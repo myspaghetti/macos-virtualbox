@@ -378,7 +378,7 @@ read -p "Press enter when the virtual machine shutdown is complete."
 echo ""
 echo "Detaching initial base system and starting virtual machine."
 echo "The VM will boot from the new base system on the installer virtual disk."
-VBoxManage storageattach "${vmname}" --storagectl SATA --port 2 --medium emptydrive
+VBoxManage storageattach "${vmname}" --storagectl SATA --port 2 --medium none
 VBoxManage startvm "${vmname}"
 
 promptlangutils
@@ -493,7 +493,7 @@ echo "Shutting down virtual machine."
 read -p "Press enter when the virtual machine shutdown is complete."
 
 # detach installer from virtual machine
-VBoxManage storageattach "${vmname}" --storagectl SATA --port 1 --medium emptydrive
+VBoxManage storageattach "${vmname}" --storagectl SATA --port 1 --medium none
 
 # Start the virtual machine again.
 # The VM will boot from the target virtual disk image and complete the installation.
