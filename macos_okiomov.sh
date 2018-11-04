@@ -503,11 +503,12 @@ echo ""
 echo "macOS Mojave 10.14.1 will now install and start up."
 echo ""
 read -n 1 -p "Delete temporary files? [y/n] " delete
-if [ "${delete}" -eq "y" ]; then
+if [ "${delete}" == "y" ]; then
 # temporary files cleanup
     VBoxManage closemedium "BaseSystem.vdi"
     VBoxManage closemedium "Install ${vmname}.vdi"
     rm "BaseSystem.vdi" "Install ${vmname}.vdi"
+fi
 echo ""
 echo "macOS Mojave 10.14.1 installation should complete in a few minutes."
 echo ""
