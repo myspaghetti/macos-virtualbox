@@ -465,21 +465,13 @@ kbstring='load fs0:\EFI\driver\AppleImageLoader.efi'; sendkeys
 kbstring='load fs0:\EFI\driver\AppleUiSupport.efi'; sendkeys
 kbstring='load fs0:\EFI\driver\ApfsDriverLoader.efi'; sendkeys
 kbstring='map -r'; sendkeys
-kbstring='fs1:'; sendkeys
-kbstring='cd "macOS Install Data\Locked Files\Boot Files"'; sendkeys
-kbstring='boot.efi'; sendkeys
-kbstring='cd "System\Library\CoreServices"'; sendkeys
-kbstring='boot.efi'; sendkeys
-kbstring='fs2:'; sendkeys
-kbstring='cd "macOS Install Data\Locked Files\Boot Files"'; sendkeys
-kbstring='boot.efi'; sendkeys
-kbstring='cd "System\Library\CoreServices"'; sendkeys
-kbstring='boot.efi'; sendkeys
-kbstring='fs3:'; sendkeys
-kbstring='cd "macOS Install Data\Locked Files\Boot Files"'; sendkeys
-kbstring='boot.efi'; sendkeys
-kbstring='cd "System\Library\CoreServices"'; sendkeys
-kbstring='boot.efi'; sendkeys
+kbstring='for %a run (1 5)'; sendkeys
+kbstring='  fs%a:'; sendkeys
+kbstring='  cd "macOS Install Data\Locked Files\Boot Files"'; sendkeys
+kbstring='  boot.efi'; sendkeys
+kbstring='  cd "System\Library\CoreServices"'; sendkeys
+kbstring='  boot.efi'; sendkeys
+kbstring='endfor'; sendkeys
 kbspecial="ESC : w q ENTER"; sendspecial
 
 # Shut down the virtual machine
@@ -511,9 +503,5 @@ if [ "${delete}" == "y" ]; then
 fi
 echo ""
 echo "macOS Mojave 10.14.1 installation should complete in a few minutes."
-echo ""
-echo "UEFI cleanup: after macOS successfully starts up, the two incorrect"
-echo "fs: guesses in the UEFI startup.nsh may be manually removed, though they"
-echo "generally have no effect except for the error messages at boot."
 echo ""
 echo "That's it. Enjoy your virtual machine."
