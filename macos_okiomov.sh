@@ -2,7 +2,7 @@
 # One-Key-Installation of macOS on VirtualBox
 # (c) img2tab, licensed under GPL2.0 or higher
 # url: https://github.com/img2tab/okiomov
-# version 0.2
+# version 0.21
 
 # Requirements: 33.5GB available storage on host
 # Dependencies: bash>4.0, unzip, wget, dmg2img, VirtualBox>5.2
@@ -38,11 +38,12 @@ exec 2>/dev/null
 
 # check dependencies
 
-if [ -n "${BASH_VERSION}" ]; then
-    if [ "${BASH_VERSION:0:1}" -lt 4 ]; then
-        echo "Please run this script in BASH 4.0 or higher."
-        exit
-    fi
+if [ -z "${BASH_VERSION}" ]; then
+    echo "Can't determine BASH_VERSION. Exiting."
+    exit
+elif [ "${BASH_VERSION:0:1}" -lt 4 ]; then
+    echo "Please run this script on BASH 4.0 or higher."
+    exit
 fi
 
 if [ -z "$(unzip -hh)" \
