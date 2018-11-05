@@ -10,7 +10,7 @@
 # Personalized the installation by setting these variables:
 vmname="Mojave"      # name of VirtualBox virtual machine
 storagesize=22000    # size of target virtual disk image. minimum 22000
-cpucount=4           # VM CPU cores, minimum 2
+cpucount=2           # VM CPU cores, minimum 2
 memorysize=4096      # VM RAM in MB, minimum 2048 
 gpuvram=128          # VM video RAM in MB, minimum 34
 resolution=1280x800  # display resolution
