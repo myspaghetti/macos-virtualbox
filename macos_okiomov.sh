@@ -2,7 +2,7 @@
 # One-Key-Installation of macOS on VirtualBox
 # (c) img2tab, licensed under GPL2.0 or higher
 # url: https://github.com/img2tab/okiomov
-# version 0.21
+# version 0.22
 
 # Requirements: 33.5GB available storage on host
 # Dependencies: bash>4.0, unzip, wget, dmg2img, VirtualBox>5.2
@@ -142,7 +142,8 @@ VBoxManage setextradata "${vmname}" \
 VBoxManage setextradata "${vmname}" \
  "VBoxInternal/Devices/efi/0/Config/DmiBoardProduct" "Mac-2BD1B31983FE1663"
 VBoxManage setextradata "${vmname}" \
- "VBoxInternal/Devices/smc/0/Config/DeviceKey" "ourhardworkbythesewordsguardedpleasedontsteal(c)AppleComputerInc"
+ "VBoxInternal/Devices/smc/0/Config/DeviceKey" \
+ "ourhardworkbythesewordsguardedpleasedontsteal(c)AppleComputerInc"
 VBoxManage setextradata "${vmname}" \
  "VBoxInternal/Devices/smc/0/Config/GetKeyFromRealSMC" 1
 VBoxManage setextradata "${vmname}" \
@@ -222,6 +223,7 @@ declare -A ksc=(
     ["SPACE"]="39 B9"
     [" "]="39 B9"
     ["CAPS"]="3A BA"
+    ["CAPSLOCK"]="3A BA"
     ["F1"]="3B BB"
     ["F2"]="3C BC"
     ["F3"]="3D BD"
@@ -292,7 +294,7 @@ declare -A ksc=(
     ["?"]="2A 35 B5 AA"
 )
 
-# send-string-as-keyboard-keystrokes and send-special-key to virtual machine
+# read variable kbstring and convert string to scancodes and send to guest vm
 function sendkeys() {
     scancode=$(for (( i=0; i < ${#kbstring}; i++ ));
                do c[i]=${kbstring:i:1}; echo -n ${ksc[${c[i]}]}" "; done)
@@ -300,6 +302,8 @@ function sendkeys() {
     VBoxManage controlvm "${vmname}" keyboardputscancode ${scancode}
 }
 
+# read variable kbspecial and send keystrokes by name,
+# for example "CTRLprs c CTRLrls", and send to guest vm
 function sendspecial() {
     scancode=""
     for keypress in ${kbspecial}; do
