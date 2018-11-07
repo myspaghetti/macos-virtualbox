@@ -15,4 +15,4 @@ iCloud and iMessage and other connected Apple services require a valid device se
 * [VirtualBox](https://www.virtualbox.org/wiki/Downloads)≥5.2
 * `Bash`≥4 (run on Windows through [Cygwin](https://cygwin.com/install.html))
 * `unzip`, `wget` (install through package manager)
-* `dmg2img` (install through package manager or let the script download it automaticall on Windows)
+* `dmg2img` (install through package manager on Linux; let the script download it automaticall on Windows)
