@@ -2,18 +2,23 @@
 # One-Key-Installation of macOS on VirtualBox
 # (c) img2tab, licensed under GPL2.0 or higher
 # url: https://github.com/img2tab/okiomov
-# version 0.22
+# version 0.23
 
 # Requirements: 33.5GB available storage on host
 # Dependencies: bash>4.0, unzip, wget, dmg2img, VirtualBox>5.2
 
 # Personalized the installation by setting these variables:
-vmname="Mojave"      # name of VirtualBox virtual machine
-storagesize=22000    # size of target virtual disk image. minimum 22000
-cpucount=2           # VM CPU cores, minimum 2
-memorysize=4096      # VM RAM in MB, minimum 2048 
-gpuvram=128          # VM video RAM in MB, minimum 34
-resolution=1280x800  # display resolution
+vmname="Mojave"             # name of VirtualBox virtual machine
+storagesize=22000           # size of target virtual disk image. minimum 22000
+cpucount=2                  # VM CPU cores, minimum 2
+memorysize=4096             # VM RAM in MB, minimum 2048 
+gpuvram=128                 # VM video RAM in MB, minimum 34
+resolution="1280x800"       # display resolution
+serialnumber="000000000000" # valid serial required for iCloud, iMessage
+# structure:  PPPYWWUUUCCC - plant, year, week, unique identifier, model
+# The whether the serial is valid depends on the device name, below
+devicename="MacBookPro11,3" 
+boardid="Mac-2BD1B31983FE1663"
 
 # welcome message
 whiteonred="\e[48;2;255;0;0m\e[38;2;255;255;255m"
@@ -29,6 +34,9 @@ The installation requires '${whiteonred}'33.5GB\033[0m of available storage,
 22GB for the virtual machine and 11.5GB for temporary installation files.
 
 The script checks for dependencies and will prompt to install them if unmet.
+
+For iCloud and iMessage functionality, you will need to provide a valid
+Apple serial number. macOS will work without it, but not Apple-connected apps.
 
 Press enter to continue, CTRL-C to exit.' 
 read
@@ -136,11 +144,11 @@ VBoxManage modifyvm "${vmname}" --cpus "${cpucount}" --memory "${memorysize}" \
  --boot4 none --firmware efi --rtcuseutc on --usbxhci on --chipset ich9 \
  --mouse usb --keyboard usb --audio none
 VBoxManage setextradata "${vmname}" \
- "VBoxInternal/Devices/efi/0/Config/DmiSystemProduct" "MacBookPro11,3"
+ "VBoxInternal/Devices/efi/0/Config/DmiSystemProduct" "${devicename}"
 VBoxManage setextradata "${vmname}" \
  "VBoxInternal/Devices/efi/0/Config/DmiSystemVersion" "1.0"
 VBoxManage setextradata "${vmname}" \
- "VBoxInternal/Devices/efi/0/Config/DmiBoardProduct" "Mac-2BD1B31983FE1663"
+ "VBoxInternal/Devices/efi/0/Config/DmiBoardProduct" "${boardid}"
 VBoxManage setextradata "${vmname}" \
  "VBoxInternal/Devices/smc/0/Config/DeviceKey" \
  "ourhardworkbythesewordsguardedpleasedontsteal(c)AppleComputerInc"
@@ -148,6 +156,8 @@ VBoxManage setextradata "${vmname}" \
  "VBoxInternal/Devices/smc/0/Config/GetKeyFromRealSMC" 1
 VBoxManage setextradata "${vmname}" \
  "VBoxInternal2/EfiGraphicsResolution" "${resolution}"
+VBoxManage setextradata "${vmname}" \
+ "VBoxInternal/Devices/efi/0/Config/DmiSystemSerial" "${serialnumber}"
 
 # sterr back
 exec 2>/dev/tty
