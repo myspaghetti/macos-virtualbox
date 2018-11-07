@@ -6,6 +6,6 @@ The goal of the script is to allow for a very easy installation without any clos
 
 Tested on Cygwin, should work on Linux distros.
 
-##iCloud and iMessage connectivity
+## iCloud and iMessage connectivity
 
 iCloud and iMessage and other connected Apple services require a valid device serial number. If you own a Mac, use yours. An invalid serial number that matches the correct structure for the device name and board ID might work, too.
