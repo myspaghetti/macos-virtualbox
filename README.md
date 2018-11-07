@@ -9,3 +9,10 @@ Tested on Cygwin, should work on Linux distros.
 ## iCloud and iMessage connectivity
 
 iCloud and iMessage and other connected Apple services require a valid device serial number. If you own a Mac, use yours. An invalid serial number that matches the correct structure for the device name and board ID might work, too.
+
+## Dependencies
+
+* [VirtualBox](https://www.virtualbox.org/wiki/Downloads)≥5.2
+* `Bash`≥4 (run on Windows through [Cygwin](https://cygwin.com/install.html))
+* `unzip`, `wget` (install through package manager)
+* `dmg2img` (install through package manager or let the script download it automaticall on Windows)
