@@ -68,6 +68,11 @@ if [ -n "$(cygcheck -V)" ]; then
     windows="True"
 fi
 
+macos=""
+if [[ "$OSTYPE" == "darwin"* ]]; then
+    macos="True"
+fi
+
 # VirtualBox in ${PATH}
 
 if [ -z "$(VBoxManage -v)" ]; then
@@ -81,17 +86,19 @@ if [ -z "$(VBoxManage -v)" ]; then
 fi
 
 # dmg2img
-if [ -z "$(dmg2img -d)" ]; then
-    if [ -z "${windows}" ]; then
-        echo "Please install the package dmg2img."
-        exit
-    else
-        echo "Downloading dmg2img"
-        wget -c "http://vu1tur.eu.org/tools/dmg2img-1.6.6-win32.zip" \
-             -O "dmg2img-1.6.6-win32.zip" --quiet --show-progress 2>/dev/tty
-        unzip -oj "dmg2img-1.6.6-win32.zip" "dmg2img.exe"
-        rm "dmg2img-1.6.6-win32.zip"
-        chmod +x "dmg2img.exe"
+if [ -z "${macos}" ]; then
+    if [ -z "$(dmg2img -d)" ]; then
+        if [ -z "${windows}" ]; then
+            echo "Please install the package dmg2img."
+            exit
+        else
+            echo "Downloading dmg2img"
+            wget -c "http://vu1tur.eu.org/tools/dmg2img-1.6.6-win32.zip" \
+            -O "dmg2img-1.6.6-win32.zip" --quiet --show-progress 2>/dev/tty
+            unzip -oj "dmg2img-1.6.6-win32.zip" "dmg2img.exe"
+            rm "dmg2img-1.6.6-win32.zip"
+            chmod +x "dmg2img.exe"
+        fi
     fi
 fi
 
@@ -109,7 +116,12 @@ else
     echo "Downloading BaseSystem.dmg from swcdn.apple.com"
     wget -c 'http://swcdn.apple.com/content/downloads/35/53/091-93471/ff5kp0aiow1d87t494xp5twbugymnlvz16/BaseSystem.dmg' -O "BaseSystem.dmg" --quiet --show-progress 2>/dev/tty
     echo "Downloaded BaseSystem.dmg. Converting to BaseSystem.img"
-    dmg2img "BaseSystem.dmg" "BaseSystem.img"
+    if [ -z "${macos}" ]; then
+        dmg2img "BaseSystem.dmg" "BaseSystem.img"
+    else
+        hdiutil convert "BaseSystem.dmg" -format UDRW -o "BaseSystem.img"
+        mv "BaseSystem.img.dmg" "BaseSystem.img"
+    fi
     VBoxManage convertfromraw --format VDI "BaseSystem.img" "BaseSystem.vdi"
     rm "BaseSystem.dmg" "BaseSystem.img"
 fi
