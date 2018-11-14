@@ -14,7 +14,7 @@ cpucount=2                  # VM CPU cores, minimum 2
 memorysize=4096             # VM RAM in MB, minimum 2048 
 gpuvram=128                 # VM video RAM in MB, minimum 34
 resolution="1280x800"       # display resolution
-serialnumber="000000000000" # valid serial required for iCloud, iMessage.
+serialnumber="" # valid serial required for iCloud, iMessage.
 # Structure:  PPPYWWUUUCCC - plant, year, week, unique identifier, model
 # Whether the serial is valid depends on the device name and board, below
 devicename="MacBookPro11,3" 
@@ -156,8 +156,10 @@ VBoxManage setextradata "${vmname}" \
  "VBoxInternal/Devices/smc/0/Config/GetKeyFromRealSMC" 1
 VBoxManage setextradata "${vmname}" \
  "VBoxInternal2/EfiGraphicsResolution" "${resolution}"
-VBoxManage setextradata "${vmname}" \
- "VBoxInternal/Devices/efi/0/Config/DmiSystemSerial" "${serialnumber}"
+if [ -n "${serialnumber}" ]; then
+    VBoxManage setextradata "${vmname}" \
+     "VBoxInternal/Devices/efi/0/Config/DmiSystemSerial" "${serialnumber}"
+fi
 
 # sterr back
 exec 2>/dev/tty
