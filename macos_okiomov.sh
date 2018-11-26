@@ -408,7 +408,9 @@ kbstring='mv "${installpath}InstallESDDmg.pkg" "${installpath}InstallESD.dmg" &&
 sendkeys
 
 # reboot, because the installer does't work when the partition is remounted
+promptterminalready
 kbstring="reboot"
+sendkeys
 echo ""
 echo "Rebooting the virtual machine"
 promptlangutils
