@@ -2,7 +2,7 @@
 # One-Key-Installation of macOS on VirtualBox
 # (c) img2tab, licensed under GPL2.0 or higher
 # url: https://github.com/img2tab/okiomov
-# version 0.24
+# version 0.26
 
 # Requirements: 33.5GB available storage on host
 # Dependencies: bash>4.0, unzip, wget, dmg2img, VirtualBox>5.2
@@ -23,14 +23,16 @@ boardid="Mac-2BD1B31983FE1663"
 # welcome message
 whiteonred="\e[48;2;255;0;0m\e[38;2;255;255;255m"
 whiteonblack="\e[48;2;0;0;9m\e[38;2;255;255;255m"
+defaultcolor="\033[0m"
+
 printf '
          One-Key-Installation of macOS On VirtualBox - Mojave 10.14.11        
 -------------------------------------------------------------------------------
 
 '${whiteonblack}'This installer uses only open-source software and original
-unmodified Apple binaries.\033[0m
+unmodified Apple binaries.'${defaultcolor}'
 
-The installation requires '${whiteonred}'33.5GB\033[0m of available storage,
+The installation requires '${whiteonred}'33.5GB'${defaultcolor}' of available storage,
 22GB for the virtual machine and 11.5GB for temporary installation files.
 
 The script checks for dependencies and will prompt to install them if unmet.
@@ -38,7 +40,7 @@ The script checks for dependencies and will prompt to install them if unmet.
 For iCloud and iMessage functionality, you will need to provide a valid
 Apple serial number. macOS will work without it, but not Apple-connected apps.
 
-Press enter to continue, CTRL-C to exit.' 
+'${whiteonblack}'Press enter to continue, CTRL-C to exit.'${defaultcolor}
 read
 
 # silence stderr
@@ -99,10 +101,6 @@ fi
 
 
 if [ -n "$(VBoxManage showvminfo "${vmname}")" ]; then
-    echo "${vmname} virtual machine already exists. Exiting."
-    exit
-fi
-
     echo "${vmname} virtual machine already exists. Exiting."
     exit
 fi
@@ -333,24 +331,26 @@ function sendenter() {
 }
  
 function promptlangutils() {
-echo ""
-read -p "Press enter when the language select screen is ready."
+printf ${whiteonblack}'
+Press enter when the language select screen is ready.'${defaultcolor}
+read -p ""
 sendenter
 
-echo ""
-read -p "Press enter when the macOS Utilities screen is ready."
+printf ${whiteonblack}'
+Press enter when the macOS Utilities screen is ready.'${defaultcolor}
+read -p ""
 
 kbspecial='CTRLprs F2 CTRLrls u ENTER t ENTER'
 sendspecial
 }
 
-promptlangutils
-
 function promptterminalready() {
-echo ""
-read -p "Press enter when the Terminal command prompt is ready."
+printf ${whiteonblack}'
+Press enter when the Terminal command prompt is ready.'${defaultcolor}
+read -p ""
 }
 
+promptlangutils
 promptterminalready
 
 echo ""
@@ -390,9 +390,10 @@ promptterminalready
 kbstring='shutdown -h now'
 sendkeys
 
-echo ""
-echo "Shutting down virtual machine."
-read -p "Press enter when the virtual machine shutdown is complete."
+printf ${whiteonblack}'
+Shutting down virtual machine.
+Press enter when the virtual machine shutdown is complete.'${defaultcolor}
+read -p ""
 
 # Detach the original 2GB BaseSystem.vdi and boot from the new 8GB BaseSystem
 echo ""
@@ -409,6 +410,7 @@ kbstring='mount -rw / && installpath="/Install macOS Mojave.app/Contents/SharedS
 sendkeys
 
 # Rename InstallESDDmg.pkg to InstallESD.dmg and update InstallInfo.plist
+promptterminalready
 kbstring='mv "${installpath}InstallESDDmg.pkg" "${installpath}InstallESD.dmg" && sed -i.bak -e "s/InstallESDDmg\.pkg/InstallESD.dmg/" -e "s/pkg\.InstallESDDmg/dmg.InstallESD/" "${installpath}InstallInfo.plist" && sed -i.bak2 -e "/InstallESD\.dmg/{n;N;N;N;d;}" "${installpath}InstallInfo.plist"'
 sendkeys
 
@@ -424,28 +426,33 @@ promptterminalready
 # Start the installer.
 kbstring='cd "/Install macOS Mojave.app/Contents/Resources/"; ./startosinstall --volume "/Volumes/'"${vmname}"'"'
 sendkeys
-echo ""
-echo "Installer started. Please wait for the license prompt to appear at"
-echo "the bottom of the virtual machine terminal, then press enter here."
-read -p "This will accept the license on the virtual machine."
+printf ${whiteonblack}'
+Installer started. Please wait for the license prompt to appear at
+the bottom of the virtual machine terminal, then press enter here.
+This will accept the license on the virtual machine.'${defaultcolor}
+read -p ""
 kbspecial="A ENTER"
 sendspecial
 
 echo ""
 echo "When the installer finishes preparing, the virtual machine will reboot"
 echo "into the base system, not the installer."
-read -p "After the reboot, press enter when the language select screen is ready."
+printf ${whiteonblack}'
+After the reboot, press enter when the language select screen is ready.'${defaultcolor}
+read -p ""
 sendenter
 
-echo ""
-read -p "Press enter when the macOS Utilities screen is ready."
+printf ${whiteonblack}'
+Press enter when the macOS Utilities screen is ready.'${defaultcolor}
+read -p ""
 
 # Start Safari (Get Help Online)
 kbspecial="UP UP UP UP DOWN DOWN TAB SPACE"
 sendspecial
 
-echo ""
-read -p "Press enter when Safari is ready."
+printf ${whiteonblack}'
+Press enter when Safari is ready.'${defaultcolor}
+read -p ""
 
 # Browse the web!
 kbspecial="CMDprs l CMDrls"
@@ -453,16 +460,18 @@ sendspecial
 kbstring="https://github.com/acidanthera/AppleSupportPkg/releases/tag/2.0.4"
 sendkeys
 echo ""
-printf 'In the VM, '${whiteonred}'manually\033[0m right-click on AppleSupport-v2.0.4-RELEASE.zip'
-echo "and 'Download Linked File As...' and select ${vmname} for 'Where:'"
+printf 'In the VM, '${whiteonred}'manually'${defaultcolor}' right-click on AppleSupport-v2.0.4-RELEASE.zip'
+echo ""
+echo "and 'Download Linked File As...' then select ${vmname} for 'Where:'"
 echo "from the dropdown menu. Then unbind the mouse cursor from the virtual"
-printf 'machine with the '${whiteonblack}'right control key\033[0m.'   
-read -p "Click here and press enter when the download is complete."
+printf 'machine with the '${whiteonblack}'right control key.'${defaultcolor}
+read -p " Click here and press enter when the download is complete."
 
 kbspecial="CMDprs q CMDrls"
 sendspecial
-echo ""
-read -p "Press enter when the macOS Utilities screen is ready."
+printf ${whiteonblack}'
+Press enter when the macOS Utilities screen is ready.'${defaultcolor}
+read -p ""
 kbspecial="CTRLprs F2 CTRLrls u ENTER t ENTER"
 sendspecial
 promptterminalready
@@ -478,9 +487,11 @@ sendkeys
 # create startup.nsh EFI script
 kbstring='cd "/Volumes/'"${vmname}"'/mount_efi/" && vim startup.nsh'
 sendkeys
-echo ""
-echo "Press enter when '\"startup.nsh\" [New File]' appears"
-read -p "at the bottom of the terminal."
+
+printf ${whiteonblack}'
+Press enter when '${defaultcolor}'"startup.nsh" [New File]'${whiteonblack}' appears
+at the bottom of the terminal.'${defaultcolor}
+read -p ""
 
 kbstring='Iecho -off'; sendkeys
 kbstring='load fs0:\EFI\driver\AppleImageLoader.efi'; sendkeys
@@ -497,14 +508,17 @@ kbstring='endfor'; sendkeys
 kbspecial="ESC : w q ENTER"; sendspecial
 
 # Shut down the virtual machine
-echo ""
-read -p "Press enter when the terminal is ready."
+printf ${whiteonblack}'
+Press enter when the terminal is ready.'${defaultcolor}
+read -p ""
 kbstring='shutdown -h now'
 sendkeys
 
 echo ""
 echo "Shutting down virtual machine."
-read -p "Press enter when the virtual machine shutdown is complete."
+printf ${whiteonblack}'
+Press enter when the virtual machine shutdown is complete.'${defaultcolor}
+read -p ""
 
 # detach installer from virtual machine
 VBoxManage storageattach "${vmname}" --storagectl SATA --port 1 --medium none
@@ -513,17 +527,18 @@ VBoxManage storageattach "${vmname}" --storagectl SATA --port 1 --medium none
 # The VM will boot from the target virtual disk image and complete the installation.
 VBoxManage startvm "${vmname}"
 
-echo ""
-echo "macOS Mojave 10.14.1 will now install and start up."
-echo ""
-read -n 1 -p "Delete temporary files? [y/n] " delete
+printf '
+macOS Mojave 10.14.1 will now install and start up.
+
+'${whiteonred}'Delete temporary files?'${defaultcolor}
+read -n 1 -p " [y/n] " delete
 if [ "${delete}" == "y" ]; then
 # temporary files cleanup
     VBoxManage closemedium "BaseSystem.vdi"
     VBoxManage closemedium "Install ${vmname}.vdi"
     rm "BaseSystem.vdi" "Install ${vmname}.vdi"
-fi
-echo ""
-echo "macOS Mojave 10.14.1 installation should complete in a few minutes."
-echo ""
-echo "That's it. Enjoy your virtual machine."
+
+printf '
+macOS Mojave 10.14.1 installation should complete in a few minutes.
+
+That'\''s it. Enjoy your virtual machine.'
