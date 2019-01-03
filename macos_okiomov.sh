@@ -98,11 +98,7 @@ fi
 # Finally done with dependencies.
 
 
-if [ -z "${windows}" ]; then
-    if VBoxManage list vms | grep -q "${vmname}"; then
-        echo "${vmname} virtual machine already exists. Exiting."
-        exit
-elif [ -n "$(VBoxManage showvminfo "${vmname}")" ]; then
+if [ -n "$(VBoxManage showvminfo "${vmname}")" ]; then
     echo "${vmname} virtual machine already exists. Exiting."
     exit
 fi
