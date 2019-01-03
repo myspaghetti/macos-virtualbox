@@ -116,7 +116,7 @@ if [ -r "BaseSystem.vdi" ]; then
     echo "BaseSystem.vdi bootstrap virtual disk image ready."
 else
     echo "Downloading BaseSystem.dmg from swcdn.apple.com"
-    wget -c 'http://swcdn.apple.com/content/downloads/35/53/091-93471/ff5kp0aiow1d87t494xp5twbugymnlvz16/BaseSystem.dmg' -O "BaseSystem.dmg" --quiet --show-progress 2>/dev/tty
+    wget -c 'http://swcdn.apple.com/content/downloads/01/22/041-19985/q7s69dmdnh5jhfrmy1jp80m8vy2eh0dst2/BaseSystem.dmg' -O "BaseSystem.dmg" --quiet --show-progress 2>/dev/tty
     echo "Downloaded BaseSystem.dmg. Converting to BaseSystem.img"
     dmg2img "BaseSystem.dmg" "BaseSystem.img"
     VBoxManage convertfromraw --format VDI "BaseSystem.img" "BaseSystem.vdi"
@@ -379,7 +379,7 @@ echo ""
 echo "Downloading macOS Mojave 10.14.1 installer."
 
 # downloading macOS
-kbstring='urlpath="http://swcdn.apple.com/content/downloads/35/53/091-93471/ff5kp0aiow1d87t494xp5twbugymnlvz16/"; for filename in BaseSystem.chunklist InstallInfo.plist AppleDiagnostics.dmg AppleDiagnostics.chunklist BaseSystem.dmg InstallESDDmg.pkg; do curl "${urlpath}${filename}" -o "/Volumes/'"${vmname}"'/${filename}"; done'
+kbstring='urlpath="http://swcdn.apple.com/content/downloads/01/22/041-19985/q7s69dmdnh5jhfrmy1jp80m8vy2eh0dst2/"; for filename in BaseSystem.chunklist InstallInfo.plist AppleDiagnostics.dmg AppleDiagnostics.chunklist BaseSystem.dmg InstallESDDmg.pkg; do curl "${urlpath}${filename}" -o "/Volumes/'"${vmname}"'/${filename}"; done'
 sendkeys
 promptterminalready
 echo ""
