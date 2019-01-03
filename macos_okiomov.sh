@@ -7,7 +7,7 @@
 # Requirements: 33.5GB available storage on host
 # Dependencies: bash>4.0, unzip, wget, dmg2img, VirtualBox>5.2
 
-# Personalized the installation by setting these variables:
+# Personalize the installation by setting these variables:
 vmname="Mojave"             # name of VirtualBox virtual machine
 storagesize=22000           # size of target virtual disk image. minimum 22000
 cpucount=2                  # VM CPU cores, minimum 2
@@ -15,9 +15,9 @@ memorysize=4096             # VM RAM in MB, minimum 2048
 gpuvram=128                 # VM video RAM in MB, minimum 34
 resolution="1280x800"       # display resolution
 serialnumber="NOTAVALIDSN0" # valid serial required for iCloud, iMessage.
-# Structure:  PPPYWWUUUCCC - plant, year, week, unique identifier, model
-# Whether the serial is valid depends on the device name and board, below
-devicename="MacBookPro11,3" 
+# Structure:  PPPYWWUUUMMM - Plant, Year, Week, Unique identifier, Model
+# Whether the serial is valid depends on the device name and board, below:
+devicename="MacBookPro11,3" # personalize to match serial if desired
 boardid="Mac-2BD1B31983FE1663"
 
 # welcome message
@@ -26,7 +26,7 @@ whiteonblack="\e[48;2;0;0;9m\e[38;2;255;255;255m"
 defaultcolor="\033[0m"
 
 printf '
-         One-Key-Installation of macOS On VirtualBox - Mojave 10.14.11        
+         One-Key-Installation of macOS On VirtualBox - Mojave 10.14.2        
 -------------------------------------------------------------------------------
 
 '${whiteonblack}'This installer uses only open-source software and original
@@ -34,6 +34,7 @@ unmodified Apple binaries.'${defaultcolor}'
 
 The installation requires '${whiteonred}'33.5GB'${defaultcolor}' of available storage,
 22GB for the virtual machine and 11.5GB for temporary installation files.
+Assigning more storage for the virtual machine is recommended for long-term use.
 
 The script checks for dependencies and will prompt to install them if unmet.
 
@@ -99,7 +100,6 @@ fi
 
 # Finally done with dependencies.
 
-
 if [ -n "$(VBoxManage showvminfo "${vmname}")" ]; then
     echo "${vmname} virtual machine already exists. Exiting."
     exit
@@ -117,7 +117,7 @@ else
     rm "BaseSystem.dmg" "BaseSystem.img"
 fi
 
-# initialize the VirtualBox macOS Mojave 10.14.1 virtual machine:
+# Initialize the VirtualBox macOS Mojave 10.14.2 virtual machine:
 echo "Creating ${vmname} virtual disk images."
 VBoxManage createvm --name "${vmname}" --ostype "MacOS_64" --register
 
@@ -372,7 +372,7 @@ kbstring='diskutil partitionDisk "/dev/${disks[1]}" 1 GPT JHFS+ "Install" R'
 sendkeys
 promptterminalready
 echo ""
-echo "Downloading macOS Mojave 10.14.1 installer."
+echo "Downloading macOS Mojave 10.14.2 installer."
 
 # downloading macOS
 kbstring='urlpath="http://swcdn.apple.com/content/downloads/01/22/041-19985/q7s69dmdnh5jhfrmy1jp80m8vy2eh0dst2/"; for filename in BaseSystem.chunklist InstallInfo.plist AppleDiagnostics.dmg AppleDiagnostics.chunklist BaseSystem.dmg InstallESDDmg.pkg; do curl "${urlpath}${filename}" -o "/Volumes/'"${vmname}"'/${filename}"; done'
@@ -528,7 +528,7 @@ VBoxManage storageattach "${vmname}" --storagectl SATA --port 1 --medium none
 VBoxManage startvm "${vmname}"
 
 printf '
-macOS Mojave 10.14.1 will now install and start up.
+macOS Mojave 10.14.2 will now install and start up.
 
 '${whiteonred}'Delete temporary files?'${defaultcolor}
 read -n 1 -p " [y/n] " delete
@@ -539,6 +539,6 @@ if [ "${delete}" == "y" ]; then
     rm "BaseSystem.vdi" "Install ${vmname}.vdi"
 
 printf '
-macOS Mojave 10.14.1 installation should complete in a few minutes.
+macOS Mojave 10.14.2 installation should complete in a few minutes.
 
 That'\''s it. Enjoy your virtual machine.'
