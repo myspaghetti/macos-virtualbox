@@ -14,7 +14,7 @@ cpucount=2                  # VM CPU cores, minimum 2
 memorysize=4096             # VM RAM in MB, minimum 2048 
 gpuvram=128                 # VM video RAM in MB, minimum 34
 resolution="1280x800"       # display resolution
-serialnumber="000000000000" # valid serial required for iCloud, iMessage.
+serialnumber="NOTAVALIDSN0" # valid serial required for iCloud, iMessage.
 # Structure:  PPPYWWUUUCCC - plant, year, week, unique identifier, model
 # Whether the serial is valid depends on the device name and board, below
 devicename="MacBookPro11,3" 
