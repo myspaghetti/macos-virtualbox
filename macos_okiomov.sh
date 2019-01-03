@@ -2,7 +2,7 @@
 # One-Key-Installation of macOS on VirtualBox
 # (c) img2tab, licensed under GPL2.0 or higher
 # url: https://github.com/img2tab/okiomov
-# version 0.26
+# version 0.27
 
 # Requirements: 33.5GB available storage on host
 # Dependencies: bash>4.0, unzip, wget, dmg2img, VirtualBox>5.2
@@ -306,6 +306,11 @@ declare -A ksc=(
     [">"]="2A 34 B4 AA"
     ["?"]="2A 35 B5 AA"
 )
+
+# hacky way to clear input buffer before sending scancodes
+function clearinputbuffer() {
+    while read -d '' -r -t 0; do read -d '' -t 0.1 -n 10000; break; done
+}
 
 # read variable kbstring and convert string to scancodes and send to guest vm
 function sendkeys() {
