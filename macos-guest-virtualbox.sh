@@ -542,6 +542,7 @@ if [ "${delete}" == "y" ]; then
     VBoxManage closemedium "BaseSystem.vdi"
     VBoxManage closemedium "Install ${vmname}.vdi"
     rm "BaseSystem.vdi" "Install ${vmname}.vdi"
+fi
 
 printf '
 macOS Mojave 10.14.2 installation should complete in a few minutes.
