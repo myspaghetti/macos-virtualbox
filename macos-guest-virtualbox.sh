@@ -2,7 +2,7 @@
 # One-Key-Installation of macOS on VirtualBox
 # (c) img2tab, licensed under GPL2.0 or higher
 # url: https://github.com/img2tab/okiomov
-# version 0.29
+# version 0.30
 
 # Requirements: 33.5GB available storage on host
 # Dependencies: bash>4.0, unzip, wget, dmg2img, VirtualBox>5.2
@@ -87,6 +87,7 @@ fi
 if [ -z "$(dmg2img -d)" ]; then
     if [ -z "${windows}" ]; then
         echo "Please install the package dmg2img."
+        exec 2>/dev/tty
         exit
     else
         echo "Downloading dmg2img"
@@ -100,25 +101,12 @@ fi
 
 # Finally done with dependencies.
 
-if [ -n "$(VBoxManage showvminfo "${vmname}")" ]; then
-    printf ${vmname}' virtual machine already exists.
-'${whiteonred}'Delete existing virtual machine "'${vmname}'"?'${defaultcolor}
-    delete=""
-    read -n 1 -p " [y/n] " delete
-    if [ "${delete}" == "y" ]; then
-        VBoxManage unregistervm "${vmname}" --delete
-    else
-        echo "Please assign a different VM name with the script variable \"vmname\"."
-        exit
-    fi
-fi
-
 # Create the macOS base system virtual disk image:
 if [ -r "BaseSystem.vdi" ]; then
     echo "BaseSystem.vdi bootstrap virtual disk image ready."
 else
     echo "Downloading BaseSystem.dmg from swcdn.apple.com"
-    wget -c 'http://swcdn.apple.com/content/downloads/01/22/041-19985/q7s69dmdnh5jhfrmy1jp80m8vy2eh0dst2/BaseSystem.dmg' -O "BaseSystem.dmg" --quiet --show-progress 2>/dev/tty
+    wget -c 'http://swcdn.apple.com/content/downloads/01/22/041-19985/q7s69dmdnh5jhfrmy1jp80m8vy2eh0dst2/BaseSystem.dmg' -O "BaseSystem.dmg" --quiet 2>/dev/tty
     echo "Downloaded BaseSystem.dmg. Converting to BaseSystem.img"
     dmg2img "BaseSystem.dmg" "BaseSystem.img"
     VBoxManage convertfromraw --format VDI "BaseSystem.img" "BaseSystem.vdi"
@@ -126,18 +114,56 @@ else
 fi
 
 # Initialize the VirtualBox macOS Mojave 10.14.2 virtual machine:
-echo "Creating ${vmname} virtual disk images."
-VBoxManage createvm --name "${vmname}" --ostype "MacOS1013_64" --register
+echo "Initializing ${vmname} virtual machine configuration file."
+if [ -n "$(VBoxManage showvminfo "${vmname}")" ]; then
+    printf "${vmname}"' virtual machine already exists.
+'${whiteonred}'Delete existing virtual machine "'${vmname}'"?'${defaultcolor}
+    delete=""
+    read -n 1 -p " [y/n] " delete 2>/dev/tty
+    echo ""
+    if [ "${delete}" == "y" ]; then
+        VBoxManage unregistervm "${vmname}" --delete
+    else
+        printf '
+'${whiteonblack}'Please edit the script to assign a different VM name with script variable "vmname".'${defaultcolor}
+        exec 2>/dev/tty
+        exit
+    fi
+fi
 
+# Attempt to create new virtual machine named "${vmname}"
+if [ -n "$(VBoxManage createvm --name "${vmname}" --ostype "MacOS1013_64" --register 2>&1 1>/dev/null)" ]; then
+    printf '
+Error: Could not create virtual machine "'${vmname}'".
+'${whiteonblack}'Please delete exising "'${vmname}'" VirtualBox configuration files '${whiteonred}'manually'${defaultcolor}'.
+
+Error message:
+'
+    exec 2>/dev/tty
+    VBoxManage createvm --name "${vmname}" --ostype "MacOS1013_64" --register
+exit
+fi
+
+echo "Creating ${vmname} virtual disk images."
 # Create the target virtual disk image:
-VBoxManage createmedium --size="${storagesize}" \
-                        --filename "${vmname}.vdi" \
-                        --variant fixed 2>/dev/tty
+if [ -r "${vmname}.vdi" ]; then
+    echo "${vmname}.vdi target system virtual disk image ready."
+else
+    echo "Creating ${vmname} target system virtual disk image."
+    VBoxManage createmedium --size="${storagesize}" \
+                            --filename "${vmname}.vdi" \
+                            --variant fixed 2>/dev/tty
+fi
 
 # Create the installation media virtual disk image:
-VBoxManage createmedium --size=8000 \
-                        --filename "Install ${vmname}.vdi" \
-                        --variant fixed 2>/dev/tty
+if [ -r "Install ${vmname}.vdi" ]; then
+    echo "Installation media virtual disk image ready."
+else
+    echo "Creating ${vmname} installation media virtual disk image."
+    VBoxManage createmedium --size=8000 \
+                            --filename "Install ${vmname}.vdi" \
+                            --variant fixed 2>/dev/tty
+fi
 
 # Attach the target virtual disk image, the EFI drivers,
 # and the base system in the virtual machine:
@@ -545,7 +571,8 @@ macOS Mojave 10.14.2 will now install and start up.
 
 '${whiteonred}'Delete temporary files?'${defaultcolor}
 delete=""
-read -n 1 -p " [y/n] " delete
+read -n 1 -p " [y/n] " delete 2>/dev/tty
+echo ""
 if [ "${delete}" == "y" ]; then
 # temporary files cleanup
     VBoxManage closemedium "BaseSystem.vdi"
@@ -553,7 +580,6 @@ if [ "${delete}" == "y" ]; then
     rm "BaseSystem.vdi" "Install ${vmname}.vdi"
 fi
 
-printf '
-macOS Mojave 10.14.2 installation should complete in a few minutes.
+printf 'macOS Mojave 10.14.2 installation should complete in a few minutes.
 
 That'\''s it. Enjoy your virtual machine.'
