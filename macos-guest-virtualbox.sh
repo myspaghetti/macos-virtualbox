@@ -2,7 +2,7 @@
 # One-key semi-automatic installer of macOS on VirtualBox
 # (c) img2tab, licensed under GPL2.0 or higher
 # url: https://github.com/img2tab/macos-guest-virtualbox
-# version 0.32
+# version 0.33
 
 # Requirements: 33.5GB available storage on host
 # Dependencies: bash>4.0, unzip, wget, dmg2img, VirtualBox>5.2
@@ -373,12 +373,12 @@ function sendenter() {
  
 function promptlangutils() {
 printf ${whiteonblack}'
-Press enter when the language select screen is ready.'${defaultcolor}
+Press enter when the Language window is ready.'${defaultcolor}
 read -p ""
 sendenter
 
 printf ${whiteonblack}'
-Press enter when the macOS Utilities screen is ready.'${defaultcolor}
+Press enter when the macOS Utilities window is ready.'${defaultcolor}
 read -p ""
 
 kbspecial='CTRLprs F2 CTRLrls u ENTER t ENTER'
@@ -455,7 +455,7 @@ promptterminalready
 kbstring='mv "${installpath}InstallESDDmg.pkg" "${installpath}InstallESD.dmg" && sed -i.bak -e "s/InstallESDDmg\.pkg/InstallESD.dmg/" -e "s/pkg\.InstallESDDmg/dmg.InstallESD/" "${installpath}InstallInfo.plist" && sed -i.bak2 -e "/InstallESD\.dmg/{n;N;N;N;d;}" "${installpath}InstallInfo.plist"'
 sendkeys
 
-# reboot, because the installer does't work when the partition is remounted
+# reboot, because the installer does not work when the partition is remounted
 promptterminalready
 kbstring="reboot"
 sendkeys
@@ -479,12 +479,13 @@ echo ""
 echo "When the installer finishes preparing, the virtual machine will reboot"
 echo "into the base system, not the installer."
 printf ${whiteonblack}'
-After the reboot, press enter when the language select screen is ready.'${defaultcolor}
+After the reboot, press enter when the Language window '
+'or Utilities window is ready.'${defaultcolor}
 read -p ""
 sendenter
 
 printf ${whiteonblack}'
-Press enter when the macOS Utilities screen is ready.'${defaultcolor}
+Press enter when the macOS Utilities window is ready.'${defaultcolor}
 read -p ""
 
 # Start Safari (Get Help Online)
@@ -505,13 +506,14 @@ printf 'In the VM, '${whiteonred}'manually'${defaultcolor}' right-click on Apple
 echo ""
 echo "and 'Download Linked File As...' then select ${vmname} for 'Where:'"
 echo "from the dropdown menu. Then unbind the mouse cursor from the virtual"
-printf 'machine with the '${whiteonblack}'right control key.'${defaultcolor}
+printf 'machine with the '${whiteonblack}'right control key.'${defaultcolor}'
+'
 read -p " Click here and press enter when the download is complete."
 
 kbspecial="CMDprs q CMDrls"
 sendspecial
 printf ${whiteonblack}'
-Press enter when the macOS Utilities screen is ready.'${defaultcolor}
+Press enter when the macOS Utilities window is ready.'${defaultcolor}
 read -p ""
 kbspecial="CTRLprs F2 CTRLrls u ENTER t ENTER"
 sendspecial
