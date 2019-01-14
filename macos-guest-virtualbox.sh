@@ -1,8 +1,8 @@
 #!/bin/bash
-# One-Key-Installation of macOS on VirtualBox
+# One-key semi-automatic installer of macOS on VirtualBox
 # (c) img2tab, licensed under GPL2.0 or higher
 # url: https://github.com/img2tab/macos-guest-virtualbox
-# version 0.31
+# version 0.32
 
 # Requirements: 33.5GB available storage on host
 # Dependencies: bash>4.0, unzip, wget, dmg2img, VirtualBox>5.2
@@ -351,6 +351,7 @@ function sendkeys() {
     scancode=$(for (( i=0; i < ${#kbstring}; i++ ));
                do c[i]=${kbstring:i:1}; echo -n ${ksc[${c[i]}]}" "; done)
     scancode="${scancode} ${ksc['ENTER']}"
+    clearinputbuffer
     VBoxManage controlvm "${vmname}" keyboardputscancode ${scancode}
 }
 
@@ -361,6 +362,7 @@ function sendspecial() {
     for keypress in ${kbspecial}; do
         scancode="${scancode}${ksc[${keypress}]}"" "
     done
+    clearinputbuffer
     VBoxManage controlvm "${vmname}" keyboardputscancode ${scancode}
 }
 
