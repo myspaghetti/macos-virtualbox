@@ -1,8 +1,8 @@
 #!/bin/bash
 # One-Key-Installation of macOS on VirtualBox
 # (c) img2tab, licensed under GPL2.0 or higher
-# url: https://github.com/img2tab/okiomov
-# version 0.30
+# url: https://github.com/img2tab/macos-guest-virtualbox
+# version 0.31
 
 # Requirements: 33.5GB available storage on host
 # Dependencies: bash>4.0, unzip, wget, dmg2img, VirtualBox>5.2
@@ -99,21 +99,9 @@ if [ -z "$(dmg2img -d)" ]; then
     fi
 fi
 
-# Finally done with dependencies.
+# Done with dependencies
 
-# Create the macOS base system virtual disk image:
-if [ -r "BaseSystem.vdi" ]; then
-    echo "BaseSystem.vdi bootstrap virtual disk image ready."
-else
-    echo "Downloading BaseSystem.dmg from swcdn.apple.com"
-    wget -c 'http://swcdn.apple.com/content/downloads/01/22/041-19985/q7s69dmdnh5jhfrmy1jp80m8vy2eh0dst2/BaseSystem.dmg' -O "BaseSystem.dmg" --quiet 2>/dev/tty
-    echo "Downloaded BaseSystem.dmg. Converting to BaseSystem.img"
-    dmg2img "BaseSystem.dmg" "BaseSystem.img"
-    VBoxManage convertfromraw --format VDI "BaseSystem.img" "BaseSystem.vdi"
-    rm "BaseSystem.dmg" "BaseSystem.img"
-fi
-
-# Initialize the VirtualBox macOS Mojave 10.14.2 virtual machine:
+# Initialize the VirtualBox macOS Mojave 10.14.2 virtual machine config:
 echo "Initializing ${vmname} virtual machine configuration file."
 if [ -n "$(VBoxManage showvminfo "${vmname}")" ]; then
     printf "${vmname}"' virtual machine already exists.
@@ -142,6 +130,18 @@ Error message:
     exec 2>/dev/tty
     VBoxManage createvm --name "${vmname}" --ostype "MacOS1013_64" --register
 exit
+fi
+
+# Create the macOS base system virtual disk image:
+if [ -r "BaseSystem.vdi" ]; then
+    echo "BaseSystem.vdi bootstrap virtual disk image ready."
+else
+    echo "Downloading BaseSystem.dmg from swcdn.apple.com"
+    wget -c 'http://swcdn.apple.com/content/downloads/01/22/041-19985/q7s69dmdnh5jhfrmy1jp80m8vy2eh0dst2/BaseSystem.dmg' -O "BaseSystem.dmg" 2>/dev/tty
+    echo "Downloaded BaseSystem.dmg. Converting to BaseSystem.img"
+    dmg2img "BaseSystem.dmg" "BaseSystem.img"
+    VBoxManage convertfromraw --format VDI "BaseSystem.img" "BaseSystem.vdi"
+    rm "BaseSystem.dmg" "BaseSystem.img"
 fi
 
 echo "Creating ${vmname} virtual disk images."
