@@ -2,7 +2,7 @@
 # One-Key-Installation of macOS on VirtualBox
 # (c) img2tab, licensed under GPL2.0 or higher
 # url: https://github.com/img2tab/okiomov
-# version 0.27
+# version 0.28
 
 # Requirements: 33.5GB available storage on host
 # Dependencies: bash>4.0, unzip, wget, dmg2img, VirtualBox>5.2
@@ -101,8 +101,16 @@ fi
 # Finally done with dependencies.
 
 if [ -n "$(VBoxManage showvminfo "${vmname}")" ]; then
-    echo "${vmname} virtual machine already exists. Exiting."
-    exit
+    printf ${vmname}' virtual machine already exists.
+'${whiteonred}'Delete existing virtual machine "'${vmname}'"?'${defaultcolor}
+    delete=""
+    read -n 1 -p " [y/n] " delete
+    if [ "${delete}" == "y" ]; then
+        VBoxManage unregistervm "${vmname}" --delete
+    else
+        echo "Please assign a different VM name with the script variable \"vmname\"."
+        exit
+    fi
 fi
 
 # Create the macOS base system virtual disk image:
@@ -536,6 +544,7 @@ printf '
 macOS Mojave 10.14.2 will now install and start up.
 
 '${whiteonred}'Delete temporary files?'${defaultcolor}
+delete=""
 read -n 1 -p " [y/n] " delete
 if [ "${delete}" == "y" ]; then
 # temporary files cleanup
