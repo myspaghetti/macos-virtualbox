@@ -2,7 +2,7 @@
 # One-Key-Installation of macOS on VirtualBox
 # (c) img2tab, licensed under GPL2.0 or higher
 # url: https://github.com/img2tab/okiomov
-# version 0.28
+# version 0.29
 
 # Requirements: 33.5GB available storage on host
 # Dependencies: bash>4.0, unzip, wget, dmg2img, VirtualBox>5.2
@@ -91,7 +91,7 @@ if [ -z "$(dmg2img -d)" ]; then
     else
         echo "Downloading dmg2img"
         wget -c "http://vu1tur.eu.org/tools/dmg2img-1.6.6-win32.zip" \
-             -O "dmg2img-1.6.6-win32.zip" --quiet --show-progress 2>/dev/tty
+             -O "dmg2img-1.6.6-win32.zip" --quiet  2>/dev/tty
         unzip -oj "dmg2img-1.6.6-win32.zip" "dmg2img.exe"
         rm "dmg2img-1.6.6-win32.zip"
         chmod +x "dmg2img.exe"
