@@ -127,7 +127,7 @@ fi
 
 # Initialize the VirtualBox macOS Mojave 10.14.2 virtual machine:
 echo "Creating ${vmname} virtual disk images."
-VBoxManage createvm --name "${vmname}" --ostype "MacOS_64" --register
+VBoxManage createvm --name "${vmname}" --ostype "MacOS1013_64" --register
 
 # Create the target virtual disk image:
 VBoxManage createmedium --size="${storagesize}" \
