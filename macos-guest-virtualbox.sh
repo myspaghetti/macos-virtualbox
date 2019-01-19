@@ -165,8 +165,8 @@ else
                             --variant fixed 2>/dev/tty
 fi
 
-# Attach the target virtual disk image, the EFI drivers,
-# and the base system in the virtual machine:
+# Attach virtual disk images of the base system, installation, and target
+# to the virtual machine
 VBoxManage storagectl "${vmname}" --add sata --name SATA --hostiocache on
 VBoxManage storageattach "${vmname}" --storagectl SATA --port 0 \
            --type hdd --nonrotational on --medium "${vmname}.vdi"
