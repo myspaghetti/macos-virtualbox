@@ -510,10 +510,10 @@ sendkeys
 echo ""
 printf 'In the VM, '${whiteonred}'manually'${defaultcolor}' right-click on AppleSupport-v2.0.4-RELEASE.zip'
 echo ""
-echo "and click 'Download Linked File As...' then from the dropdown menu
+echo "and click 'Download Linked File As...' then from the dropdown menu"
 echo "select '${vmname}' for 'Where:', then unbind the mouse cursor from the virtual"
-printf 'machine with the '${whiteonblack}'right control key.'${defaultcolor}'
-'
+printf 'machine with the '${whiteonblack}'right control key.'${defaultcolor}''
+echo ""
 read -p "Click here and press enter when the download is complete."
 
 kbspecial="CMDprs q CMDrls"
