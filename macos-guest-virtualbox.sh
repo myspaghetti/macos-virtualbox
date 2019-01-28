@@ -2,10 +2,11 @@
 # One-key semi-automatic installer of macOS on VirtualBox
 # (c) img2tab, licensed under GPL2.0 or higher
 # url: https://github.com/img2tab/macos-guest-virtualbox
-# version 0.33
+# version 0.34
 
 # Requirements: 33.5GB available storage on host
-# Dependencies: bash>4.0, unzip, wget, dmg2img, VirtualBox>5.2
+# Dependencies: bash>=4.0, unzip, wget, dmg2img,
+#               VirtualBox with Guest Additions >=5.2
 
 # Personalize the installation by setting these variables:
 vmname="Mojave"             # name of VirtualBox virtual machine
@@ -26,7 +27,7 @@ whiteonblack="\e[48;2;0;0;9m\e[38;2;255;255;255m"
 defaultcolor="\033[0m"
 
 printf '
-         One-Key-Installation of macOS On VirtualBox - Mojave 10.14.2        
+  One-key semi-automatic installation of macOS On VirtualBox - Mojave 10.14.3
 -------------------------------------------------------------------------------
 
 '${whiteonblack}'This installer uses only open-source software and original
@@ -44,9 +45,6 @@ Apple serial number. macOS will work without it, but not Apple-connected apps.
 '${whiteonblack}'Press enter to continue, CTRL-C to exit.'${defaultcolor}
 read
 
-# silence stderr
-exec 2>/dev/null
-
 # check dependencies
 
 if [ -z "${BASH_VERSION}" ]; then
@@ -57,8 +55,8 @@ elif [ "${BASH_VERSION:0:1}" -lt 4 ]; then
     exit
 fi
 
-if [ -z "$(unzip -hh)" \
-     -o -z "$(wget --version)" ]; then
+if [ -z "$(unzip -hh 2>/dev/null)" \
+     -o -z "$(wget --version 2>/dev/null)" ]; then
     echo "Please install the packages 'unzip' and 'wget'."
     exit
 fi
@@ -66,14 +64,14 @@ fi
 # add ${PATH} for VirtualBox and currend directory in Cygwin
 
 windows=""
-if [ -n "$(cygcheck -V)" ]; then
+if [ -n "$(cygcheck -V 2>/dev/null)" ]; then
     PATH="${PATH}:/cygdrive/c/Program Files/Oracle/VirtualBox:$(pwd)"
     windows="True"
 fi
 
 # VirtualBox in ${PATH}
 
-if [ -z "$(VBoxManage -v)" ]; then
+if [ -z "$(VBoxManage -v 2>/dev/null)" ]; then
     echo "Please make sure VirtualBox is installed, and that the path to"
     echo "the VBoxManage executable is in the PATH variable."
     if [ -n "${windows}" ]; then echo -n "VBoxManage is usually installed in"
@@ -84,15 +82,18 @@ if [ -z "$(VBoxManage -v)" ]; then
 fi
 
 # dmg2img
-if [ -z "$(dmg2img -d)" ]; then
+if [ -z "$(dmg2img -d 2>/dev/null)" ]; then
     if [ -z "${windows}" ]; then
         echo "Please install the package dmg2img."
-        exec 2>/dev/tty
         exit
     else
-        echo "Downloading dmg2img"
+        echo "Locally installing dmg2img"
         wget -c "http://vu1tur.eu.org/tools/dmg2img-1.6.6-win32.zip" \
-             -O "dmg2img-1.6.6-win32.zip" --quiet  2>/dev/tty
+             -O "dmg2img-1.6.6-win32.zip" --quiet
+        if [ ! -s dmg2img-1.6.6-win32.zip ]; then
+             echo "Error downloading dmg2img. Please provide the package manually."
+             exit
+        fi
         unzip -oj "dmg2img-1.6.6-win32.zip" "dmg2img.exe"
         rm "dmg2img-1.6.6-win32.zip"
         chmod +x "dmg2img.exe"
@@ -101,7 +102,7 @@ fi
 
 # Done with dependencies
 
-# Initialize the VirtualBox macOS Mojave 10.14.2 virtual machine config:
+# Initialize the VirtualBox macOS Mojave 10.14.3 virtual machine config:
 echo "Initializing ${vmname} virtual machine configuration file."
 if [ -n "$(VBoxManage showvminfo "${vmname}")" ]; then
     printf "${vmname}"' virtual machine already exists.
@@ -114,7 +115,6 @@ if [ -n "$(VBoxManage showvminfo "${vmname}")" ]; then
     else
         printf '
 '${whiteonblack}'Please edit the script to assign a different VM name with script variable "vmname".'${defaultcolor}
-        exec 2>/dev/tty
         exit
     fi
 fi
@@ -127,9 +127,8 @@ Error: Could not create virtual machine "'${vmname}'".
 
 Error message:
 '
-    exec 2>/dev/tty
-    VBoxManage createvm --name "${vmname}" --ostype "MacOS1013_64" --register
-exit
+    VBoxManage createvm --name "${vmname}" --ostype "MacOS1013_64" --register 2>/dev/tty
+    exit
 fi
 
 # Create the macOS base system virtual disk image:
@@ -137,7 +136,14 @@ if [ -r "BaseSystem.vdi" ]; then
     echo "BaseSystem.vdi bootstrap virtual disk image ready."
 else
     echo "Downloading BaseSystem.dmg from swcdn.apple.com"
-    wget -c 'http://swcdn.apple.com/content/downloads/01/22/041-19985/q7s69dmdnh5jhfrmy1jp80m8vy2eh0dst2/BaseSystem.dmg' -O "BaseSystem.dmg" 2>/dev/tty
+    wget -c 'http://swcdn.apple.com/content/downloads/22/46/041-31308/r39g613fmms2li42if9r120zwn2bn7rnhn/BaseSystem.dmg' -O "BaseSystem.dmg" 2>/dev/tty
+    if [ ! -s BaseSystem.dmg ]; then
+        printf ${whiteonred}'Could not download BaseSystem.dmg'${defaultcolor}'. Please report this issue
+on https://github.com/img2tab/macos-guest-virtualbox/issues
+or update the URL yourself from the catalog found
+on https://gist.github.com/nuomi1/16133b89c2b38b7eb197'
+        exit
+    fi
     echo "Downloaded BaseSystem.dmg. Converting to BaseSystem.img"
     dmg2img "BaseSystem.dmg" "BaseSystem.img"
     VBoxManage convertfromraw --format VDI "BaseSystem.img" "BaseSystem.vdi"
@@ -413,10 +419,10 @@ kbstring='diskutil partitionDisk "/dev/${disks[1]}" 1 GPT JHFS+ "Install" R'
 sendkeys
 promptterminalready
 echo ""
-echo "Downloading macOS Mojave 10.14.2 installer."
+echo "Downloading macOS Mojave 10.14.3 installer."
 
 # downloading macOS
-kbstring='urlpath="http://swcdn.apple.com/content/downloads/01/22/041-19985/q7s69dmdnh5jhfrmy1jp80m8vy2eh0dst2/"; for filename in BaseSystem.chunklist InstallInfo.plist AppleDiagnostics.dmg AppleDiagnostics.chunklist BaseSystem.dmg InstallESDDmg.pkg; do curl "${urlpath}${filename}" -o "/Volumes/'"${vmname}"'/${filename}"; done'
+kbstring='urlpath="http://swcdn.apple.com/content/downloads/22/46/041-31308/r39g613fmms2li42if9r120zwn2bn7rnhn/"; for filename in BaseSystem.chunklist InstallInfo.plist AppleDiagnostics.dmg AppleDiagnostics.chunklist BaseSystem.dmg InstallESDDmg.pkg; do curl "${urlpath}${filename}" -o "/Volumes/'"${vmname}"'/${filename}"; done'
 sendkeys
 promptterminalready
 echo ""
@@ -446,7 +452,8 @@ VBoxManage startvm "${vmname}"
 promptlangutils
 promptterminalready
 echo ""
-echo "Moving installation files to installer virtual disk"
+echo "Moving installation files to installer virtual disk."
+echo "The virtual machine may report that disk space is critically low; this is fine."
 kbstring='mount -rw / && installpath="/Install macOS Mojave.app/Contents/SharedSupport/" && mkdir -p "${installpath}" && cd "/Volumes/'"${vmname}/"'" && mv *.chunklist *.plist *.dmg *.pkg "${installpath}"'
 sendkeys
 
@@ -503,11 +510,11 @@ sendkeys
 echo ""
 printf 'In the VM, '${whiteonred}'manually'${defaultcolor}' right-click on AppleSupport-v2.0.4-RELEASE.zip'
 echo ""
-echo "and 'Download Linked File As...' then select ${vmname} for 'Where:'"
-echo "from the dropdown menu. Then unbind the mouse cursor from the virtual"
+echo "and click 'Download Linked File As...' then from the dropdown menu
+echo "select '${vmname}' for 'Where:', then unbind the mouse cursor from the virtual"
 printf 'machine with the '${whiteonblack}'right control key.'${defaultcolor}'
 '
-read -p " Click here and press enter when the download is complete."
+read -p "Click here and press enter when the download is complete."
 
 kbspecial="CMDprs q CMDrls"
 sendspecial
@@ -570,7 +577,7 @@ VBoxManage storageattach "${vmname}" --storagectl SATA --port 1 --medium none
 VBoxManage startvm "${vmname}"
 
 printf '
-macOS Mojave 10.14.2 will now install and start up.
+macOS Mojave 10.14.3 will now install and start up.
 
 '${whiteonred}'Delete temporary files?'${defaultcolor}
 delete=""
@@ -583,6 +590,6 @@ if [ "${delete}" == "y" ]; then
     rm "BaseSystem.vdi" "Install ${vmname}.vdi"
 fi
 
-printf 'macOS Mojave 10.14.2 installation should complete in a few minutes.
+printf 'macOS Mojave 10.14.3 installation should complete in a few minutes.
 
 That'\''s it. Enjoy your virtual machine.'
