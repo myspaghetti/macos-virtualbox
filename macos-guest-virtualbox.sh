@@ -479,8 +479,7 @@ echo ""
 echo "When the installer finishes preparing, the virtual machine will reboot"
 echo "into the base system, not the installer."
 printf ${whiteonblack}'
-After the reboot, press enter when the Language window '
-'or Utilities window is ready.'${defaultcolor}
+After the reboot, press enter when the Language window or Utilities window is ready.'${defaultcolor}
 read -p ""
 sendenter
 
