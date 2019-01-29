@@ -6,7 +6,7 @@
 
 # Requirements: 33.5GB available storage on host
 # Dependencies: bash>=4.0, unzip, wget, dmg2img,
-#               VirtualBox with Guest Additions >=5.2
+#               VirtualBox with Extension Pack >=5.2
 
 # Personalize the installation by setting these variables:
 vmname="Mojave"             # name of VirtualBox virtual machine
