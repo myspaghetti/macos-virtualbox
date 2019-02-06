@@ -12,7 +12,7 @@ iCloud and iMessage and other connected Apple services require a valid device se
 
 ## Storage size
 
-The script assigns the minimum required storage size for the instalaltion. After the installation is complete, the virtual disk image may be increased through VirtualBox, and then the macOS system partition may be increased through Disk Utility inside the virtual machine.
+The script assigns the minimum required storage size for the instalaltion. After the installation is complete, the virtual disk image may be increased through VirtualBox, and then the macOS system partition size may be increased through Disk Utility inside the virtual machine.
 
 ## Dependencies
 
