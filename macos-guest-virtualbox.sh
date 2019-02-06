@@ -2,19 +2,19 @@
 # One-key semi-automatic installer of macOS on VirtualBox
 # (c) img2tab, licensed under GPL2.0 or higher
 # url: https://github.com/img2tab/macos-guest-virtualbox
-# version 0.35
+# version 0.36
 
 # Requirements: 33.5GB available storage on host
 # Dependencies: bash>=4.0, unzip, wget, dmg2img,
 #               VirtualBox with Extension Pack >=5.2
 
-# Personalize the installation by setting these variables:
-vmname="Mojave"             # name of VirtualBox virtual machine
-storagesize=22000           # size of target virtual disk image. minimum 22000
+# Customize the installation by setting these variables:
+vmname="Mojave"             # name of the VirtualBox virtual machine
+storagesize=22000           # VM disk image size in MB. minimum 22000
 cpucount=2                  # VM CPU cores, minimum 2
 memorysize=4096             # VM RAM in MB, minimum 2048 
-gpuvram=128                 # VM video RAM in MB, minimum 34
-resolution="1280x800"       # display resolution
+gpuvram=128                 # VM video RAM in MB, minimum 34, maximum 128
+resolution="1280x800"       # VM display resolution
 serialnumber="NOTAVALIDSN0" # valid serial required for iCloud, iMessage.
 # Structure:  PPPYWWUUUMMM - Plant, Year, Week, Unique identifier, Model
 # Whether the serial is valid depends on the device name and board, below:
@@ -30,17 +30,35 @@ printf '
   One-key semi-automatic installation of macOS On VirtualBox - Mojave 10.14.3
 -------------------------------------------------------------------------------
 
-'${whiteonblack}'This installer uses only open-source software and original
-unmodified Apple binaries.'${defaultcolor}'
-
-The installation requires '${whiteonred}'33.5GB'${defaultcolor}' of available storage,
-22GB for the virtual machine and 11.5GB for temporary installation files.
-Assigning more storage for the virtual machine is recommended for long-term use.
+This installer uses only open-source software and original,
+unmodified Apple binaries.
 
 The script checks for dependencies and will prompt to install them if unmet.
 
-For iCloud and iMessage functionality, you will need to provide a valid
+For iCloud and iMessage connectivity, you will need to provide a valid
 Apple serial number. macOS will work without it, but not Apple-connected apps.
+
+The installation requires '${whiteonred}'33.5GB'${defaultcolor}' of available storage,
+22GB for the virtual machine and 11.5GB for temporary installation files.
+
+'${whiteonblack}'Press enter to review the script settings.'${defaultcolor}
+read
+
+# custom settings prompt
+printf '
+vmname="'${vmname}'"             # name of the VirtualBox virtual machine
+storagesize='${storagesize}'           # VM disk image size in MB. minimum 22000
+cpucount='${cpucount}'                  # VM CPU cores, minimum 2
+memorysize='${memorysize}'             # VM RAM in MB, minimum 2048 
+gpuvram='${gpuvram}'                 # VM video RAM in MB, minimum 34, maximum 128
+resolution="'${resolution}'"       # VM display resolution
+serialnumber="'${serialnumber}'" # valid serial required for iCloud, iMessage.
+# Structure:  PPPYWWUUUMMM - Plant, Year, Week, Unique identifier, Model
+# Whether the serial is valid depends on the device name and board, below:
+devicename="'${devicename}'" # personalize to match serial if desired
+boardid="'${boardid}'"
+
+These values may be customized by editing them at the top of the script file.
 
 '${whiteonblack}'Press enter to continue, CTRL-C to exit.'${defaultcolor}
 read
@@ -154,11 +172,15 @@ echo "Creating ${vmname} virtual disk images."
 # Create the target virtual disk image:
 if [ -r "${vmname}.vdi" ]; then
     echo "${vmname}.vdi target system virtual disk image ready."
+elif [ "${storagesize}" -lt 22000 ]; then
+    echo "Attempting to install macOS Mojave on a disk smaller than 22000MB will fail."
+    echo "Please assign a larger virtual disk image size."
+    exit
 else
     echo "Creating ${vmname} target system virtual disk image."
     VBoxManage createmedium --size="${storagesize}" \
                             --filename "${vmname}.vdi" \
-                            --variant fixed 2>/dev/tty
+                            --variant standard 2>/dev/tty
 fi
 
 # Create the installation media virtual disk image:
@@ -591,5 +613,9 @@ if [ "${delete}" == "y" ]; then
 fi
 
 printf 'macOS Mojave 10.14.3 installation should complete in a few minutes.
+
+After the installation is complete, you may wish to expand the virtual disk
+image size through VirtualBox, and then expand the macOS system partition
+through Disk Utility in the virtual machine itself.
 
 That'\''s it. Enjoy your virtual machine.'
