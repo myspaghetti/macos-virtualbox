@@ -10,6 +10,10 @@ Tested on Cygwin, should work on Linux distros.
 
 iCloud and iMessage and other connected Apple services require a valid device serial number. Set it before the installation by replacing `NOTAVALIDSN0` with a valid serial number, or after the installation with `VBoxManage setextradata "${vmname}" "VBoxInternal/Devices/efi/0/Config/DmiSystemSerial" "${serialnumber}"`. An invalid serial number that matches the correct structure for the device name and board ID might work, too.
 
+## Storage size
+
+The script assigns the minimum required storage size for the instalaltion. After the installation is complete, the virtual disk image may be increased through VirtualBox, and then the macOS system partition may be increased through Disk Utility inside the virtual machine.
+
 ## Dependencies
 
 * [VirtualBox](https://www.virtualbox.org/wiki/Downloads)≥5.2 with Extension Pack
