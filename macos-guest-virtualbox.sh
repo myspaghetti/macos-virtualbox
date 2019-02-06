@@ -517,8 +517,6 @@ printf ${whiteonblack}'
 Press enter when the macOS Utilities window is ready.'${defaultcolor}
 read -p ""
 
-fi
-
 # Start Safari (Get Help Online)
 kbspecial="UP UP UP UP DOWN DOWN TAB SPACE"
 sendspecial
