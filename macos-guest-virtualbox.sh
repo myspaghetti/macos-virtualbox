@@ -2,7 +2,7 @@
 # One-key semi-automatic installer of macOS on VirtualBox
 # (c) img2tab, licensed under GPL2.0 or higher
 # url: https://github.com/img2tab/macos-guest-virtualbox
-# version 0.36
+# version 0.37
 
 # Requirements: 33.5GB available storage on host
 # Dependencies: bash>=4.0, unzip, wget, dmg2img,
@@ -508,13 +508,16 @@ echo ""
 echo "When the installer finishes preparing, the virtual machine will reboot"
 echo "into the base system, not the installer."
 printf ${whiteonblack}'
-After the reboot, press enter when the Language window or Utilities window is ready.'${defaultcolor}
+After the reboot, press enter when either the Language window'${defaultcolor}'
+'${whiteonblack}'or Utilities window is ready.'${defaultcolor}
 read -p ""
 sendenter
 
 printf ${whiteonblack}'
 Press enter when the macOS Utilities window is ready.'${defaultcolor}
 read -p ""
+
+fi
 
 # Start Safari (Get Help Online)
 kbspecial="UP UP UP UP DOWN DOWN TAB SPACE"
@@ -550,10 +553,12 @@ promptterminalready
 # find largest drive
 kbstring='disks="$(diskutil list | grep -o "[0-9][^ ]* GB *disk[012]$" | sort -gr | grep -o disk[012])"; disks=(${disks[@]})'
 sendkeys
+promptterminalready
 
 # move drivers into path on EFI partition
 kbstring='mkdir -p "/Volumes/'"${vmname}"'/mount_efi" && mount_msdos /dev/${disks[0]}s1 "/Volumes/'"${vmname}"'/mount_efi" && mkdir -p "/Volumes/'"${vmname}"'/mount_efi/EFI/driver/" && cd "/Volumes/'"${vmname}"'/mount_efi/EFI/driver/" && tar -xf "/Volumes/'"${vmname}"'/AppleSupport-v2.0.4-RELEASE.zip" && cd "Drivers/" && mv *.efi "/Volumes/'"${vmname}"'/mount_efi/EFI/driver/"'
 sendkeys
+promptterminalready
 
 # create startup.nsh EFI script
 kbstring='cd "/Volumes/'"${vmname}"'/mount_efi/" && vim startup.nsh'
