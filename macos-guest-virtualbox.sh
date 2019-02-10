@@ -2,7 +2,7 @@
 # One-key semi-automatic installer of macOS on VirtualBox
 # (c) img2tab, licensed under GPL2.0 or higher
 # url: https://github.com/img2tab/macos-guest-virtualbox
-# version 0.37
+# version 0.38
 
 # Requirements: 33.5GB available storage on host
 # Dependencies: bash>=4.0, unzip, wget, dmg2img,
@@ -154,7 +154,7 @@ if [ -r "BaseSystem.vdi" ]; then
     echo "BaseSystem.vdi bootstrap virtual disk image ready."
 else
     echo "Downloading BaseSystem.dmg from swcdn.apple.com"
-    wget -c 'http://swcdn.apple.com/content/downloads/22/46/041-31308/r39g613fmms2li42if9r120zwn2bn7rnhn/BaseSystem.dmg' -O "BaseSystem.dmg" 2>/dev/tty
+    wget -c 'http://swcdn.apple.com/content/downloads/34/52/041-38914/dhgsi49xaudtqpbj3zibbmjy3ry9ola2rb/BaseSystem.dmg' -O "BaseSystem.dmg" 2>/dev/tty
     if [ ! -s BaseSystem.dmg ]; then
         printf ${whiteonred}'Could not download BaseSystem.dmg'${defaultcolor}'. Please report this issue
 on https://github.com/img2tab/macos-guest-virtualbox/issues
@@ -444,7 +444,7 @@ echo ""
 echo "Downloading macOS Mojave 10.14.3 installer."
 
 # downloading macOS
-kbstring='urlpath="http://swcdn.apple.com/content/downloads/22/46/041-31308/r39g613fmms2li42if9r120zwn2bn7rnhn/"; for filename in BaseSystem.chunklist InstallInfo.plist AppleDiagnostics.dmg AppleDiagnostics.chunklist BaseSystem.dmg InstallESDDmg.pkg; do curl "${urlpath}${filename}" -o "/Volumes/'"${vmname}"'/${filename}"; done'
+kbstring='urlpath="http://swcdn.apple.com/content/downloads/34/52/041-38914/dhgsi49xaudtqpbj3zibbmjy3ry9ola2rb/"; for filename in BaseSystem.chunklist InstallInfo.plist AppleDiagnostics.dmg AppleDiagnostics.chunklist BaseSystem.dmg InstallESDDmg.pkg; do curl "${urlpath}${filename}" -o "/Volumes/'"${vmname}"'/${filename}"; done'
 sendkeys
 promptterminalready
 echo ""
