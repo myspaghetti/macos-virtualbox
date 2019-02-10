@@ -159,7 +159,9 @@ else
         printf ${whiteonred}'Could not download BaseSystem.dmg'${defaultcolor}'. Please report this issue
 on https://github.com/img2tab/macos-guest-virtualbox/issues
 or update the URL yourself from the catalog found
-on https://gist.github.com/nuomi1/16133b89c2b38b7eb197'
+on https://gist.github.com/nuomi1/16133b89c2b38b7eb197
+or http://swscan.apple.com/content/catalogs/others/
+   index-10.14-10.13-10.12-10.11-10.10-10.9-mountainlion-lion-snowleopard-leopard.merged-1.sucatalog'
         exit
     fi
     echo "Downloaded BaseSystem.dmg. Converting to BaseSystem.img"
