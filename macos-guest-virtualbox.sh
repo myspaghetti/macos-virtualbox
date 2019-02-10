@@ -619,8 +619,10 @@ fi
 
 printf 'macOS Mojave 10.14.3 installation should complete in a few minutes.
 
-After the installation is complete, you may wish to expand the virtual disk
-image size through VirtualBox, and then expand the macOS system partition
-through Disk Utility in the virtual machine itself.
+After the installation is complete, the virtual disk image may be increased
+through VirtualBox, then the macOS system APFS container size may be
+increased through Disk Utility inside the virtual machine by creating a new
+APFS container and subsequently deleting it, allowing the system APFS container
+to take up the available space.
 
 That'\''s it. Enjoy your virtual machine.'
