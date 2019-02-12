@@ -16,7 +16,7 @@ The script assigns the minimum required storage size for the installation. After
 
 ## Unsupported features (audio, USB devices)
 
-Hosting a macOS virtual machine on Windows or Linux running on a Mac computer may be fine by some reading of the macOS license ([*B. you are granted a limited, non-transferable, non-exclusive license: (iii) to install, use and run up to two (2) additional copies or instances of the Apple Software within virtual operating system environments on each Mac Computer you own or control that is already running the Apple Software, for purposes of: (a) software development; (b) testing during software development; (c) using macOS Server; or (d) personal, non-commercial use.*](https://www.apple.com/legal/sla/docs/macOS1014.pdf)) Despite this, Oracle, the company that develops VirtualBox, does not offer VirtualBox support for macOS guests on Windows or Linux hosts, and actively suppresses using VirtualBox for this purpose. This means that some hardware issues like the lack of proper audio and USB support will not be developed or maintained by Oracle.
+[Section B.(iii) of the macOS Mojave software license grants the user a license to run macOS virtualized only on a Mac computer that is already running macOS Mojave.](https://www.apple.com/legal/sla/docs/macOS1014.pdf) Oracle, the company that develops VirtualBox, actively suppresses running VirtualBox macOS guests on Windows or Linux hosts. This means that some hardware issues like the lack of proper audio and USB support will not be developed or maintained by Oracle.
 
 Developing and maintaining VirtualBox features is beyond the scope of this script.
 
