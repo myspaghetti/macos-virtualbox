@@ -16,7 +16,7 @@ The script assigns the minimum required storage size for the installation. After
 
 ## Unsupported features (audio, USB devices)
 
-[Section B.(iii) of the macOS Mojave software license grants the user a license to run macOS virtualized only on a Mac computer that is already running macOS Mojave.](https://www.apple.com/legal/sla/docs/macOS1014.pdf) Oracle, the company that develops VirtualBox, actively suppresses running VirtualBox macOS guests on Windows or Linux hosts. This means that some hardware issues like the lack of proper audio and USB support will not be developed or maintained by Oracle.
+[Section 2.B.(iii) of the macOS Mojave software license grants the user a license to run macOS virtualized only on a Mac computer that is already running macOS Mojave.](https://www.apple.com/legal/sla/docs/macOS1014.pdf) Oracle, the company that develops VirtualBox, actively suppresses running VirtualBox macOS guests on Windows or Linux hosts. This means that some hardware issues like the lack of proper audio and USB support will not be developed or maintained by Oracle.
 
 Developing and maintaining VirtualBox features is beyond the scope of this script.
 
