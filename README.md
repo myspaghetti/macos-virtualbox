@@ -14,11 +14,9 @@ iCloud and iMessage and other connected Apple services require a valid device se
 
 The script assigns the minimum required storage size for the installation. After the installation is complete, the virtual disk image may be increased through VirtualBox, and then the macOS system partition size may be increased through Disk Utility inside the virtual machine by creating a new APFS container and subsequently deleting it, allowing the system APFS container to take up the space.
 
-## Unsupported features (audio, USB devices)
+## Unsupported features
 
-[Section 2.B.(iii) of the macOS Mojave software license grants the user a license to run macOS virtualized only on a Mac computer that is already running macOS Mojave.](https://www.apple.com/legal/sla/docs/macOS1014.pdf) Oracle, the company that develops VirtualBox, actively suppresses running VirtualBox macOS guests on Windows or Linux hosts. This means that some hardware issues like the lack of proper audio and USB support will not be developed or maintained by Oracle.
-
-Developing and maintaining VirtualBox features is beyond the scope of this script.
+Developing and maintaining VirtualBox features is beyond the scope of this script. Audio support, USB device support, and other features are not currently implemented for macOS guests on Windows and Linux hosts.
 
 ## Dependencies
 
