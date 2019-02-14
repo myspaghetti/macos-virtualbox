@@ -2,7 +2,7 @@
 # One-key semi-automatic installer of macOS on VirtualBox
 # (c) img2tab, licensed under GPL2.0 or higher
 # url: https://github.com/img2tab/macos-guest-virtualbox
-# version 0.38
+# version 0.38.1
 
 # Requirements: 33.5GB available storage on host
 # Dependencies: bash>=4.0, unzip, wget, dmg2img,
@@ -226,9 +226,6 @@ VBoxManage setextradata "${vmname}" \
 VBoxManage setextradata "${vmname}" \
  "VBoxInternal/Devices/efi/0/Config/DmiSystemSerial" "${serialnumber}"
 
-# sterr back
-exec 2>/dev/tty
-
 # Start the virtual machine. This should take a couple of minutes.
 VBoxManage startvm "${vmname}"
 
@@ -402,23 +399,23 @@ function sendenter() {
 }
  
 function promptlangutils() {
-printf ${whiteonblack}'
+    printf ${whiteonblack}'
 Press enter when the Language window is ready.'${defaultcolor}
-read -p ""
-sendenter
+    read -p ""
+    sendenter
 
-printf ${whiteonblack}'
+    printf ${whiteonblack}'
 Press enter when the macOS Utilities window is ready.'${defaultcolor}
-read -p ""
+    read -p ""
 
-kbspecial='CTRLprs F2 CTRLrls u ENTER t ENTER'
-sendspecial
+    kbspecial='CTRLprs F2 CTRLrls u ENTER t ENTER'
+    sendspecial
 }
 
 function promptterminalready() {
-printf ${whiteonblack}'
+    printf ${whiteonblack}'
 Press enter when the Terminal command prompt is ready.'${defaultcolor}
-read -p ""
+    read -p ""
 }
 
 promptlangutils
