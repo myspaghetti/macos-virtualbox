@@ -4,7 +4,7 @@ The "one key" is enter, which has to be pressed whenever the virtual machine is 
 
 The goal of the script is to allow for a very easy installation without any closed-source additions or extra bootloaders.
 
-Tested on Cygwin, should work on Linux distros.
+Tested on Cygwin, should work on Linux distros (including WSL).
 
 ## iCloud and iMessage connectivity
 
@@ -24,3 +24,5 @@ Developing and maintaining VirtualBox features is beyond the scope of this scrip
 * `Bash`≥4 (run on Windows through [Cygwin](https://cygwin.com/install.html))
 * `unzip`, `wget` (install through package manager)
 * `dmg2img` (install through package manager on Linux; let the script download it automatically on Windows)
+
+For Debian and Ubuntu: `sudo apt install d2img unzip wget`
