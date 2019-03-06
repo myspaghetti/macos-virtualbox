@@ -2,7 +2,7 @@
 # One-key semi-automatic installer of macOS on VirtualBox
 # (c) img2tab, licensed under GPL2.0 or higher
 # url: https://github.com/img2tab/macos-guest-virtualbox
-# version 0.42
+# version 0.43
 
 # Requirements: 33.5GB available storage on host
 # Dependencies: bash>=4.0, unzip, wget, dmg2img,
@@ -66,7 +66,6 @@ read
 }
 
 # check dependencies
-function check_dependencies() {
 if [ -z "${BASH_VERSION}" ]; then
     echo "Can't determine BASH_VERSION. Exiting."
     exit
@@ -81,16 +80,7 @@ if [ -z "$(unzip -hh 2>/dev/null)" \
     exit
 fi
 
-# add ${PATH} for VirtualBox and currend directory in Cygwin
-
-windows=""
-if [ -n "$(cygcheck -V 2>/dev/null)" ]; then
-    PATH="${PATH}:/cygdrive/c/Program Files/Oracle/VirtualBox:$(pwd)"
-    windows="True"
-fi
-
 # VirtualBox in ${PATH}
-
 if [ -z "$(VBoxManage -v 2>/dev/null)" ]; then
     if [ -n "$('/mnt/c/Program Files/Oracle/VirtualBox/VBoxManage.exe' -v 2>/dev/null)" ]; then
         # If VBoxManage.exe is in the standard install location, use it.
@@ -110,7 +100,7 @@ fi
 
 # dmg2img
 if [ -z "$(dmg2img -d 2>/dev/null)" ]; then
-    if [ -z "${windows}" ]; then
+    if [ -z "$(cygcheck -V 2>/dev/null)" ]; then
         echo "Please install the package dmg2img."
         exit
     else
@@ -126,7 +116,6 @@ if [ -z "$(dmg2img -d 2>/dev/null)" ]; then
         chmod +x "dmg2img.exe"
     fi
 fi
-}
 
 # Done with dependencies
 
@@ -658,7 +647,6 @@ That'\''s it. Enjoy your virtual machine.'
 
 if [ -z "${1}" ]; then
     welcome
-    check_dependencies
     prompt_delete_existing_vm
     create_vm
     create_basesystem_vdi
