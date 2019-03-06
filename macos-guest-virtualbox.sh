@@ -2,7 +2,7 @@
 # One-key semi-automatic installer of macOS on VirtualBox
 # (c) img2tab, licensed under GPL2.0 or higher
 # url: https://github.com/img2tab/macos-guest-virtualbox
-# version 0.40
+# version 0.41
 
 # Requirements: 33.5GB available storage on host
 # Dependencies: bash>=4.0, unzip, wget, dmg2img,
@@ -93,11 +93,11 @@ if [ -z "$(VBoxManage -v 2>/dev/null)" ]; then
     if [ -n "$('/mnt/c/Program Files/Oracle/VirtualBox/VBoxManage.exe' -v 2>/dev/null)" ]; then
         # If VBoxManage.exe is in the standard install location, use it.
         function VBoxManage() {
-            '/mnt/c/Program Files/Oracle/VirtualBox/VBoxManage.exe' "$@"
+            '/mnt/c/Program Files/Oracle/VirtualBox/VBoxManage.exe' $@
         }
     elif [ -n "$('/cygdrive/c/Program Files/Oracle/VirtualBox/VBoxManage.exe' -v 2>/dev/null)" ]; then
         function VBoxManage() {
-            '/cygdrive/c/Program Files/Oracle/VirtualBox/VBoxManage.exe' "$@"
+            '/cygdrive/c/Program Files/Oracle/VirtualBox/VBoxManage.exe' $@
         }
     else
         echo "Please make sure VirtualBox is installed, and that the path to"
