@@ -2,7 +2,7 @@
 # One-key semi-automatic installer of macOS on VirtualBox
 # (c) img2tab, licensed under GPL2.0 or higher
 # url: https://github.com/img2tab/macos-guest-virtualbox
-# version 0.41
+# version 0.42
 
 # Requirements: 33.5GB available storage on host
 # Dependencies: bash>=4.0, unzip, wget, dmg2img,
@@ -26,6 +26,7 @@ whiteonred="\e[48;2;255;0;0m\e[38;2;255;255;255m"
 whiteonblack="\e[48;2;0;0;9m\e[38;2;255;255;255m"
 defaultcolor="\033[0m"
 
+function welcome() {
 printf '
   One-key semi-automatic installation of macOS On VirtualBox - Mojave 10.14.3
 -------------------------------------------------------------------------------
@@ -62,9 +63,10 @@ These values may be customized by editing them at the top of the script file.
 
 '${whiteonblack}'Press enter to continue, CTRL-C to exit.'${defaultcolor}
 read
+}
 
 # check dependencies
-
+function check_dependencies() {
 if [ -z "${BASH_VERSION}" ]; then
     echo "Can't determine BASH_VERSION. Exiting."
     exit
@@ -124,11 +126,12 @@ if [ -z "$(dmg2img -d 2>/dev/null)" ]; then
         chmod +x "dmg2img.exe"
     fi
 fi
+}
 
 # Done with dependencies
 
-# Initialize the VirtualBox macOS Mojave 10.14.3 virtual machine config:
-echo "Initializing ${vmname} virtual machine configuration file."
+# Prompt to delete existing virtual machine config:
+function prompt_delete_existing_vm() {
 if [ -n "$(VBoxManage showvminfo "${vmname}")" ]; then
     printf "${vmname}"' virtual machine already exists.
 '${whiteonred}'Delete existing virtual machine "'${vmname}'"?'${defaultcolor}
@@ -139,12 +142,14 @@ if [ -n "$(VBoxManage showvminfo "${vmname}")" ]; then
         VBoxManage unregistervm "${vmname}" --delete
     else
         printf '
-'${whiteonblack}'Please edit the script to assign a different VM name with script variable "vmname".'${defaultcolor}
+'${whiteonblack}'Please assign a different VM name to variable "vmname" by editing the script.'${defaultcolor}
         exit
     fi
 fi
+}
 
 # Attempt to create new virtual machine named "${vmname}"
+function create_vm() {
 if [ -n "$(VBoxManage createvm --name "${vmname}" --ostype "MacOS1013_64" --register 2>&1 1>/dev/null)" ]; then
     printf '
 Error: Could not create virtual machine "'${vmname}'".
@@ -155,8 +160,10 @@ Error message:
     VBoxManage createvm --name "${vmname}" --ostype "MacOS1013_64" --register 2>/dev/tty
     exit
 fi
+}
 
 # Create the macOS base system virtual disk image:
+function create_basesystem_vdi() {
 if [ -r "BaseSystem.vdi" ]; then
     echo "BaseSystem.vdi bootstrap virtual disk image ready."
 else
@@ -176,9 +183,10 @@ or http://swscan.apple.com/content/catalogs/others/
     VBoxManage convertfromraw --format VDI "BaseSystem.img" "BaseSystem.vdi"
     rm "BaseSystem.dmg" "BaseSystem.img"
 fi
+}
 
-echo "Creating ${vmname} virtual disk images."
 # Create the target virtual disk image:
+function create_target_vdi() {
 if [ -r "${vmname}.vdi" ]; then
     echo "${vmname}.vdi target system virtual disk image ready."
 elif [ "${storagesize}" -lt 22000 ]; then
@@ -191,8 +199,10 @@ else
                             --filename "${vmname}.vdi" \
                             --variant standard 2>/dev/tty
 fi
+}
 
 # Create the installation media virtual disk image:
+function create_install_vdi() {
 if [ -r "Install ${vmname}.vdi" ]; then
     echo "Installation media virtual disk image ready."
 else
@@ -201,9 +211,11 @@ else
                             --filename "Install ${vmname}.vdi" \
                             --variant fixed 2>/dev/tty
 fi
+}
 
 # Attach virtual disk images of the base system, installation, and target
 # to the virtual machine
+function attach_initial_storage() {
 VBoxManage storagectl "${vmname}" --add sata --name SATA --hostiocache on
 VBoxManage storageattach "${vmname}" --storagectl SATA --port 0 \
            --type hdd --nonrotational on --medium "${vmname}.vdi"
@@ -211,8 +223,10 @@ VBoxManage storageattach "${vmname}" --storagectl SATA --port 1 \
            --type hdd --nonrotational on --medium "Install ${vmname}.vdi"
 VBoxManage storageattach "${vmname}" --storagectl SATA --port 2 \
            --type hdd --nonrotational on --medium BaseSystem.vdi
+}
 
 # Configure the VM
+function configure_vm() {
 VBoxManage modifyvm "${vmname}" --cpus "${cpucount}" --memory "${memorysize}" \
  --vram "${gpuvram}" --pae on --boot1 dvd --boot2 disk --boot3 none \
  --boot4 none --firmware efi --rtcuseutc on --usbxhci on --chipset ich9 \
@@ -232,10 +246,9 @@ VBoxManage setextradata "${vmname}" \
  "VBoxInternal2/EfiGraphicsResolution" "${resolution}"
 VBoxManage setextradata "${vmname}" \
  "VBoxInternal/Devices/efi/0/Config/DmiSystemSerial" "${serialnumber}"
+}
 
-# Start the virtual machine. This should take a couple of minutes.
-VBoxManage startvm "${vmname}"
-
+function initialize_script_functions() {
 # QWERTY-to-scancode dictionary. Hex scancodes, keydown and keyup event.
 # Virtualbox Mac scancodes found here:
 # https://wiki.osdev.org/PS/2_Keyboard#Scan_Code_Set_1
@@ -425,6 +438,13 @@ Press enter when the Terminal command prompt is ready.'${defaultcolor}
     read -p ""
 }
 
+}
+
+# Start the virtual machine. This should take a couple of minutes.
+function populate_virtual_disks() {
+echo "Starting virtualmachine ${vmname}. This should take a couple of minutes."
+VBoxManage startvm "${vmname}" 2>/dev/null
+
 promptlangutils
 promptterminalready
 
@@ -469,13 +489,15 @@ printf ${whiteonblack}'
 Shutting down virtual machine.
 Press enter when the virtual machine shutdown is complete.'${defaultcolor}
 read -p ""
+}
 
 # Detach the original 2GB BaseSystem.vdi and boot from the new 8GB BaseSystem
+function install_the_installer() {
 echo ""
 echo "Detaching initial base system and starting virtual machine."
 echo "The VM will boot from the new base system on the installer virtual disk."
 VBoxManage storageattach "${vmname}" --storagectl SATA --port 2 --medium none
-VBoxManage startvm "${vmname}"
+VBoxManage startvm "${vmname}" 2>/dev/null
 
 promptlangutils
 promptterminalready
@@ -599,7 +621,9 @@ echo "Shutting down virtual machine."
 printf ${whiteonblack}'
 Press enter when the virtual machine shutdown is complete.'${defaultcolor}
 read -p ""
+}
 
+function boot_macos_installer() {
 # detach installer from virtual machine
 VBoxManage storageattach "${vmname}" --storagectl SATA --port 1 --medium none
 
@@ -630,3 +654,23 @@ APFS container and subsequently deleting it, allowing the system APFS container
 to take up the available space.
 
 That'\''s it. Enjoy your virtual machine.'
+}
+
+if [ -z "${1}" ]; then
+    welcome
+    check_dependencies
+    prompt_delete_existing_vm
+    create_vm
+    create_basesystem_vdi
+    create_target_vdi
+    create_install_vdi
+    attach_initial_storage
+    configure_vm
+    initialize_script_functions
+    populate_virtual_disks
+    install_the_installer
+    boot_macos_installer
+else
+    initialize_script_functions
+    ${1}
+fi
