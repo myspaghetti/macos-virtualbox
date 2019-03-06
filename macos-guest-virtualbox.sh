@@ -450,7 +450,7 @@ echo ""
 echo "Loading base system onto installer virtual disk"
 
 # Create secondary base system and shut down the virtual machine
-kbstring='asr restore --source /Volumes/'"${vmname}"'/BaseSystem.dmg --target /Volumes/Install --erase --noprompt'
+kbstring='asr restore --source "/Volumes/'"${vmname}"'/BaseSystem.dmg" --target /Volumes/Install --erase --noprompt'
 sendkeys
 
 promptterminalready
