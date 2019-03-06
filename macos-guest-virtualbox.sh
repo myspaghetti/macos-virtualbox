@@ -2,7 +2,7 @@
 # One-key semi-automatic installer of macOS on VirtualBox
 # (c) img2tab, licensed under GPL2.0 or higher
 # url: https://github.com/img2tab/macos-guest-virtualbox
-# version 0.43
+# version 0.44
 
 # Requirements: 33.5GB available storage on host
 # Dependencies: bash>=4.0, unzip, wget, dmg2img,
@@ -66,6 +66,7 @@ read
 }
 
 # check dependencies
+function check_dependencies() {
 if [ -z "${BASH_VERSION}" ]; then
     echo "Can't determine BASH_VERSION. Exiting."
     exit
@@ -116,7 +117,7 @@ if [ -z "$(dmg2img -d 2>/dev/null)" ]; then
         chmod +x "dmg2img.exe"
     fi
 fi
-
+}
 # Done with dependencies
 
 # Prompt to delete existing virtual machine config:
@@ -647,6 +648,7 @@ That'\''s it. Enjoy your virtual machine.'
 
 if [ -z "${1}" ]; then
     welcome
+    check_dependencies
     prompt_delete_existing_vm
     create_vm
     create_basesystem_vdi
@@ -659,6 +661,7 @@ if [ -z "${1}" ]; then
     install_the_installer
     boot_macos_installer
 else
+    check_dependencies
     initialize_script_functions
     ${1}
 fi
