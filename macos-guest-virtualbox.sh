@@ -90,18 +90,18 @@ fi
 # VirtualBox in ${PATH}
 
 if [ -z "$(VBoxManage -v 2>/dev/null)" ]; then
-    if [ -x '/mnt/c/Program Files/Oracle/VirtualBox/VBoxManage.exe' ]; then
+    if [ -n "$('/mnt/c/Program Files/Oracle/VirtualBox/VBoxManage.exe' -v 2>/dev/null)" ]; then
         # If VBoxManage.exe is in the standard install location, use it.
-        VBoxManage () {
+        function VBoxManage() {
             '/mnt/c/Program Files/Oracle/VirtualBox/VBoxManage.exe' "$@"
+        }
+    elif [ -n "$('/cygdrive/c/Program Files/Oracle/VirtualBox/VBoxManage.exe' -v 2>/dev/null)" ]; then
+        function VBoxManage() {
+            '/cygdrive/c/Program Files/Oracle/VirtualBox/VBoxManage.exe' "$@"
         }
     else
         echo "Please make sure VirtualBox is installed, and that the path to"
         echo "the VBoxManage executable is in the PATH variable."
-        if [ -n "${windows}" ]; then echo -n "VBoxManage is usually installed in"
-            echo "/cygdrive/c/Program Files/Oracle/VirtualBox"
-            echo "and can be added with PATH=\"\${PATH}:/cygdrive/c/<...>\""
-        fi
         exit
     fi
 fi
