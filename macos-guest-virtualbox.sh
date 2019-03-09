@@ -2,7 +2,7 @@
 # One-key semi-automatic installer of macOS on VirtualBox
 # (c) img2tab, licensed under GPL2.0 or higher
 # url: https://github.com/img2tab/macos-guest-virtualbox
-# version 0.44
+# version 0.45
 
 # Requirements: 33.5GB available storage on host
 # Dependencies: bash>=4.0, unzip, wget, dmg2img,
@@ -104,7 +104,7 @@ if [ -z "$(dmg2img -d 2>/dev/null)" ]; then
     if [ -z "$(cygcheck -V 2>/dev/null)" ]; then
         echo "Please install the package dmg2img."
         exit
-    else
+    elif [ -z "$(${PWD}/dmg2img -d 2>/dev/null)" ]; then
         echo "Locally installing dmg2img"
         wget -c "http://vu1tur.eu.org/tools/dmg2img-1.6.6-win32.zip" \
              -O "dmg2img-1.6.6-win32.zip" --quiet
@@ -170,7 +170,7 @@ or http://swscan.apple.com/content/catalogs/others/
     fi
     echo "Downloaded BaseSystem.dmg. Converting to BaseSystem.img"
     dmg2img "BaseSystem.dmg" "BaseSystem.img"
-    VBoxManage convertfromraw --format VDI "BaseSystem.img" "BaseSystem.vdi"
+    VBoxManage convertfromraw --format VDI "${PWD}/BaseSystem.img" "${PWD}/BaseSystem.vdi"
     rm "BaseSystem.dmg" "BaseSystem.img"
 fi
 }
@@ -186,7 +186,7 @@ elif [ "${storagesize}" -lt 22000 ]; then
 else
     echo "Creating ${vmname} target system virtual disk image."
     VBoxManage createmedium --size="${storagesize}" \
-                            --filename "${vmname}.vdi" \
+                            --filename "${PWD}/${vmname}.vdi" \
                             --variant standard 2>/dev/tty
 fi
 }
@@ -198,7 +198,7 @@ if [ -r "Install ${vmname}.vdi" ]; then
 else
     echo "Creating ${vmname} installation media virtual disk image."
     VBoxManage createmedium --size=8000 \
-                            --filename "Install ${vmname}.vdi" \
+                            --filename "${PWD}/Install ${vmname}.vdi" \
                             --variant fixed 2>/dev/tty
 fi
 }
@@ -208,11 +208,11 @@ fi
 function attach_initial_storage() {
 VBoxManage storagectl "${vmname}" --add sata --name SATA --hostiocache on
 VBoxManage storageattach "${vmname}" --storagectl SATA --port 0 \
-           --type hdd --nonrotational on --medium "${vmname}.vdi"
+           --type hdd --nonrotational on --medium "${PWD}/${vmname}.vdi"
 VBoxManage storageattach "${vmname}" --storagectl SATA --port 1 \
-           --type hdd --nonrotational on --medium "Install ${vmname}.vdi"
+           --type hdd --nonrotational on --medium "${PWD}/Install ${vmname}.vdi"
 VBoxManage storageattach "${vmname}" --storagectl SATA --port 2 \
-           --type hdd --nonrotational on --medium BaseSystem.vdi
+           --type hdd --nonrotational on --medium "${PWD}/BaseSystem.vdi"
 }
 
 # Configure the VM
