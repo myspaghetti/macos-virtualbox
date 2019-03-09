@@ -4,7 +4,7 @@ The "one key" is enter, which has to be pressed whenever the virtual machine is 
 
 The goal of the script is to allow for a very easy installation without any closed-source additions or extra bootloaders.
 
-Tested on Cygwin, usually works on Linux distros and WSL.
+Tested on Cygwin, usually works on Linux distros.
 
 ## iCloud and iMessage connectivity
 
@@ -23,4 +23,4 @@ Developing and maintaining VirtualBox features is beyond the scope of this scrip
 * [VirtualBox](https://www.virtualbox.org/wiki/Downloads)≥5.2 with Extension Pack
 * `Bash`≥4 (run on Windows through [Cygwin](https://cygwin.com/install.html) or WSL)
 * `unzip`, `wget` (install through package manager)
-* `dmg2img` (install through package manager on Linux and WSL; let the script download it automatically on Cygwin)
+* `dmg2img` (install through package manager on Linux; let the script download it automatically on Cygwin)
