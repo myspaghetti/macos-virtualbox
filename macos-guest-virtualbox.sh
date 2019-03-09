@@ -2,7 +2,7 @@
 # One-key semi-automatic installer of macOS on VirtualBox
 # (c) img2tab, licensed under GPL2.0 or higher
 # url: https://github.com/img2tab/macos-guest-virtualbox
-# version 0.48
+# version 0.49
 
 # Requirements: 33.5GB available storage on host
 # Dependencies: bash>=4.0, unzip, wget, dmg2img,
@@ -123,7 +123,8 @@ fi
 # Prompt to delete existing virtual machine config:
 function prompt_delete_existing_vm() {
 if [ -n "$(VBoxManage showvminfo "${vmname}")" ]; then
-    printf "${vmname}"' virtual machine already exists.
+    printf '
+'"${vmname}"' virtual machine already exists.
 '${whiteonred}'Delete existing virtual machine "'${vmname}'"?'${defaultcolor}
     delete=""
     read -n 1 -p " [y/n] " delete 2>/dev/tty
@@ -435,7 +436,7 @@ Press enter when the Terminal command prompt is ready.'${defaultcolor}
 
 # Start the virtual machine. This should take a couple of minutes.
 function populate_virtual_disks() {
-echo "Starting virtualmachine ${vmname}. This should take a couple of minutes."
+echo "Starting virtual machine ${vmname}. This should take a couple of minutes."
 VBoxManage startvm "${vmname}" 2>/dev/null
 
 promptlangutils
