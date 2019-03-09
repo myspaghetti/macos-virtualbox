@@ -2,7 +2,7 @@
 # One-key semi-automatic installer of macOS on VirtualBox
 # (c) img2tab, licensed under GPL2.0 or higher
 # url: https://github.com/img2tab/macos-guest-virtualbox
-# version 0.49
+# version 0.50
 
 # Requirements: 33.5GB available storage on host
 # Dependencies: bash>=4.0, unzip, wget, dmg2img,
@@ -31,10 +31,11 @@ printf '
   One-key semi-automatic installation of macOS On VirtualBox - Mojave 10.14.3
 -------------------------------------------------------------------------------
 
-This installer uses only open-source software and original,
-unmodified Apple binaries.
+This script installs only open-source software and unmodified Apple binaries.
 
 The script checks for dependencies and will prompt to install them if unmet.
+Some stages may fail due to errant keyboard presses; run the script with
+"'${whiteonblack}${0}' stages'${defaultcolor}'" to see how to run only certain stages.
 
 For iCloud and iMessage connectivity, you will need to provide a valid
 Apple serial number. macOS will work without it, but not Apple-connected apps.
@@ -99,6 +100,13 @@ if [ -z "$(VBoxManage -v 2>/dev/null)" ]; then
     fi
 fi
 
+# Windows Subsystem for Linux (WSL)
+wsldir=""
+if [[ "$(cat /proc/sys/kernel/osrelease 2>/dev/null)" == *"Microsoft"* ]]; then
+    wsldir="$(cmd /C cd)"
+    wsldir="${wsldir:0:-1}"'\'
+fi
+
 # dmg2img
 if [ -z "$(dmg2img -d 2>/dev/null)" ]; then
     if [ -z "$(cygcheck -V 2>/dev/null)" ]; then
@@ -133,7 +141,8 @@ if [ -n "$(VBoxManage showvminfo "${vmname}")" ]; then
         VBoxManage unregistervm "${vmname}" --delete
     else
         printf '
-'${whiteonblack}'Please assign a different VM name to variable "vmname" by editing the script.'${defaultcolor}
+'${whiteonblack}'Please assign a different VM name to variable "vmname" by editing the script,'${defaultcolor}'
+or skip this check manually as described in "'${0}' stages".'
         exit
     fi
 fi
@@ -175,7 +184,7 @@ or http://swscan.apple.com/content/catalogs/others/
     else
         dmg2img "BaseSystem.dmg" "BaseSystem.img"
     fi
-    VBoxManage convertfromraw --format VDI "BaseSystem.img" "BaseSystem.vdi"
+    VBoxManage convertfromraw --format VDI "${wsldir}BaseSystem.img" "${wsldir}BaseSystem.vdi"
     if [ -s BaseSystem.vdi ]; then
         rm "BaseSystem.dmg" "BaseSystem.img" 2>/dev/null
     fi
@@ -184,7 +193,7 @@ fi
 
 # Create the target virtual disk image:
 function create_target_vdi() {
-if [ -r "${vmname}.vdi" ]; then
+if [ -w "${vmname}.vdi" ]; then
     echo "${vmname}.vdi target system virtual disk image ready."
 elif [ "${storagesize}" -lt 22000 ]; then
     echo "Attempting to install macOS Mojave on a disk smaller than 22000MB will fail."
@@ -193,19 +202,19 @@ elif [ "${storagesize}" -lt 22000 ]; then
 else
     echo "Creating ${vmname} target system virtual disk image."
     VBoxManage createmedium --size="${storagesize}" \
-                            --filename "${vmname}.vdi" \
+                            --filename "${wsldir}${vmname}.vdi" \
                             --variant standard 2>/dev/tty
 fi
 }
 
 # Create the installation media virtual disk image:
 function create_install_vdi() {
-if [ -r "Install ${vmname}.vdi" ]; then
+if [ -w "Install ${vmname}.vdi" ]; then
     echo "Installation media virtual disk image ready."
 else
     echo "Creating ${vmname} installation media virtual disk image."
     VBoxManage createmedium --size=8000 \
-                            --filename "Install ${vmname}.vdi" \
+                            --filename "${wsldir}Install ${vmname}.vdi" \
                             --variant fixed 2>/dev/tty
 fi
 }
@@ -215,11 +224,11 @@ fi
 function attach_initial_storage() {
 VBoxManage storagectl "${vmname}" --add sata --name SATA --hostiocache on
 VBoxManage storageattach "${vmname}" --storagectl SATA --port 0 \
-           --type hdd --nonrotational on --medium "${vmname}.vdi"
+           --type hdd --nonrotational on --medium "${wsldir}${vmname}.vdi"
 VBoxManage storageattach "${vmname}" --storagectl SATA --port 1 \
-           --type hdd --nonrotational on --medium "Install ${vmname}.vdi"
+           --type hdd --nonrotational on --medium "${wsldir}Install ${vmname}.vdi"
 VBoxManage storageattach "${vmname}" --storagectl SATA --port 2 \
-           --type hdd --nonrotational on --medium "BaseSystem.vdi"
+           --type hdd --nonrotational on --medium "${wsldir}BaseSystem.vdi"
 }
 
 # Configure the VM
@@ -483,14 +492,15 @@ printf ${whiteonblack}'
 Shutting down virtual machine.
 Press enter when the virtual machine shutdown is complete.'${defaultcolor}
 read -p ""
-}
-
-# Detach the original 2GB BaseSystem.vdi and boot from the new 8GB BaseSystem
-function install_the_installer() {
 echo ""
 echo "Detaching initial base system and starting virtual machine."
-echo "The VM will boot from the new base system on the installer virtual disk."
+# Detach the original 2GB BaseSystem.vdi
 VBoxManage storageattach "${vmname}" --storagectl SATA --port 2 --medium none
+}
+
+function install_the_installer() {
+#Boot from "Install.vdi" that contains the 2GB BaseSystem and 6GB free space
+echo "The VM will boot from the new base system on the installer virtual disk."
 VBoxManage startvm "${vmname}" 2>/dev/null
 
 promptlangutils
@@ -615,27 +625,26 @@ echo "Shutting down virtual machine."
 printf ${whiteonblack}'
 Press enter when the virtual machine shutdown is complete.'${defaultcolor}
 read -p ""
+
+# detach installer from virtual machine
+VBoxManage storageattach "${vmname}" --storagectl SATA --port 1 --medium none
 }
 
 function boot_macos_installer() {
-# detach installer from virtual machine
-VBoxManage storageattach "${vmname}" --storagectl SATA --port 1 --medium none
-
-# Start the virtual machine again.
-# The VM will boot from the target virtual disk image and complete the installation.
+echo "The VM will boot from the target virtual disk image."
 VBoxManage startvm "${vmname}"
 
 printf '
 macOS Mojave 10.14.3 will now install and start up.
 
-'${whiteonred}'Delete temporary files?'${defaultcolor}
+Temporary files are safe to delete. '${whiteonred}'Delete temporary files?'${defaultcolor}
 delete=""
 read -n 1 -p " [y/n] " delete 2>/dev/tty
 echo ""
 if [ "${delete}" == "y" ]; then
 # temporary files cleanup
-    VBoxManage closemedium "BaseSystem.vdi"
-    VBoxManage closemedium "Install ${vmname}.vdi"
+    VBoxManage closemedium "${wsldir}BaseSystem.vdi"
+    VBoxManage closemedium "Install ${wsldir}${vmname}.vdi"
     rm "BaseSystem.vdi" "Install ${vmname}.vdi"
 fi
 
@@ -647,7 +656,38 @@ increased through Disk Utility inside the virtual machine by creating a new
 APFS container and subsequently deleting it, allowing the system APFS container
 to take up the available space.
 
-That'\''s it. Enjoy your virtual machine.'
+That'\''s it. Enjoy your virtual machine.
+'
+}
+
+function stages() {
+printf '
+USAGE: '${whiteonblack}${0}' [STAGE]...'${defaultcolor}'
+
+The script is divided into stages that run as separate functions.
+Add one or more stage titles to the command line to run the corresponding
+function. Some examples:
+    "'${0}' populate_virtual_disks install_the_installer"
+These stages might be useful by themselves if the VDI files and the VM are
+already set.
+    "'${0}' configure_vm"
+This stage might be useful after copying an existing VDI to a different
+VirtualBox installation and having the script automatically configure the VM.
+
+Available stage titles:
+    welcome
+    check_dependencies
+    prompt_delete_existing_vm
+    create_vm
+    create_basesystem_vdi
+    create_target_vdi
+    create_install_vdi
+    attach_initial_storage
+    configure_vm
+    populate_virtual_disks
+    install_the_installer
+    boot_macos_installer
+'
 }
 
 if [ -z "${1}" ]; then
