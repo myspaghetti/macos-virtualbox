@@ -21,6 +21,6 @@ Developing and maintaining VirtualBox features is beyond the scope of this scrip
 ## Dependencies
 
 * [VirtualBox](https://www.virtualbox.org/wiki/Downloads)≥5.2 with Extension Pack
-* `Bash`≥4 (run on Windows through [Cygwin](https://cygwin.com/install.html))
+* `Bash`≥4 (run on Windows through [Cygwin](https://cygwin.com/install.html)) with `coreutils`
 * `unzip`, `wget` (install through package manager)
 * `dmg2img` (install through package manager on Linux; let the script download it automatically on Cygwin)
