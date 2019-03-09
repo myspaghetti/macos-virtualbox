@@ -2,7 +2,7 @@
 # One-key semi-automatic installer of macOS on VirtualBox
 # (c) img2tab, licensed under GPL2.0 or higher
 # url: https://github.com/img2tab/macos-guest-virtualbox
-# version 0.47
+# version 0.48
 
 # Requirements: 33.5GB available storage on host
 # Dependencies: bash>=4.0, unzip, wget, dmg2img,
@@ -244,7 +244,6 @@ VBoxManage setextradata "${vmname}" \
  "VBoxInternal/Devices/efi/0/Config/DmiSystemSerial" "${serialnumber}"
 }
 
-function initialize_script_functions() {
 # QWERTY-to-scancode dictionary. Hex scancodes, keydown and keyup event.
 # Virtualbox Mac scancodes found here:
 # https://wiki.osdev.org/PS/2_Keyboard#Scan_Code_Set_1
@@ -432,8 +431,6 @@ function promptterminalready() {
     printf ${whiteonblack}'
 Press enter when the Terminal command prompt is ready.'${defaultcolor}
     read -p ""
-}
-
 }
 
 # Start the virtual machine. This should take a couple of minutes.
@@ -662,12 +659,10 @@ if [ -z "${1}" ]; then
     create_install_vdi
     attach_initial_storage
     configure_vm
-    initialize_script_functions
     populate_virtual_disks
     install_the_installer
     boot_macos_installer
 else
     check_dependencies
-    initialize_script_functions
     for argument in $@; do ${argument}; done
 fi
