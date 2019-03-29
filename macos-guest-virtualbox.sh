@@ -2,7 +2,7 @@
 # One-key semi-automatic installer of macOS on VirtualBox
 # (c) img2tab, licensed under GPL2.0 or higher
 # url: https://github.com/img2tab/macos-guest-virtualbox
-# version 0.50
+# version 0.51
 
 # Requirements: 33.5GB available storage on host
 # Dependencies: bash>=4.0, unzip, wget, dmg2img,
@@ -28,7 +28,7 @@ defaultcolor="\033[0m"
 
 function welcome() {
 printf '
-  One-key semi-automatic installation of macOS On VirtualBox - Mojave 10.14.3
+   One-key semi-automatic installation of macOS On VirtualBox - Mojave 10.14
 -------------------------------------------------------------------------------
 
 This script installs only open-source software and unmodified Apple binaries.
@@ -103,7 +103,7 @@ fi
 # Windows Subsystem for Linux (WSL)
 wsldir=""
 if [[ "$(cat /proc/sys/kernel/osrelease 2>/dev/null)" == *"Microsoft"* ]]; then
-    wsldir="$(cmd /C cd)"
+    wsldir="$(cmd.exe /C cd)"
     wsldir="${wsldir:0:-1}"'\'
 fi
 
@@ -167,8 +167,18 @@ function create_basesystem_vdi() {
 if [ -r "BaseSystem.vdi" ]; then
     echo "BaseSystem.vdi bootstrap virtual disk image ready."
 else
+    # Find the correct download URL in the Apple catalog
+    echo "Downloading Apple macOS Mojave software update catalog"
+    wget -c 'http://swscan.apple.com/content/catalogs/others/index-10.14-10.13-10.12-10.11-10.10-10.9-mountainlion-lion-snowleopard-leopard.merged-1.sucatalog' -O 'apple.sucatalog.tmp'
+    echo "Finding latest macOS InstallAssistant entry"
+    tac "apple.sucatalog.tmp" | csplit - '/InstallAssistantAuto.smd/+1' -f "applecatalog.tmp." -s
+    urlbase="$(tail -n 1 "applecatalog.tmp.00")"
+    urlbase="$(expr match "${urlbase}" '.*\(http://[^<]*/\)')"
+    echo "Found BaseSystem.dmg URL: ${urlbase}BaseSystem.dmg"
+    echo "${urlbase}" > urlbase.tmp
+
     echo "Downloading BaseSystem.dmg from swcdn.apple.com"
-    wget -c 'http://swcdn.apple.com/content/downloads/34/52/041-38914/dhgsi49xaudtqpbj3zibbmjy3ry9ola2rb/BaseSystem.dmg' -O "BaseSystem.dmg" 2>/dev/tty
+    wget -c "${urlbase}BaseSystem.dmg" -O "BaseSystem.dmg" 2>/dev/tty
     if [ ! -s BaseSystem.dmg ]; then
         printf ${whiteonred}'Could not download BaseSystem.dmg'${defaultcolor}'. Please report this issue
 on https://github.com/img2tab/macos-guest-virtualbox/issues
@@ -209,12 +219,12 @@ fi
 
 # Create the installation media virtual disk image:
 function create_install_vdi() {
-if [ -w "Install ${vmname}.vdi" ]; then
+if [ -w "Install_${vmname}.vdi" ]; then
     echo "Installation media virtual disk image ready."
 else
     echo "Creating ${vmname} installation media virtual disk image."
     VBoxManage createmedium --size=8000 \
-                            --filename "${wsldir}Install ${vmname}.vdi" \
+                            --filename "${wsldir}Install_${vmname}.vdi" \
                             --variant fixed 2>/dev/tty
 fi
 }
@@ -226,7 +236,7 @@ VBoxManage storagectl "${vmname}" --add sata --name SATA --hostiocache on
 VBoxManage storageattach "${vmname}" --storagectl SATA --port 0 \
            --type hdd --nonrotational on --medium "${wsldir}${vmname}.vdi"
 VBoxManage storageattach "${vmname}" --storagectl SATA --port 1 \
-           --type hdd --nonrotational on --medium "${wsldir}Install ${vmname}.vdi"
+           --type hdd --nonrotational on --medium "${wsldir}Install_${vmname}.vdi"
 VBoxManage storageattach "${vmname}" --storagectl SATA --port 2 \
            --type hdd --nonrotational on --medium "${wsldir}BaseSystem.vdi"
 }
@@ -470,10 +480,11 @@ kbstring='diskutil partitionDisk "/dev/${disks[1]}" 1 GPT JHFS+ "Install" R'
 sendkeys
 promptterminalready
 echo ""
-echo "Downloading macOS Mojave 10.14.3 installer."
+echo "Downloading macOS Mojave 10.14 installer."
 
 # downloading macOS
-kbstring='urlpath="http://swcdn.apple.com/content/downloads/34/52/041-38914/dhgsi49xaudtqpbj3zibbmjy3ry9ola2rb/"; for filename in BaseSystem.chunklist InstallInfo.plist AppleDiagnostics.dmg AppleDiagnostics.chunklist BaseSystem.dmg InstallESDDmg.pkg; do curl "${urlpath}${filename}" -o "/Volumes/'"${vmname}"'/${filename}"; done'
+urlbase="$(cat urlbase.tmp)"
+kbstring='urlbase="'"${urlbase}"'"; for filename in BaseSystem.chunklist InstallInfo.plist AppleDiagnostics.dmg AppleDiagnostics.chunklist BaseSystem.dmg InstallESDDmg.pkg; do curl "${urlbase}${filename}" -o "/Volumes/'"${vmname}"'/${filename}"; done'
 sendkeys
 promptterminalready
 echo ""
@@ -635,7 +646,7 @@ echo "The VM will boot from the target virtual disk image."
 VBoxManage startvm "${vmname}"
 
 printf '
-macOS Mojave 10.14.3 will now install and start up.
+macOS Mojave 10.14 will now install and start up.
 
 Temporary files are safe to delete. '${whiteonred}'Delete temporary files?'${defaultcolor}
 delete=""
@@ -644,11 +655,12 @@ echo ""
 if [ "${delete}" == "y" ]; then
 # temporary files cleanup
     VBoxManage closemedium "${wsldir}BaseSystem.vdi"
-    VBoxManage closemedium "Install ${wsldir}${vmname}.vdi"
-    rm "BaseSystem.vdi" "Install ${vmname}.vdi"
+    VBoxManage closemedium "Install_${wsldir}${vmname}.vdi"
+    rm "BaseSystem.vdi" "Install_${vmname}.vdi"
+    rm "apple.sucatalog.tmp" "applecatalog.tmp.00" "applecatalog.tmp.01" "urlbase.tmp"
 fi
 
-printf 'macOS Mojave 10.14.3 installation should complete in a few minutes.
+printf 'macOS Mojave 10.14 installation should complete in a few minutes.
 
 After the installation is complete, the virtual disk image may be increased
 through VirtualBox, then the macOS system APFS container size may be
