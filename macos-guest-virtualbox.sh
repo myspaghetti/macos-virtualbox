@@ -2,7 +2,7 @@
 # One-key semi-automatic installer of macOS on VirtualBox
 # (c) img2tab, licensed under GPL2.0 or higher
 # url: https://github.com/img2tab/macos-guest-virtualbox
-# version 0.51
+# version 0.52
 
 # Requirements: 33.5GB available storage on host
 # Dependencies: bash>=4.0, unzip, wget, dmg2img,
@@ -125,6 +125,24 @@ if [ -z "$(dmg2img -d 2>/dev/null)" ]; then
         chmod +x "dmg2img.exe"
     fi
 fi
+
+# Find the correct download URL in the Apple catalog
+echo "Downloading Apple macOS Mojave software update catalog"
+wget -c 'http://swscan.apple.com/content/catalogs/others/index-10.14-10.13-10.12-10.11-10.10-10.9-mountainlion-lion-snowleopard-leopard.merged-1.sucatalog' -O 'apple.sucatalog.tmp'
+echo "Finding latest macOS InstallAssistant entry"
+tac "apple.sucatalog.tmp" | csplit - '/InstallAssistantAuto.smd/+1' -f "applecatalog.tmp." -s
+urlbase="$(tail -n 1 "applecatalog.tmp.00")"
+urlbase="$(expr match "${urlbase}" '.*\(http://[^<]*/\)')"
+if [ -z "${urlbase}" ]; then
+    printf "Couldn't find the download URL in the Apple catalog. Please report this issue
+on https://github.com/img2tab/macos-guest-virtualbox/issues
+or update the URL yourself from the catalog found
+on https://gist.github.com/nuomi1/16133b89c2b38b7eb197
+or http://swscan.apple.com/content/catalogs/others/
+   index-10.14-10.13-10.12-10.11-10.10-10.9-mountainlion-lion-snowleopard-leopard.merged-1.sucatalog'
+   exit
+fi
+echo "Found BaseSystem.dmg URL: ${urlbase}BaseSystem.dmg"
 }
 # Done with dependencies
 
@@ -167,25 +185,10 @@ function create_basesystem_vdi() {
 if [ -r "BaseSystem.vdi" ]; then
     echo "BaseSystem.vdi bootstrap virtual disk image ready."
 else
-    # Find the correct download URL in the Apple catalog
-    echo "Downloading Apple macOS Mojave software update catalog"
-    wget -c 'http://swscan.apple.com/content/catalogs/others/index-10.14-10.13-10.12-10.11-10.10-10.9-mountainlion-lion-snowleopard-leopard.merged-1.sucatalog' -O 'apple.sucatalog.tmp'
-    echo "Finding latest macOS InstallAssistant entry"
-    tac "apple.sucatalog.tmp" | csplit - '/InstallAssistantAuto.smd/+1' -f "applecatalog.tmp." -s
-    urlbase="$(tail -n 1 "applecatalog.tmp.00")"
-    urlbase="$(expr match "${urlbase}" '.*\(http://[^<]*/\)')"
-    echo "Found BaseSystem.dmg URL: ${urlbase}BaseSystem.dmg"
-    echo "${urlbase}" > urlbase.tmp
-
     echo "Downloading BaseSystem.dmg from swcdn.apple.com"
     wget -c "${urlbase}BaseSystem.dmg" -O "BaseSystem.dmg" 2>/dev/tty
     if [ ! -s BaseSystem.dmg ]; then
-        printf ${whiteonred}'Could not download BaseSystem.dmg'${defaultcolor}'. Please report this issue
-on https://github.com/img2tab/macos-guest-virtualbox/issues
-or update the URL yourself from the catalog found
-on https://gist.github.com/nuomi1/16133b89c2b38b7eb197
-or http://swscan.apple.com/content/catalogs/others/
-   index-10.14-10.13-10.12-10.11-10.10-10.9-mountainlion-lion-snowleopard-leopard.merged-1.sucatalog'
+        printf ${whiteonred}'Could not download BaseSystem.dmg'${defaultcolor}'.'
         exit
     fi
     echo "Downloaded BaseSystem.dmg. Converting to BaseSystem.img"
@@ -483,7 +486,6 @@ echo ""
 echo "Downloading macOS Mojave 10.14 installer."
 
 # downloading macOS
-urlbase="$(cat urlbase.tmp)"
 kbstring='urlbase="'"${urlbase}"'"; for filename in BaseSystem.chunklist InstallInfo.plist AppleDiagnostics.dmg AppleDiagnostics.chunklist BaseSystem.dmg InstallESDDmg.pkg; do curl "${urlbase}${filename}" -o "/Volumes/'"${vmname}"'/${filename}"; done'
 sendkeys
 promptterminalready
@@ -655,9 +657,9 @@ echo ""
 if [ "${delete}" == "y" ]; then
 # temporary files cleanup
     VBoxManage closemedium "${wsldir}BaseSystem.vdi"
-    VBoxManage closemedium "Install_${wsldir}${vmname}.vdi"
+    VBoxManage closemedium "${wsldir}Install_${vmname}.vdi"
     rm "BaseSystem.vdi" "Install_${vmname}.vdi"
-    rm "apple.sucatalog.tmp" "applecatalog.tmp.00" "applecatalog.tmp.01" "urlbase.tmp"
+    rm "apple.sucatalog.tmp" "applecatalog.tmp.00" "applecatalog.tmp.01"
 fi
 
 printf 'macOS Mojave 10.14 installation should complete in a few minutes.
