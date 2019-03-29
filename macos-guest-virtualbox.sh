@@ -2,7 +2,7 @@
 # One-key semi-automatic installer of macOS on VirtualBox
 # (c) img2tab, licensed under GPL2.0 or higher
 # url: https://github.com/img2tab/macos-guest-virtualbox
-# version 0.52
+# version 0.53
 
 # Requirements: 33.5GB available storage on host
 # Dependencies: bash>=4.0, unzip, wget, dmg2img,
@@ -139,7 +139,7 @@ on https://github.com/img2tab/macos-guest-virtualbox/issues
 or update the URL yourself from the catalog found
 on https://gist.github.com/nuomi1/16133b89c2b38b7eb197
 or http://swscan.apple.com/content/catalogs/others/
-   index-10.14-10.13-10.12-10.11-10.10-10.9-mountainlion-lion-snowleopard-leopard.merged-1.sucatalog'
+   index-10.14-10.13-10.12-10.11-10.10-10.9-mountainlion-lion-snowleopard-leopard.merged-1.sucatalog"
    exit
 fi
 echo "Found BaseSystem.dmg URL: ${urlbase}BaseSystem.dmg"
