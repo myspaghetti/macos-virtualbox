@@ -2,7 +2,7 @@
 # One-key semi-automatic installer of macOS on VirtualBox
 # (c) img2tab, licensed under GPL2.0 or higher
 # url: https://github.com/img2tab/macos-guest-virtualbox
-# version 0.54
+# version 0.55
 
 # Requirements: 33.5GB available storage on host
 # Dependencies: bash>=4.0, unzip, wget, dmg2img,
@@ -101,20 +101,22 @@ if [ -z "$(VBoxManage -v 2>/dev/null)" ]; then
 fi
 
 # Windows Subsystem for Linux (WSL)
-wsl_home=""
-if [[ "$(cat /proc/sys/kernel/osrelease 2>/dev/null)" == *"Microsoft"* ]]; then
+wsl_home=""  # if the Windows home directory path contains spaces, please assign a rw-able path without spaces
+if [[ -z "${wsl_home}" && "$(cat /proc/sys/kernel/osrelease 2>/dev/null)" == *"Microsoft"* ]]; then
     wsl_home="$(cmd.exe /C cd)"
     wsl_home="${wsl_home:0:-1}"'\'  # remove trailing newline \M
-    printf '
-Windows Subsystem for Linux results in unexpected behavior when VBoxManage
-interprets '${whiteonblack}'quoted variables with whitespace'${defaultcolor}', so if your Windows home directory
-or assigned script variables contain whitespaces please choose ones without.
-'
+    if [[ ${wsl_home} == *" "* || ${vmname} == *" "* ]]; then
+        printf 'VBoxManage behaves unexpectedly when interpreting variables with whitespace
+        on Windows Subsystem for Linux. '${whiteonblack}'Please assign values without whitespace'${defaultcolor}' to the
+        variables "wsl_home", a Windows-style backslash-terminated path for a readable
+        and writable working directory (for example "C:\\Users\\Default\\"), and "vmname".\n'
+        exit
+    fi
 fi
 
 # macOS
 if [ -n "$(sw_vers 2>/dev/null)" ]; then
-    printf 'This script is not tested on macOS. Exiting.'
+    printf '\nThis script is not tested on macOS. Exiting.'
     exit
 fi
 
@@ -160,8 +162,7 @@ echo "Found BaseSystem.dmg URL: ${urlbase}BaseSystem.dmg"
 # Prompt to delete existing virtual machine config:
 function prompt_delete_existing_vm() {
 if [ -n "$(VBoxManage showvminfo "${vmname}")" ]; then
-    printf '
-'"${vmname}"' virtual machine already exists.
+    printf '\n'"${vmname}"' virtual machine already exists.
 '${whiteonred}'Delete existing virtual machine "'${vmname}'"?'${defaultcolor}
     delete=""
     read -n 1 -p " [y/n] " delete 2>/dev/tty
@@ -169,8 +170,7 @@ if [ -n "$(VBoxManage showvminfo "${vmname}")" ]; then
     if [ "${delete}" == "y" ]; then
         VBoxManage unregistervm "${vmname}" --delete
     else
-        printf '
-'${whiteonblack}'Please assign a different VM name to variable "vmname" by editing the script,'${defaultcolor}'
+        printf '\n'${whiteonblack}'Please assign a different VM name to variable "vmname" by editing the script,'${defaultcolor}'
 or skip this check manually as described in "'${0}' stages".'
         exit
     fi
@@ -180,8 +180,7 @@ fi
 # Attempt to create new virtual machine named "${vmname}"
 function create_vm() {
 if [ -n "$(VBoxManage createvm --name "${vmname}" --ostype "MacOS1013_64" --register 2>&1 1>/dev/null)" ]; then
-    printf '
-Error: Could not create virtual machine "'${vmname}'".
+    printf '\nError: Could not create virtual machine "'${vmname}'".
 '${whiteonblack}'Please delete exising "'${vmname}'" VirtualBox configuration files '${whiteonred}'manually'${defaultcolor}'.
 
 Error message:
@@ -658,8 +657,7 @@ function boot_macos_installer() {
 echo "The VM will boot from the target virtual disk image."
 VBoxManage startvm "${vmname}"
 
-printf '
-macOS Mojave 10.14 will now install and start up.
+printf '\nmacOS Mojave 10.14 will now install and start up.
 
 Temporary files are safe to delete. '${whiteonred}'Delete temporary files?'${defaultcolor}
 delete=""
@@ -686,8 +684,7 @@ That'\''s it. Enjoy your virtual machine.
 }
 
 function stages() {
-printf '
-USAGE: '${whiteonblack}${0}' [STAGE]...'${defaultcolor}'
+printf '\nUSAGE: '${whiteonblack}${0}' [STAGE]...'${defaultcolor}'
 
 The script is divided into stages that run as separate functions.
 Add one or more stage titles to the command line to run the corresponding
