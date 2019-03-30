@@ -2,7 +2,7 @@
 # One-key semi-automatic installer of macOS on VirtualBox
 # (c) img2tab, licensed under GPL2.0 or higher
 # url: https://github.com/img2tab/macos-guest-virtualbox
-# version 0.53
+# version 0.54
 
 # Requirements: 33.5GB available storage on host
 # Dependencies: bash>=4.0, unzip, wget, dmg2img,
@@ -101,10 +101,21 @@ if [ -z "$(VBoxManage -v 2>/dev/null)" ]; then
 fi
 
 # Windows Subsystem for Linux (WSL)
-wsldir=""
+wsl_home=""
 if [[ "$(cat /proc/sys/kernel/osrelease 2>/dev/null)" == *"Microsoft"* ]]; then
-    wsldir="$(cmd.exe /C cd)"
-    wsldir="${wsldir:0:-1}"'\'
+    wsl_home="$(cmd.exe /C cd)"
+    wsl_home="${wsl_home:0:-1}"'\'  # remove trailing newline \M
+    printf '
+Windows Subsystem for Linux results in unexpected behavior when VBoxManage
+interprets '${whiteonblack}'quoted variables with whitespace'${defaultcolor}', so if your Windows home directory
+or assigned script variables contain whitespaces please choose ones without.
+'
+fi
+
+# macOS
+if [ -n "$(sw_vers 2>/dev/null)" ]; then
+    printf 'This script is not tested on macOS. Exiting.'
+    exit
 fi
 
 # dmg2img
@@ -197,7 +208,7 @@ else
     else
         dmg2img "BaseSystem.dmg" "BaseSystem.img"
     fi
-    VBoxManage convertfromraw --format VDI "${wsldir}BaseSystem.img" "${wsldir}BaseSystem.vdi"
+    VBoxManage convertfromraw --format VDI "${wsl_home}BaseSystem.img" "${wsl_home}BaseSystem.vdi"
     if [ -s BaseSystem.vdi ]; then
         rm "BaseSystem.dmg" "BaseSystem.img" 2>/dev/null
     fi
@@ -215,7 +226,7 @@ elif [ "${storagesize}" -lt 22000 ]; then
 else
     echo "Creating ${vmname} target system virtual disk image."
     VBoxManage createmedium --size="${storagesize}" \
-                            --filename "${wsldir}${vmname}.vdi" \
+                            --filename "${wsl_home}${vmname}.vdi" \
                             --variant standard 2>/dev/tty
 fi
 }
@@ -227,7 +238,7 @@ if [ -w "Install_${vmname}.vdi" ]; then
 else
     echo "Creating ${vmname} installation media virtual disk image."
     VBoxManage createmedium --size=8000 \
-                            --filename "${wsldir}Install_${vmname}.vdi" \
+                            --filename "${wsl_home}Install_${vmname}.vdi" \
                             --variant fixed 2>/dev/tty
 fi
 }
@@ -237,11 +248,11 @@ fi
 function attach_initial_storage() {
 VBoxManage storagectl "${vmname}" --add sata --name SATA --hostiocache on
 VBoxManage storageattach "${vmname}" --storagectl SATA --port 0 \
-           --type hdd --nonrotational on --medium "${wsldir}${vmname}.vdi"
+           --type hdd --nonrotational on --medium "${wsl_home}${vmname}.vdi"
 VBoxManage storageattach "${vmname}" --storagectl SATA --port 1 \
-           --type hdd --nonrotational on --medium "${wsldir}Install_${vmname}.vdi"
+           --type hdd --nonrotational on --medium "${wsl_home}Install_${vmname}.vdi"
 VBoxManage storageattach "${vmname}" --storagectl SATA --port 2 \
-           --type hdd --nonrotational on --medium "${wsldir}BaseSystem.vdi"
+           --type hdd --nonrotational on --medium "${wsl_home}BaseSystem.vdi"
 }
 
 # Configure the VM
@@ -656,8 +667,8 @@ read -n 1 -p " [y/n] " delete 2>/dev/tty
 echo ""
 if [ "${delete}" == "y" ]; then
 # temporary files cleanup
-    VBoxManage closemedium "${wsldir}BaseSystem.vdi"
-    VBoxManage closemedium "${wsldir}Install_${vmname}.vdi"
+    VBoxManage closemedium "${wsl_home}BaseSystem.vdi"
+    VBoxManage closemedium "${wsl_home}Install_${vmname}.vdi"
     rm "BaseSystem.vdi" "Install_${vmname}.vdi"
     rm "apple.sucatalog.tmp" "applecatalog.tmp.00" "applecatalog.tmp.01"
 fi
