@@ -2,7 +2,7 @@
 # One-key semi-automatic installer of macOS on VirtualBox
 # (c) img2tab, licensed under GPL2.0 or higher
 # url: https://github.com/img2tab/macos-guest-virtualbox
-# version 0.55
+# version 0.56
 
 # Requirements: 33.5GB available storage on host
 # Dependencies: bash>=4.0, unzip, wget, dmg2img,
@@ -101,14 +101,15 @@ if [ -z "$(VBoxManage -v 2>/dev/null)" ]; then
 fi
 
 # Windows Subsystem for Linux (WSL)
-wsl_home=""  # if the Windows home directory path contains spaces, please assign a rw-able path without spaces
-if [[ -z "${wsl_home}" && "$(cat /proc/sys/kernel/osrelease 2>/dev/null)" == *"Microsoft"* ]]; then
-    wsl_home="$(cmd.exe /C cd)"
-    wsl_home="${wsl_home:0:-1}"'\'  # remove trailing newline \M
-    if [[ ${wsl_home} == *" "* || ${vmname} == *" "* ]]; then
+windows_home=""  # if the Windows home directory path contains spaces, please assign a rw-able path without spaces
+if [[ -z "${windows_home}" && "$(cat /proc/sys/kernel/osrelease 2>/dev/null)" == *"Microsoft"* ]]; then
+    windows_home="$(cmd.exe /C cd)"  # returns Windows user's home directory
+    windows_home="${windows_home:0:-1}"'\'  # remove trailing newline \M
+    if [[ "${windows_home,,}" =~ .*sytem32.* ]]; then echo "Please run this script without elevated privileges."; exit; fi
+    if [[ ${windows_home} == *" "* || ${vmname} == *" "* ]]; then
         printf 'VBoxManage behaves unexpectedly when interpreting variables with whitespace
         on Windows Subsystem for Linux. '${whiteonblack}'Please assign values without whitespace'${defaultcolor}' to the
-        variables "wsl_home", a Windows-style backslash-terminated path for a readable
+        variables "windows_home", a Windows-style backslash-terminated path for a readable
         and writable working directory (for example "C:\\Users\\Default\\"), and "vmname".\n'
         exit
     fi
@@ -207,7 +208,7 @@ else
     else
         dmg2img "BaseSystem.dmg" "BaseSystem.img"
     fi
-    VBoxManage convertfromraw --format VDI "${wsl_home}BaseSystem.img" "${wsl_home}BaseSystem.vdi"
+    VBoxManage convertfromraw --format VDI "${windows_home}BaseSystem.img" "${windows_home}BaseSystem.vdi"
     if [ -s BaseSystem.vdi ]; then
         rm "BaseSystem.dmg" "BaseSystem.img" 2>/dev/null
     fi
@@ -225,7 +226,7 @@ elif [ "${storagesize}" -lt 22000 ]; then
 else
     echo "Creating ${vmname} target system virtual disk image."
     VBoxManage createmedium --size="${storagesize}" \
-                            --filename "${wsl_home}${vmname}.vdi" \
+                            --filename "${windows_home}${vmname}.vdi" \
                             --variant standard 2>/dev/tty
 fi
 }
@@ -237,7 +238,7 @@ if [ -w "Install_${vmname}.vdi" ]; then
 else
     echo "Creating ${vmname} installation media virtual disk image."
     VBoxManage createmedium --size=8000 \
-                            --filename "${wsl_home}Install_${vmname}.vdi" \
+                            --filename "${windows_home}Install_${vmname}.vdi" \
                             --variant fixed 2>/dev/tty
 fi
 }
@@ -247,11 +248,11 @@ fi
 function attach_initial_storage() {
 VBoxManage storagectl "${vmname}" --add sata --name SATA --hostiocache on
 VBoxManage storageattach "${vmname}" --storagectl SATA --port 0 \
-           --type hdd --nonrotational on --medium "${wsl_home}${vmname}.vdi"
+           --type hdd --nonrotational on --medium "${windows_home}${vmname}.vdi"
 VBoxManage storageattach "${vmname}" --storagectl SATA --port 1 \
-           --type hdd --nonrotational on --medium "${wsl_home}Install_${vmname}.vdi"
+           --type hdd --nonrotational on --medium "${windows_home}Install_${vmname}.vdi"
 VBoxManage storageattach "${vmname}" --storagectl SATA --port 2 \
-           --type hdd --nonrotational on --medium "${wsl_home}BaseSystem.vdi"
+           --type hdd --nonrotational on --medium "${windows_home}BaseSystem.vdi"
 }
 
 # Configure the VM
@@ -665,8 +666,8 @@ read -n 1 -p " [y/n] " delete 2>/dev/tty
 echo ""
 if [ "${delete}" == "y" ]; then
 # temporary files cleanup
-    VBoxManage closemedium "${wsl_home}BaseSystem.vdi"
-    VBoxManage closemedium "${wsl_home}Install_${vmname}.vdi"
+    VBoxManage closemedium "${windows_home}BaseSystem.vdi"
+    VBoxManage closemedium "${windows_home}Install_${vmname}.vdi"
     rm "BaseSystem.vdi" "Install_${vmname}.vdi"
     rm "apple.sucatalog.tmp" "applecatalog.tmp.00" "applecatalog.tmp.01"
 fi
