@@ -2,7 +2,7 @@
 # One-key semi-automatic installer of macOS on VirtualBox
 # (c) img2tab, licensed under GPL2.0 or higher
 # url: https://github.com/img2tab/macos-guest-virtualbox
-# version 0.56
+# version 0.57
 
 # Requirements: 33.5GB available storage on host
 # Dependencies: bash>=4.0, unzip, wget, dmg2img,
@@ -101,15 +101,15 @@ if [ -z "$(VBoxManage -v 2>/dev/null)" ]; then
 fi
 
 # Windows Subsystem for Linux (WSL)
-windows_home=""  # if the Windows home directory path contains spaces, please assign a rw-able path without spaces
-if [[ -z "${windows_home}" && "$(cat /proc/sys/kernel/osrelease 2>/dev/null)" == *"Microsoft"* ]]; then
-    windows_home="$(cmd.exe /C cd)"  # returns Windows user's home directory
-    windows_home="${windows_home:0:-1}"'\'  # remove trailing newline \M
-    if [[ "${windows_home,,}" =~ .*sytem32.* ]]; then echo "Please run this script without elevated privileges."; exit; fi
-    if [[ ${windows_home} == *" "* || ${vmname} == *" "* ]]; then
+microsoft_path=""  # if the Windows home directory path contains spaces, please assign a rw-able path without spaces
+if [[ -z "${microsoft_path}" && "$(cat /proc/sys/kernel/osrelease 2>/dev/null)" == *"Microsoft"* ]]; then
+    microsoft_path="$(cmd.exe /C cd)"  # returns Windows user's home directory
+    microsoft_path="${microsoft_path:0:-1}"'\'  # remove trailing newline \M
+    if [[ "${microsoft_path,,}" =~ .*sytem32.* ]]; then echo "Please run this script without elevated privileges.\n"; exit; fi
+    if [[ ${microsoft_path} == *" "* || ${vmname} == *" "* ]]; then
         printf 'VBoxManage behaves unexpectedly when interpreting variables with whitespace
         on Windows Subsystem for Linux. '${whiteonblack}'Please assign values without whitespace'${defaultcolor}' to the
-        variables "windows_home", a Windows-style backslash-terminated path for a readable
+        variables "microsoft_path", a Windows-style backslash-terminated path for a readable
         and writable working directory (for example "C:\\Users\\Default\\"), and "vmname".\n'
         exit
     fi
@@ -117,7 +117,7 @@ fi
 
 # macOS
 if [ -n "$(sw_vers 2>/dev/null)" ]; then
-    printf '\nThis script is not tested on macOS. Exiting.'
+    printf '\nThis script is not tested on macOS. Exiting.\n'
     exit
 fi
 
@@ -153,7 +153,7 @@ on https://github.com/img2tab/macos-guest-virtualbox/issues
 or update the URL yourself from the catalog found
 on https://gist.github.com/nuomi1/16133b89c2b38b7eb197
 or http://swscan.apple.com/content/catalogs/others/
-   index-10.14-10.13-10.12-10.11-10.10-10.9-mountainlion-lion-snowleopard-leopard.merged-1.sucatalog"
+   index-10.14-10.13-10.12-10.11-10.10-10.9-mountainlion-lion-snowleopard-leopard.merged-1.sucatalog\n"
    exit
 fi
 echo "Found BaseSystem.dmg URL: ${urlbase}BaseSystem.dmg"
@@ -172,7 +172,7 @@ if [ -n "$(VBoxManage showvminfo "${vmname}")" ]; then
         VBoxManage unregistervm "${vmname}" --delete
     else
         printf '\n'${whiteonblack}'Please assign a different VM name to variable "vmname" by editing the script,'${defaultcolor}'
-or skip this check manually as described in "'${0}' stages".'
+or skip this check manually as described in "'${0}' stages".\n'
         exit
     fi
 fi
@@ -208,7 +208,7 @@ else
     else
         dmg2img "BaseSystem.dmg" "BaseSystem.img"
     fi
-    VBoxManage convertfromraw --format VDI "${windows_home}BaseSystem.img" "${windows_home}BaseSystem.vdi"
+    VBoxManage convertfromraw --format VDI "${microsoft_path}BaseSystem.img" "${microsoft_path}BaseSystem.vdi"
     if [ -s BaseSystem.vdi ]; then
         rm "BaseSystem.dmg" "BaseSystem.img" 2>/dev/null
     fi
@@ -226,7 +226,7 @@ elif [ "${storagesize}" -lt 22000 ]; then
 else
     echo "Creating ${vmname} target system virtual disk image."
     VBoxManage createmedium --size="${storagesize}" \
-                            --filename "${windows_home}${vmname}.vdi" \
+                            --filename "${microsoft_path}${vmname}.vdi" \
                             --variant standard 2>/dev/tty
 fi
 }
@@ -238,7 +238,7 @@ if [ -w "Install_${vmname}.vdi" ]; then
 else
     echo "Creating ${vmname} installation media virtual disk image."
     VBoxManage createmedium --size=8000 \
-                            --filename "${windows_home}Install_${vmname}.vdi" \
+                            --filename "${microsoft_path}Install_${vmname}.vdi" \
                             --variant fixed 2>/dev/tty
 fi
 }
@@ -248,11 +248,11 @@ fi
 function attach_initial_storage() {
 VBoxManage storagectl "${vmname}" --add sata --name SATA --hostiocache on
 VBoxManage storageattach "${vmname}" --storagectl SATA --port 0 \
-           --type hdd --nonrotational on --medium "${windows_home}${vmname}.vdi"
+           --type hdd --nonrotational on --medium "${microsoft_path}${vmname}.vdi"
 VBoxManage storageattach "${vmname}" --storagectl SATA --port 1 \
-           --type hdd --nonrotational on --medium "${windows_home}Install_${vmname}.vdi"
+           --type hdd --nonrotational on --medium "${microsoft_path}Install_${vmname}.vdi"
 VBoxManage storageattach "${vmname}" --storagectl SATA --port 2 \
-           --type hdd --nonrotational on --medium "${windows_home}BaseSystem.vdi"
+           --type hdd --nonrotational on --medium "${microsoft_path}BaseSystem.vdi"
 }
 
 # Configure the VM
@@ -666,8 +666,8 @@ read -n 1 -p " [y/n] " delete 2>/dev/tty
 echo ""
 if [ "${delete}" == "y" ]; then
 # temporary files cleanup
-    VBoxManage closemedium "${windows_home}BaseSystem.vdi"
-    VBoxManage closemedium "${windows_home}Install_${vmname}.vdi"
+    VBoxManage closemedium "${microsoft_path}BaseSystem.vdi"
+    VBoxManage closemedium "${microsoft_path}Install_${vmname}.vdi"
     rm "BaseSystem.vdi" "Install_${vmname}.vdi"
     rm "apple.sucatalog.tmp" "applecatalog.tmp.00" "applecatalog.tmp.01"
 fi
