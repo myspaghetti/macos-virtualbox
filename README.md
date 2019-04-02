@@ -16,7 +16,7 @@ The script assigns the minimum required storage size for the installation. After
 
 ## Unsupported features
 
-Developing and maintaining VirtualBox features is beyond the scope of this script. Audio support, USB device support, and other features are not currently implemented for macOS guests on Windows and Linux hosts.
+Developing and maintaining VirtualBox features is beyond the scope of this script. [Audio support](https://github.com/chris1111/VoodooHDA-2.9.0-Clover-V12/releases), USB device support, and other features are not currently implemented for macOS guests on Windows and Linux hosts.
 
 ## Dependencies
 
