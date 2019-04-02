@@ -2,7 +2,7 @@
 # One-key semi-automatic installer of macOS on VirtualBox
 # (c) img2tab, licensed under GPL2.0 or higher
 # url: https://github.com/img2tab/macos-guest-virtualbox
-# version 0.57
+# version 0.58
 
 # Requirements: 33.5GB available storage on host
 # Dependencies: bash>=4.0, unzip, wget, dmg2img,
@@ -82,6 +82,13 @@ if [ -z "$(unzip -hh 2>/dev/null)" \
     exit
 fi
 
+# wget supports --show-progress from version 1.16
+if [ "$(wget --version | head -n 1 | cut -c 12-13)" -ge "16" 2>/dev/null ]; then
+    wgetargs="--quiet --continue --show-progress"  # pretty
+else
+    wgetargs="--continue"  # ugly
+fi
+
 # VirtualBox in ${PATH}
 if [ -z "$(VBoxManage -v 2>/dev/null)" ]; then
     if [ -n "$('/mnt/c/Program Files/Oracle/VirtualBox/VBoxManage.exe' -v 2>/dev/null)" ]; then
@@ -128,8 +135,9 @@ if [ -z "$(dmg2img -d 2>/dev/null)" ]; then
         exit
     elif [ -z "$(${PWD}/dmg2img -d 2>/dev/null)" ]; then
         echo "Locally installing dmg2img"
-        wget -c "http://vu1tur.eu.org/tools/dmg2img-1.6.6-win32.zip" \
-             -O "dmg2img-1.6.6-win32.zip" --quiet
+        wget "http://vu1tur.eu.org/tools/dmg2img-1.6.6-win32.zip" \
+             ${wgetargs} \
+             --output-document="dmg2img-1.6.6-win32.zip"
         if [ ! -s dmg2img-1.6.6-win32.zip ]; then
              echo "Error downloading dmg2img. Please provide the package manually."
              exit
@@ -142,7 +150,9 @@ fi
 
 # Find the correct download URL in the Apple catalog
 echo "Downloading Apple macOS Mojave software update catalog"
-wget -c 'http://swscan.apple.com/content/catalogs/others/index-10.14-10.13-10.12-10.11-10.10-10.9-mountainlion-lion-snowleopard-leopard.merged-1.sucatalog' -O 'apple.sucatalog.tmp'
+wget 'http://swscan.apple.com/content/catalogs/others/index-10.14-10.13-10.12-10.11-10.10-10.9-mountainlion-lion-snowleopard-leopard.merged-1.sucatalog' \
+     ${wgetargs} \
+     --output-document='apple.sucatalog.tmp'
 echo "Finding latest macOS InstallAssistant entry"
 tac "apple.sucatalog.tmp" | csplit - '/InstallAssistantAuto.smd/+1' -f "applecatalog.tmp." -s
 urlbase="$(tail -n 1 "applecatalog.tmp.00")"
@@ -162,7 +172,7 @@ echo "Found BaseSystem.dmg URL: ${urlbase}BaseSystem.dmg"
 
 # Prompt to delete existing virtual machine config:
 function prompt_delete_existing_vm() {
-if [ -n "$(VBoxManage showvminfo "${vmname}")" ]; then
+if [ -n "$(VBoxManage showvminfo "${vmname}" 2>/dev/null)" ]; then
     printf '\n'"${vmname}"' virtual machine already exists.
 '${whiteonred}'Delete existing virtual machine "'${vmname}'"?'${defaultcolor}
     delete=""
@@ -197,14 +207,16 @@ if [ -r "BaseSystem.vdi" ]; then
     echo "BaseSystem.vdi bootstrap virtual disk image ready."
 else
     echo "Downloading BaseSystem.dmg from swcdn.apple.com"
-    wget -c "${urlbase}BaseSystem.dmg" -O "BaseSystem.dmg" 2>/dev/tty
+    wget "${urlbase}BaseSystem.dmg" \
+         ${wgetargs} \
+         --output-document="BaseSystem.dmg"
     if [ ! -s BaseSystem.dmg ]; then
         printf ${whiteonred}'Could not download BaseSystem.dmg'${defaultcolor}'.'
         exit
     fi
     echo "Downloaded BaseSystem.dmg. Converting to BaseSystem.img"
-    if [ -n "$(${PWD}/dmg2img -d 2>/dev/null)" ]; then
-        ${PWD}/dmg2img "BaseSystem.dmg" "BaseSystem.img"
+    if [ -n "$("${PWD}/dmg2img.exe" -d 2>/dev/null)" ]; then
+        "${PWD}/dmg2img.exe" "BaseSystem.dmg" "BaseSystem.img"
     else
         dmg2img "BaseSystem.dmg" "BaseSystem.img"
     fi
