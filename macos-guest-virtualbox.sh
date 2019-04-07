@@ -108,9 +108,9 @@ if [ -z "$(VBoxManage -v 2>/dev/null)" ]; then
 fi
 
 # Windows Subsystem for Linux (WSL)
-microsoft_path=""  # if the Windows home directory path contains spaces, please assign a rw-able path without spaces
+microsoft_path=""  # if the path contains spaces, please assign a read-write-able path without spaces
 if [[ -z "${microsoft_path}" && "$(cat /proc/sys/kernel/osrelease 2>/dev/null)" == *"Microsoft"* ]]; then
-    microsoft_path="$(cmd.exe /C cd)"  # returns Windows user's home directory
+    microsoft_path="$(cmd.exe /C cd)"  # returns working directory in Microsoft-style (backslash) path
     microsoft_path="${microsoft_path:0:-1}"'\'  # remove trailing newline \M
     if [[ "${microsoft_path,,}" =~ .*sytem32.* ]]; then echo "Please run this script without elevated privileges.\n"; exit; fi
     if [[ ${microsoft_path} == *" "* || ${vmname} == *" "* ]]; then
