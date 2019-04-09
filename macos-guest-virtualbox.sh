@@ -2,9 +2,9 @@
 # One-key semi-automatic installer of macOS on VirtualBox
 # (c) img2tab, licensed under GPL2.0 or higher
 # url: https://github.com/img2tab/macos-guest-virtualbox
-# version 0.58
+# version 0.59
 
-# Requirements: 33.5GB available storage on host
+# Requirements: 37.5GB available storage on host
 # Dependencies: bash>=4.0, unzip, wget, dmg2img,
 #               VirtualBox with Extension Pack >=5.2
 
@@ -40,8 +40,8 @@ Some stages may fail due to errant keyboard presses; run the script with
 For iCloud and iMessage connectivity, you will need to provide a valid
 Apple serial number. macOS will work without it, but not Apple-connected apps.
 
-The installation requires '${whiteonred}'33.5GB'${defaultcolor}' of available storage,
-22GB for the virtual machine and 11.5GB for temporary installation files.
+The installation requires '${whiteonred}'37.5GB'${defaultcolor}' of available storage,
+22GB for the virtual machine and 15.5GB for temporary installation files.
 
 '${whiteonblack}'Press enter to review the script settings.'${defaultcolor}
 read
@@ -249,7 +249,7 @@ if [ -w "Install_${vmname}.vdi" ]; then
     echo "Installation media virtual disk image ready."
 else
     echo "Creating ${vmname} installation media virtual disk image."
-    VBoxManage createmedium --size=8000 \
+    VBoxManage createmedium --size=12000 \
                             --filename "${microsoft_path}Install_${vmname}.vdi" \
                             --variant fixed 2>/dev/tty
 fi
@@ -535,7 +535,7 @@ VBoxManage storageattach "${vmname}" --storagectl SATA --port 2 --medium none
 }
 
 function install_the_installer() {
-#Boot from "Install.vdi" that contains the 2GB BaseSystem and 6GB free space
+#Boot from "Install.vdi" that contains the 2GB BaseSystem and 10GB free space
 echo "The VM will boot from the new base system on the installer virtual disk."
 VBoxManage startvm "${vmname}" 2>/dev/null
 
