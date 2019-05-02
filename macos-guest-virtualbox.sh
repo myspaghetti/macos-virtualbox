@@ -2,7 +2,7 @@
 # One-key semi-automatic installer of macOS on VirtualBox
 # (c) img2tab, licensed under GPL2.0 or higher
 # url: https://github.com/img2tab/macos-guest-virtualbox
-# version 0.59
+# version 0.60
 
 # Requirements: 37.5GB available storage on host
 # Dependencies: bash>=4.0, unzip, wget, dmg2img,
@@ -105,6 +105,15 @@ if [ -z "$(VBoxManage -v 2>/dev/null)" ]; then
         echo "the VBoxManage executable is in the PATH variable."
         exit
     fi
+fi
+
+# Oracle VM VirtualBox Extension Pack
+extpacks="$(VBoxManage list extpacks 2>/dev/null)"
+if [ "$(expr match "${extpacks}" '.*Oracle VM VirtualBox Extension Pack')" -le "0" \
+    -o "$(expr match "${extpacks}" '.*Usable: *false')" -gt "0" ]; then
+    echo "Please make sure Oracle VM VirtualBox Extension Pack is installed, and that"
+    echo "all installed VirtualBox extensions are listed as usable in \"VBoxManage list extpacks\""
+    exit
 fi
 
 # Windows Subsystem for Linux (WSL)
@@ -603,7 +612,7 @@ printf 'In the VM, '${whiteonred}'manually'${defaultcolor}' right-click on Apple
 echo ""
 echo "and click 'Download Linked File As...' then from the dropdown menu"
 echo "select '${vmname}' for 'Where:', then unbind the mouse cursor from the virtual"
-printf 'machine with the '${whiteonblack}'right control key.'${defaultcolor}
+printf 'machine with the '${whiteonblack}'right control key'${defaultcolor}' or "host" key.'
 echo ""
 read -p "Click here and press enter when the download is complete."
 
@@ -687,10 +696,10 @@ fi
 printf 'macOS Mojave 10.14 installation should complete in a few minutes.
 
 After the installation is complete, the virtual disk image may be increased
-through VirtualBox, then the macOS system APFS container size may be
-increased through Disk Utility inside the virtual machine by creating a new
-APFS container and subsequently deleting it, allowing the system APFS container
-to take up the available space.
+through VirtualBox, and then the macOS system APFS container size may be
+increased. Inside the virtual machine run "sudo diskutil repairDisk disk0"
+and then from Disk Utility delete the "Free space" partition, allowing the
+macOS system APFS container to take up the available space.
 
 That'\''s it. Enjoy your virtual machine.
 '
