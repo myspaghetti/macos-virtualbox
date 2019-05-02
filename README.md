@@ -1,6 +1,6 @@
 ## One-key semi-automatic installer of macOS Mojave 10.14 on VirtualBox
 
-The "one key" is enter, which has to be pressed whenever the virtual machine is ready for the next command. (Contrary to the script's name, the user has to use more than one key! There is one instance when the "host key" is used to release the mouse from the virtual machine, and a couple of instances where the user has to choose [y]es or [n]o!)
+The "one key" is enter, which has to be pressed whenever the virtual machine is ready for the next command. (Contrary to the script's name, the user has to use more than one key! There is one instance when the right control key or "host key" is used to release the mouse from the virtual machine, and a couple of instances where the user has to choose [y]es or [n]o!)
 
 The goal of the script is to allow for a very easy installation without any closed-source additions or extra bootloaders.
 
@@ -12,7 +12,7 @@ iCloud and iMessage and other connected Apple services require a valid device se
 
 ## Storage size
 
-The script assigns the minimum required storage size for the installation. After the installation is complete, the virtual disk image may be increased through VirtualBox, and then the macOS system partition size may be increased. Inside the virtual machine run `sudo diskutil repairDisk disk0` and then from Disk Utility delete the "Free space" partition, allowing the system APFS container to take up the space.
+The script assigns the minimum required storage size for the installation. After the installation is complete, the virtual disk image may be increased through VirtualBox, and then the macOS system APFS container size may be increased. Inside the virtual machine run `sudo diskutil repairDisk disk0` and then from Disk Utility delete the "Free space" partition, allowing the system APFS container to take up the available space.
 
 ## Unsupported features
 
