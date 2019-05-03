@@ -2,7 +2,7 @@
 # One-key semi-automatic installer of macOS on VirtualBox
 # (c) img2tab, licensed under GPL2.0 or higher
 # url: https://github.com/img2tab/macos-guest-virtualbox
-# version 0.60
+# version 0.60.1
 
 # Requirements: 37.5GB available storage on host
 # Dependencies: bash>=4.0, unzip, wget, dmg2img,
@@ -281,7 +281,7 @@ function configure_vm() {
 VBoxManage modifyvm "${vmname}" --cpus "${cpucount}" --memory "${memorysize}" \
  --vram "${gpuvram}" --pae on --boot1 dvd --boot2 disk --boot3 none \
  --boot4 none --firmware efi --rtcuseutc on --usbxhci on --chipset ich9 \
- --mouse usb --keyboard usb --audio none
+ --mouse usb --keyboard usb --audiocontroller hda --audiocodec stac9221
 VBoxManage setextradata "${vmname}" \
  "VBoxInternal/Devices/efi/0/Config/DmiSystemProduct" "${devicename}"
 VBoxManage setextradata "${vmname}" \
@@ -608,11 +608,10 @@ sendspecial
 kbstring="https://github.com/acidanthera/AppleSupportPkg/releases/tag/2.0.4"
 sendkeys
 echo ""
-printf 'In the VM, '${whiteonred}'manually'${defaultcolor}' right-click on AppleSupport-v2.0.4-RELEASE.zip'
-echo ""
-echo "and click 'Download Linked File As...' then from the dropdown menu"
-echo "select '${vmname}' for 'Where:', then unbind the mouse cursor from the virtual"
-printf 'machine with the '${whiteonblack}'right control key'${defaultcolor}' or "host" key.'
+printf 'In the VM, '${whiteonred}'manually'${defaultcolor}' right-click on AppleSupport-v2.0.4-RELEASE.zip
+and click '${whiteonblack}'"Download Linked File As..."'${defaultcolor}', then from the dropdown menu
+select '${vmname}' for 'Where:', then unbind the mouse cursor from the virtual
+machine with the '${whiteonblack}'right control key'${defaultcolor}' or "host key".'
 echo ""
 read -p "Click here and press enter when the download is complete."
 
