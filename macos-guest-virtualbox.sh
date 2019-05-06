@@ -2,7 +2,7 @@
 # One-key semi-automatic installer of macOS on VirtualBox
 # (c) img2tab, licensed under GPL2.0 or higher
 # url: https://github.com/img2tab/macos-guest-virtualbox
-# version 0.60.1
+# version 0.60.2
 
 # Requirements: 37.5GB available storage on host
 # Dependencies: bash>=4.0, unzip, wget, dmg2img,
@@ -281,7 +281,7 @@ function configure_vm() {
 VBoxManage modifyvm "${vmname}" --cpus "${cpucount}" --memory "${memorysize}" \
  --vram "${gpuvram}" --pae on --boot1 dvd --boot2 disk --boot3 none \
  --boot4 none --firmware efi --rtcuseutc on --usbxhci on --chipset ich9 \
- --mouse usb --keyboard usb --audiocontroller hda --audiocodec stac9221
+ --mouse usbtablet --keyboard usb --audiocontroller hda --audiocodec stac9221
 VBoxManage setextradata "${vmname}" \
  "VBoxInternal/Devices/efi/0/Config/DmiSystemProduct" "${devicename}"
 VBoxManage setextradata "${vmname}" \
@@ -628,6 +628,9 @@ promptterminalready
 kbstring='disks="$(diskutil list | grep -o "[0-9][^ ]* GB *disk[012]$" | sort -gr | grep -o disk[012])"; disks=(${disks[@]})'
 sendkeys
 promptterminalready
+
+echo ""
+echo "Copying open-source APFS drivers to EFI partition"
 
 # move drivers into path on EFI partition
 kbstring='mkdir -p "/Volumes/'"${vmname}"'/mount_efi" && mount_msdos /dev/${disks[0]}s1 "/Volumes/'"${vmname}"'/mount_efi" && mkdir -p "/Volumes/'"${vmname}"'/mount_efi/EFI/driver/" && cd "/Volumes/'"${vmname}"'/mount_efi/EFI/driver/" && tar -xf "/Volumes/'"${vmname}"'/AppleSupport-v2.0.4-RELEASE.zip" && cd "Drivers/" && mv *.efi "/Volumes/'"${vmname}"'/mount_efi/EFI/driver/"'
