@@ -2,7 +2,7 @@
 # One-key semi-automatic installer of macOS on VirtualBox
 # (c) img2tab, licensed under GPL2.0 or higher
 # url: https://github.com/img2tab/macos-guest-virtualbox
-# version 0.61.1
+# version 0.61.2
 
 # Requirements: 37.5GB available storage on host
 # Dependencies: bash>=4.0, unzip, wget, dmg2img,
@@ -591,8 +591,11 @@ sendspecial
 echo ""
 echo "When the installer finishes preparing, the virtual machine will reboot"
 echo "into the base system, not the installer."
+}
+
+function manually_install_efi_apfs_drivers {
 printf ${whiteonblack}'
-After the reboot, press enter when either the Language window'${defaultcolor}'
+After the VM boots, press enter when either the Language window'${defaultcolor}'
 '${whiteonblack}'or Utilities window is ready.'${defaultcolor}
 read -p ""
 sendenter
@@ -615,10 +618,14 @@ sendspecial
 kbstring="https://github.com/acidanthera/AppleSupportPkg/releases/tag/2.0.4"
 sendkeys
 echo ""
-printf 'In the VM, '${whiteonred}'manually'${defaultcolor}' right-click on AppleSupport-v2.0.4-RELEASE.zip
+printf 'Safari should be browsing the following URL:
+
+https://github.com/acidanthera/AppleSupportPkg/releases/tag/2.0.4
+
+In the VM, '${whiteonred}'manually'${defaultcolor}' right-click on AppleSupport-v2.0.4-RELEASE.zip
 and click '${whiteonblack}'"Download Linked File As..."'${defaultcolor}', then from the dropdown menu
-select "'"${vmname}"'" for "Where:", then unbind the mouse cursor from the virtual
-machine with the '${whiteonblack}'right control key'${defaultcolor}' or "host key".'
+select "'"${vmname}"'" for "Where:", then unbind the mouse cursor from
+the virtual machine with the '${whiteonblack}'right control key'${defaultcolor}' or "host key".'
 echo ""
 read -p "Click here and press enter when the download is complete."
 
@@ -668,7 +675,9 @@ kbstring='  cd "System\Library\CoreServices"'; sendkeys
 kbstring='  boot.efi'; sendkeys
 kbstring='endfor'; sendkeys
 kbspecial="ESC : w q ENTER"; sendspecial
+}
 
+function detach_installer_vdi() {
 # Shut down the virtual machine
 printf ${whiteonblack}'
 Press enter when the terminal is ready.'${defaultcolor}
@@ -686,7 +695,7 @@ read -p ""
 VBoxManage storageattach "${vmname}" --storagectl SATA --port 1 --medium none
 }
 
-function boot_macos_installer() {
+function boot_macos_and_clean_up() {
 echo "The VM will boot from the target virtual disk image."
 VBoxManage startvm "${vmname}"
 echo ""
@@ -752,7 +761,9 @@ Available stage titles:
     configure_vm
     populate_virtual_disks
     install_the_installer
-    boot_macos_installer
+    manually_install_efi_apfs_drivers
+    detach_installer_vdi
+    boot_macos_and_clean_up
 '
 }
 
@@ -768,7 +779,9 @@ if [ -z "${1}" ]; then
     configure_vm
     populate_virtual_disks
     install_the_installer
-    boot_macos_installer
+    manually_install_efi_apfs_drivers
+    detach_installer_vdi
+    boot_macos_and_clean_up
 else
     if [ "${1}" != "stages" ]; then
         check_dependencies
