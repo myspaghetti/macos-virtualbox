@@ -2,14 +2,14 @@
 # One-key semi-automatic installer of macOS on VirtualBox
 # (c) img2tab, licensed under GPL2.0 or higher
 # url: https://github.com/img2tab/macos-guest-virtualbox
-# version 0.60.2
+# version 0.61
 
 # Requirements: 37.5GB available storage on host
 # Dependencies: bash>=4.0, unzip, wget, dmg2img,
 #               VirtualBox with Extension Pack >=5.2
 
 # Customize the installation by setting these variables:
-vmname="Mojave"             # name of the VirtualBox virtual machine
+vmname="macOS Mojave"       # name of the VirtualBox virtual machine
 storagesize=22000           # VM disk image size in MB. minimum 22000
 cpucount=2                  # VM CPU cores, minimum 2
 memorysize=4096             # VM RAM in MB, minimum 2048 
@@ -35,7 +35,7 @@ This script installs only open-source software and unmodified Apple binaries.
 
 The script checks for dependencies and will prompt to install them if unmet.
 Some stages may fail due to errant keyboard presses; run the script with
-"'${whiteonblack}${0}' stages'${defaultcolor}'" to see how to run only certain stages.
+"'${whiteonblack}"${0}"' stages'${defaultcolor}'" to see how to run only certain stages.
 
 For iCloud and iMessage connectivity, you will need to provide a valid
 Apple serial number. macOS will work without it, but not Apple-connected apps.
@@ -48,17 +48,17 @@ read
 
 # custom settings prompt
 printf '
-vmname="'${vmname}'"             # name of the VirtualBox virtual machine
-storagesize='${storagesize}'           # VM disk image size in MB. minimum 22000
-cpucount='${cpucount}'                  # VM CPU cores, minimum 2
-memorysize='${memorysize}'             # VM RAM in MB, minimum 2048 
-gpuvram='${gpuvram}'                 # VM video RAM in MB, minimum 34, maximum 128
-resolution="'${resolution}'"       # VM display resolution
-serialnumber="'${serialnumber}'" # valid serial required for iCloud, iMessage.
+vmname="'"${vmname}"'"       # name of the VirtualBox virtual machine
+storagesize='"${storagesize}"'           # VM disk image size in MB. minimum 22000
+cpucount='"${cpucount}"'                  # VM CPU cores, minimum 2
+memorysize='"${memorysize}"'             # VM RAM in MB, minimum 2048 
+gpuvram='"${gpuvram}"'                 # VM video RAM in MB, minimum 34, maximum 128
+resolution="'"${resolution}"'"       # VM display resolution
+serialnumber="'"${serialnumber}"'" # valid serial required for iCloud, iMessage.
 # Structure:  PPPYWWUUUMMM - Plant, Year, Week, Unique identifier, Model
 # Whether the serial is valid depends on the device name and board, below:
-devicename="'${devicename}'" # personalize to match serial if desired
-boardid="'${boardid}'"
+devicename="'"${devicename}"'" # personalize to match serial if desired
+boardid="'"${boardid}"'"
 
 These values may be customized by editing them at the top of the script file.
 
@@ -68,6 +68,13 @@ read
 
 # check dependencies
 function check_dependencies() {
+# check if running on macOS
+if [ -n "$(sw_vers 2>/dev/null)" ]; then
+    printf '\nThis script is not tested on macOS. Exiting.\n'
+    exit
+fi
+
+# check Bash version
 if [ -z "${BASH_VERSION}" ]; then
     echo "Can't determine BASH_VERSION. Exiting."
     exit
@@ -76,14 +83,17 @@ elif [ "${BASH_VERSION:0:1}" -lt 4 ]; then
     exit
 fi
 
+# check for unzip, coreutils, wget
 if [ -z "$(unzip -hh 2>/dev/null)" \
+     -o -z "$(head --version 2>/dev/null)" \
      -o -z "$(wget --version 2>/dev/null)" ]; then
-    echo "Please install the packages 'unzip' and 'wget'."
+    echo "Please make sure the following packages are installed:"
+    echo "coreutils   unzip   wget"
     exit
 fi
 
 # wget supports --show-progress from version 1.16
-if [ "$(wget --version | head -n 1 | cut -c 12-13)" -ge "16" 2>/dev/null ]; then
+if [[ "$(wget --version 2>/dev/null | head -n 1)" =~ 1\.1[6-9]|1\.2[0-9] ]]; then
     wgetargs="--quiet --continue --show-progress"  # pretty
 else
     wgetargs="--continue"  # ugly
@@ -91,18 +101,23 @@ fi
 
 # VirtualBox in ${PATH}
 if [ -z "$(VBoxManage -v 2>/dev/null)" ]; then
-    if [ -n "$('/mnt/c/Program Files/Oracle/VirtualBox/VBoxManage.exe' -v 2>/dev/null)" ]; then
-        # If VBoxManage.exe is in the standard install location, use it.
+    absolute_path_VBoxManage='C:\Program Files\Oracle\VirtualBox\VBoxManage.exe'
+    echo "Can't find VBoxManage in PATH variable,"
+    echo "checking ${absolute_path_VBoxManage}"
+    if [ -n "$(cmd.exe /d /s /c call "${absolute_path_VBoxManage}" -v 2>/dev/null)" ]; then
         function VBoxManage() {
-            '/mnt/c/Program Files/Oracle/VirtualBox/VBoxManage.exe' $@
+            cmd /d /s /c call "${absolute_path_VBoxManage}" "$@"
         }
-    elif [ -n "$('/cygdrive/c/Program Files/Oracle/VirtualBox/VBoxManage.exe' -v 2>/dev/null)" ]; then
+        echo "Found VBoxManage"
+    elif [ -n "$("${absolute_path_VBoxManage}" -v 2>/dev/null)" ]; then
         function VBoxManage() {
-            '/cygdrive/c/Program Files/Oracle/VirtualBox/VBoxManage.exe' $@
+            "${absolute_path_VBoxManage}" "$@"
         }
+        echo "Found VBoxManage"
     else
         echo "Please make sure VirtualBox is installed, and that the path to"
-        echo "the VBoxManage executable is in the PATH variable."
+        echo "the VBoxManage executable is in the PATH variable, or assigned"
+        echo "in the script, with the executable, to the variable absolute_path_VBoxManage"
         exit
     fi
 fi
@@ -117,24 +132,16 @@ if [ "$(expr match "${extpacks}" '.*Oracle VM VirtualBox Extension Pack')" -le "
 fi
 
 # Windows Subsystem for Linux (WSL)
-microsoft_path=""  # if the path contains spaces, please assign a read-write-able path without spaces
-if [[ -z "${microsoft_path}" && "$(cat /proc/sys/kernel/osrelease 2>/dev/null)" == *"Microsoft"* ]]; then
+microsoft_path=''  # a read-write-able path so cmd.exe doesn't use C:\Windows\System32
+if [[ -z "${microsoft_path}" && "$(cat /proc/sys/kernel/osrelease 2>/dev/null)" =~ Microsoft ]]; then
     microsoft_path="$(cmd.exe /C cd)"  # returns working directory in Microsoft-style (backslash) path
     microsoft_path="${microsoft_path:0:-1}"'\'  # remove trailing newline \M
-    if [[ "${microsoft_path,,}" =~ .*sytem32.* ]]; then echo "Please run this script without elevated privileges.\n"; exit; fi
-    if [[ ${microsoft_path} == *" "* || ${vmname} == *" "* ]]; then
-        printf 'VBoxManage behaves unexpectedly when interpreting variables with whitespace
-        on Windows Subsystem for Linux. '${whiteonblack}'Please assign values without whitespace'${defaultcolor}' to the
-        variables "microsoft_path", a Windows-style backslash-terminated path for a readable
-        and writable working directory (for example "C:\\Users\\Default\\"), and "vmname".\n'
+    if [[ "${microsoft_path,,}" =~ system32 ]]; then
+        echo "Please assign the script's microsoft_path variable as a Microsoft-style path"
+        echo 'ending with a slash, for example C:\Users\Public\Desktop\'
+        echo ""
         exit
     fi
-fi
-
-# macOS
-if [ -n "$(sw_vers 2>/dev/null)" ]; then
-    printf '\nThis script is not tested on macOS. Exiting.\n'
-    exit
 fi
 
 # dmg2img
@@ -158,11 +165,11 @@ if [ -z "$(dmg2img -d 2>/dev/null)" ]; then
 fi
 
 # Find the correct download URL in the Apple catalog
-echo "Downloading Apple macOS Mojave software update catalog"
+echo "Searching Apple macOS Mojave software update catalog"
 wget 'http://swscan.apple.com/content/catalogs/others/index-10.14-10.13-10.12-10.11-10.10-10.9-mountainlion-lion-snowleopard-leopard.merged-1.sucatalog' \
      ${wgetargs} \
      --output-document='apple.sucatalog.tmp'
-echo "Finding latest macOS InstallAssistant entry"
+echo "Trying to find latest macOS InstallAssistant entry"
 tac "apple.sucatalog.tmp" | csplit - '/InstallAssistantAuto.smd/+1' -f "applecatalog.tmp." -s
 urlbase="$(tail -n 1 "applecatalog.tmp.00")"
 urlbase="$(expr match "${urlbase}" '.*\(http://[^<]*/\)')"
@@ -182,8 +189,8 @@ echo "Found BaseSystem.dmg URL: ${urlbase}BaseSystem.dmg"
 # Prompt to delete existing virtual machine config:
 function prompt_delete_existing_vm() {
 if [ -n "$(VBoxManage showvminfo "${vmname}" 2>/dev/null)" ]; then
-    printf '\n'"${vmname}"' virtual machine already exists.
-'${whiteonred}'Delete existing virtual machine "'${vmname}'"?'${defaultcolor}
+    printf '\n"'"${vmname}"'" virtual machine already exists.
+'${whiteonred}'Delete existing virtual machine "'"${vmname}"'"?'${defaultcolor}
     delete=""
     read -n 1 -p " [y/n] " delete 2>/dev/tty
     echo ""
@@ -191,7 +198,7 @@ if [ -n "$(VBoxManage showvminfo "${vmname}" 2>/dev/null)" ]; then
         VBoxManage unregistervm "${vmname}" --delete
     else
         printf '\n'${whiteonblack}'Please assign a different VM name to variable "vmname" by editing the script,'${defaultcolor}'
-or skip this check manually as described in "'${0}' stages".\n'
+or skip this check manually as described in "'"${0}"' stages".\n'
         exit
     fi
 fi
@@ -200,8 +207,8 @@ fi
 # Attempt to create new virtual machine named "${vmname}"
 function create_vm() {
 if [ -n "$(VBoxManage createvm --name "${vmname}" --ostype "MacOS1013_64" --register 2>&1 1>/dev/null)" ]; then
-    printf '\nError: Could not create virtual machine "'${vmname}'".
-'${whiteonblack}'Please delete exising "'${vmname}'" VirtualBox configuration files '${whiteonred}'manually'${defaultcolor}'.
+    printf '\nError: Could not create virtual machine "'"${vmname}"'".
+'${whiteonblack}'Please delete exising "'"${vmname}"'" VirtualBox configuration files '${whiteonred}'manually'${defaultcolor}'.
 
 Error message:
 '
@@ -254,12 +261,12 @@ fi
 
 # Create the installation media virtual disk image:
 function create_install_vdi() {
-if [ -w "Install_${vmname}.vdi" ]; then
+if [ -w "Install ${vmname}.vdi" ]; then
     echo "Installation media virtual disk image ready."
 else
     echo "Creating ${vmname} installation media virtual disk image."
     VBoxManage createmedium --size=12000 \
-                            --filename "${microsoft_path}Install_${vmname}.vdi" \
+                            --filename "${microsoft_path}Install ${vmname}.vdi" \
                             --variant fixed 2>/dev/tty
 fi
 }
@@ -271,7 +278,7 @@ VBoxManage storagectl "${vmname}" --add sata --name SATA --hostiocache on
 VBoxManage storageattach "${vmname}" --storagectl SATA --port 0 \
            --type hdd --nonrotational on --medium "${microsoft_path}${vmname}.vdi"
 VBoxManage storageattach "${vmname}" --storagectl SATA --port 1 \
-           --type hdd --nonrotational on --medium "${microsoft_path}Install_${vmname}.vdi"
+           --type hdd --nonrotational on --medium "${microsoft_path}Install ${vmname}.vdi"
 VBoxManage storageattach "${vmname}" --storagectl SATA --port 2 \
            --type hdd --nonrotational on --medium "${microsoft_path}BaseSystem.vdi"
 }
@@ -610,7 +617,7 @@ sendkeys
 echo ""
 printf 'In the VM, '${whiteonred}'manually'${defaultcolor}' right-click on AppleSupport-v2.0.4-RELEASE.zip
 and click '${whiteonblack}'"Download Linked File As..."'${defaultcolor}', then from the dropdown menu
-select '${vmname}' for 'Where:', then unbind the mouse cursor from the virtual
+select "'"${vmname}"'" for "Where:", then unbind the mouse cursor from the virtual
 machine with the '${whiteonblack}'right control key'${defaultcolor}' or "host key".'
 echo ""
 read -p "Click here and press enter when the download is complete."
@@ -638,6 +645,8 @@ sendkeys
 promptterminalready
 
 # create startup.nsh EFI script
+echo ""
+echo "Creating EFI startup script that searches for boot.efi"
 kbstring='cd "/Volumes/'"${vmname}"'/mount_efi/" && vim startup.nsh'
 sendkeys
 
@@ -680,19 +689,29 @@ VBoxManage storageattach "${vmname}" --storagectl SATA --port 1 --medium none
 function boot_macos_installer() {
 echo "The VM will boot from the target virtual disk image."
 VBoxManage startvm "${vmname}"
-
-printf '\nmacOS Mojave 10.14 will now install and start up.
-
-Temporary files are safe to delete. '${whiteonred}'Delete temporary files?'${defaultcolor}
-delete=""
-read -n 1 -p " [y/n] " delete 2>/dev/tty
 echo ""
-if [ "${delete}" == "y" ]; then
+echo "macOS Mojave 10.14 will now install and start up."
+echo ""
+
 # temporary files cleanup
-    VBoxManage closemedium "${microsoft_path}BaseSystem.vdi"
-    VBoxManage closemedium "${microsoft_path}Install_${vmname}.vdi"
-    rm "BaseSystem.vdi" "Install_${vmname}.vdi"
-    rm "apple.sucatalog.tmp" "applecatalog.tmp.00" "applecatalog.tmp.01"
+VBoxManage closemedium "${microsoft_path}BaseSystem.vdi"
+VBoxManage closemedium "${microsoft_path}Install ${vmname}.vdi"
+if [ -z "${microsoft_path}" ]; then
+    printf 'Temporary files are safe to delete. '${whiteonred}'Delete temporary files?'${defaultcolor}
+    delete=""
+    read -n 1 -p " [y/n] " delete 2>/dev/tty
+    echo ""
+    if [ "${delete}" == "y" ]; then
+        rm "BaseSystem.vdi" "Install ${vmname}.vdi"
+        rm "apple.sucatalog.tmp" "applecatalog.tmp.00" "applecatalog.tmp.01"
+    fi
+else
+    echo "You may manually delete the following temporary files:"
+    echo "\"${microsoft_path}BaseSystem.vdi\""
+    echo "\"${microsoft_path}Install ${vmname}.vdi\""
+    echo "and the temporary files \"apple*.tmp\" \"apple*.tmp.*\""
+    echo "from the script's working directory."
+    echo ""
 fi
 
 printf 'macOS Mojave 10.14 installation should complete in a few minutes.
@@ -712,11 +731,12 @@ printf '\nUSAGE: '${whiteonblack}${0}' [STAGE]...'${defaultcolor}'
 
 The script is divided into stages that run as separate functions.
 Add one or more stage titles to the command line to run the corresponding
-function. Some examples:
-    "'${0}' populate_virtual_disks install_the_installer"
+function. If the first argument is "stages" all others are ignored.
+Some examples:
+    "'"${0}"' populate_virtual_disks install_the_installer"
 These stages might be useful by themselves if the VDI files and the VM are
 already set.
-    "'${0}' configure_vm"
+    "'"${0}"' configure_vm"
 This stage might be useful after copying an existing VDI to a different
 VirtualBox installation and having the script automatically configure the VM.
 
@@ -750,6 +770,10 @@ if [ -z "${1}" ]; then
     install_the_installer
     boot_macos_installer
 else
-    check_dependencies
-    for argument in $@; do ${argument}; done
+    if [ "${1}" != "stages" ]; then
+        check_dependencies
+        for argument in "$@"; do ${argument}; done
+    else
+        stages
+    fi
 fi
