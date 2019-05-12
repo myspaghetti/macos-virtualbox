@@ -2,7 +2,7 @@
 # One-key semi-automatic installer of macOS on VirtualBox
 # (c) img2tab, licensed under GPL2.0 or higher
 # url: https://github.com/img2tab/macos-guest-virtualbox
-# version 0.61
+# version 0.61.1
 
 # Requirements: 37.5GB available storage on host
 # Dependencies: bash>=4.0, unzip, wget, dmg2img,
@@ -138,7 +138,7 @@ if [[ -z "${microsoft_path}" && "$(cat /proc/sys/kernel/osrelease 2>/dev/null)" 
     microsoft_path="${microsoft_path:0:-1}"'\'  # remove trailing newline \M
     if [[ "${microsoft_path,,}" =~ system32 ]]; then
         echo "Please assign the script's microsoft_path variable as a Microsoft-style path"
-        echo 'ending with a slash, for example C:\Users\Public\Desktop\'
+        echo 'ending with a backslash, for example C:\Users\Public\Desktop\'
         echo ""
         exit
     fi
