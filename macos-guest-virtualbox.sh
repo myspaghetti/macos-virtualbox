@@ -2,7 +2,7 @@
 # One-key semi-automatic installer of macOS on VirtualBox
 # (c) img2tab, licensed under GPL2.0 or higher
 # url: https://github.com/img2tab/macos-guest-virtualbox
-# version 0.61.2
+# version 0.61.3
 
 # Requirements: 37.5GB available storage on host
 # Dependencies: bash>=4.0, unzip, wget, dmg2img,
@@ -550,7 +550,7 @@ echo "Detaching initial base system and starting virtual machine."
 VBoxManage storageattach "${vmname}" --storagectl SATA --port 2 --medium none
 }
 
-function install_the_installer() {
+function prepare_the_installer_app() {
 #Boot from "Install.vdi" that contains the 2GB BaseSystem and 10GB free space
 echo "The VM will boot from the new base system on the installer virtual disk."
 VBoxManage startvm "${vmname}" 2>/dev/null
@@ -570,10 +570,16 @@ sendkeys
 
 # reboot, because the installer does not work when the partition is remounted
 promptterminalready
-kbstring="reboot"
+kbstring='shutdown -h now'
 sendkeys
-echo ""
-echo "Rebooting the virtual machine"
+printf ${whiteonblack}'
+Shutting down virtual machine.
+Press enter when the virtual machine shutdown is complete.'${defaultcolor}
+read -p ""
+}
+
+function start_the_installer_app() {
+VBoxManage startvm "${vmname}" 2>/dev/null
 promptlangutils
 promptterminalready
 
@@ -760,7 +766,8 @@ Available stage titles:
     attach_initial_storage
     configure_vm
     populate_virtual_disks
-    install_the_installer
+    prepare_the_installer_app
+    start_the_installer_app
     manually_install_efi_apfs_drivers
     detach_installer_vdi
     boot_macos_and_clean_up
@@ -778,7 +785,8 @@ if [ -z "${1}" ]; then
     attach_initial_storage
     configure_vm
     populate_virtual_disks
-    install_the_installer
+    prepare_the_installer_app
+    start_the_installer_app
     manually_install_efi_apfs_drivers
     detach_installer_vdi
     boot_macos_and_clean_up
