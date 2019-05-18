@@ -2,7 +2,7 @@
 # One-key semi-automatic installer of macOS on VirtualBox
 # (c) img2tab, licensed under GPL2.0 or higher
 # url: https://github.com/img2tab/macos-guest-virtualbox
-# version 0.61.3
+# version 0.61.4
 
 # Requirements: 37.5GB available storage on host
 # Dependencies: bash>=4.0, unzip, wget, dmg2img,
@@ -525,7 +525,7 @@ echo ""
 echo "Downloading macOS Mojave 10.14 installer."
 
 # downloading macOS
-kbstring='urlbase="'"${urlbase}"'"; for filename in BaseSystem.chunklist InstallInfo.plist AppleDiagnostics.dmg AppleDiagnostics.chunklist BaseSystem.dmg InstallESDDmg.pkg; do curl "${urlbase}${filename}" -o "/Volumes/'"${vmname}"'/${filename}"; done'
+kbstring='urlbase="'"${urlbase}"'"; for filename in BaseSystem.chunklist InstallInfo.plist AppleDiagnostics.dmg AppleDiagnostics.chunklist BaseSystem.dmg InstallESDDmg.pkg; do curl -C - "${urlbase}${filename}" -o "/Volumes/'"${vmname}"'/${filename}"; done'
 sendkeys
 promptterminalready
 echo ""
