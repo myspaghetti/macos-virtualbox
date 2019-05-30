@@ -2,7 +2,7 @@
 # One-key semi-automatic installer of macOS on VirtualBox
 # (c) img2tab, licensed under GPL2.0 or higher
 # url: https://github.com/img2tab/macos-guest-virtualbox
-# version 0.61.6
+# version 0.62.0
 
 # Requirements: 37.5GB available storage on host
 # Dependencies: bash>=4.0, unzip, wget, dmg2img,
@@ -100,48 +100,59 @@ else
 fi
 
 # VirtualBox in ${PATH}
-if [ -z "$(VBoxManage -v 2>/dev/null)" ]; then
-    absolute_path_VBoxManage='C:\Program Files\Oracle\VirtualBox\VBoxManage.exe'
-    echo "Can't find VBoxManage in PATH variable,"
-    echo "checking ${absolute_path_VBoxManage}"
-    if [ -n "$(cmd.exe /d /s /c call "${absolute_path_VBoxManage}" -v 2>/dev/null)" ]; then
+# Cygwin
+if [ -n "$(cygcheck -V 2>/dev/null)" ]; then
+    if [ -n "$(cmd.exe /d /s /c call VBoxManage -v 2>/dev/null)" ]; then
         function VBoxManage() {
-            cmd /d /s /c call "${absolute_path_VBoxManage}" "$@"
+            cmd.exe /d /s /c call VBoxManage "$@"
         }
-        echo "Found VBoxManage"
-    elif [ -n "$("${absolute_path_VBoxManage}" -v 2>/dev/null)" ]; then
-        function VBoxManage() {
-            "${absolute_path_VBoxManage}" "$@"
-        }
-        echo "Found VBoxManage"
     else
-        echo "Please make sure VirtualBox is installed, and that the path to"
-        echo "the VBoxManage executable is in the PATH variable, or assigned"
-        echo "in the script, with the executable, to the variable absolute_path_VBoxManage"
-        exit
+        cmd_path_VBoxManage='C:\Program Files\Oracle\VirtualBox\VBoxManage.exe'
+        echo "Can't find VBoxManage in PATH variable,"
+        echo "checking ${cmd_path_VBoxManage}"
+        if [ -n "$(cmd.exe /d /s /c call "${cmd_path_VBoxManage}" -v 2>/dev/null)" ]; then
+            function VBoxManage() {
+                cmd.exe /d /s /c call "${cmd_path_VBoxManage}" "$@"
+            }
+            echo "Found VBoxManage"
+        else
+            echo "Please make sure VirtualBox is installed, and that the path to the"
+            echo "VBoxManage executable is in the PATH variable, or assigned in the script"
+            printf 'to the variable '${whiteonblack}'cmd_path_VBoxManage'${defaultcolor}' including the name of the executable.'
+            exit
+        fi
     fi
+# Windows Subsystem for Linux (WSL)
+elif [[ "$(cat /proc/sys/kernel/osrelease 2>/dev/null)" =~ Microsoft ]]; then
+    wsl_path_VBoxManage='/mnt/c/Program Files/Oracle/VirtualBox/VBoxManage.exe'
+    if [ -z "$(VBoxManage -v 2>/dev/null)" ]; then
+        echo "checking ${wsl_path_VBoxManage}"
+        if [ -n "$("${wsl_path_VBoxManage}" -v 2>/dev/null)" ]; then
+            function VBoxManage() {
+                "${wsl_path_VBoxManage}" "$@"
+            }
+            echo "Found VBoxManage"
+        else
+            echo "Please make sure VirtualBox is installed, and that the path to the"
+            echo "VBoxManage executable is in the PATH variable, or assigned in the script"
+            printf 'to the variable '${whiteonblack}'wsl_path_VBoxManage'${defaultcolor}' including the name of the executable.'
+            exit
+        fi
+    fi
+# everything else (not cygwin and not wsl)
+elif [ -z "$(VBoxManage -v 2>/dev/null)" ]; then
+    echo "Please make sure VirtualBox is installed, and that the path to the"
+    echo "VBoxManage executable is in the PATH variable."
+    exit
 fi
 
 # Oracle VM VirtualBox Extension Pack
 extpacks="$(VBoxManage list extpacks 2>/dev/null)"
 if [ "$(expr match "${extpacks}" '.*Oracle VM VirtualBox Extension Pack')" -le "0" \
-    -o "$(expr match "${extpacks}" '.*Usable: *false')" -gt "0" ]; then
+    -o "$(expr match "${extpacks}" '.*Usable:[[:blank:]]*false')" -gt "0" ]; then
     echo "Please make sure Oracle VM VirtualBox Extension Pack is installed, and that"
     echo "all installed VirtualBox extensions are listed as usable in \"VBoxManage list extpacks\""
     exit
-fi
-
-# Windows Subsystem for Linux (WSL)
-microsoft_path=''  # a read-write-able path so cmd.exe doesn't use C:\Windows\System32
-if [[ -z "${microsoft_path}" && "$(cat /proc/sys/kernel/osrelease 2>/dev/null)" =~ Microsoft ]]; then
-    microsoft_path="$(cmd.exe /C cd)"  # returns working directory in Microsoft-style (backslash) path
-    microsoft_path="${microsoft_path:0:-1}"'\'  # remove trailing newline \M
-    if [[ "${microsoft_path,,}" =~ system32 ]]; then
-        echo "Please assign the script's microsoft_path variable as a Microsoft-style path"
-        echo 'ending with a backslash, for example C:\Users\Public\Desktop\'
-        echo ""
-        exit
-    fi
 fi
 
 # dmg2img
@@ -194,7 +205,7 @@ if [ -n "$(VBoxManage showvminfo "${vmname}" 2>/dev/null)" ]; then
     delete=""
     read -n 1 -p " [y/n] " delete 2>/dev/tty
     echo ""
-    if [ "${delete}" == "y" ]; then
+    if [ "${delete,,}" == "y" ]; then
         VBoxManage unregistervm "${vmname}" --delete
     else
         printf '\n'${whiteonblack}'Please assign a different VM name to variable "vmname" by editing the script,'${defaultcolor}'
@@ -236,7 +247,7 @@ else
     else
         dmg2img "BaseSystem.dmg" "BaseSystem.img"
     fi
-    VBoxManage convertfromraw --format VDI "${microsoft_path}BaseSystem.img" "${microsoft_path}BaseSystem.vdi"
+    VBoxManage convertfromraw --format VDI "BaseSystem.img" "BaseSystem.vdi"
     if [ -s BaseSystem.vdi ]; then
         rm "BaseSystem.dmg" "BaseSystem.img" 2>/dev/null
     fi
@@ -254,7 +265,7 @@ elif [ "${storagesize}" -lt 22000 ]; then
 else
     echo "Creating ${vmname} target system virtual disk image."
     VBoxManage createmedium --size="${storagesize}" \
-                            --filename "${microsoft_path}${vmname}.vdi" \
+                            --filename "${vmname}.vdi" \
                             --variant standard 2>/dev/tty
 fi
 }
@@ -266,7 +277,7 @@ if [ -w "Install ${vmname}.vdi" ]; then
 else
     echo "Creating ${vmname} installation media virtual disk image."
     VBoxManage createmedium --size=12000 \
-                            --filename "${microsoft_path}Install ${vmname}.vdi" \
+                            --filename "Install ${vmname}.vdi" \
                             --variant fixed 2>/dev/tty
 fi
 }
@@ -276,11 +287,11 @@ fi
 function attach_initial_storage() {
 VBoxManage storagectl "${vmname}" --add sata --name SATA --hostiocache on
 VBoxManage storageattach "${vmname}" --storagectl SATA --port 0 \
-           --type hdd --nonrotational on --medium "${microsoft_path}${vmname}.vdi"
+           --type hdd --nonrotational on --medium "${vmname}.vdi"
 VBoxManage storageattach "${vmname}" --storagectl SATA --port 1 \
-           --type hdd --nonrotational on --medium "${microsoft_path}Install ${vmname}.vdi"
+           --type hdd --nonrotational on --medium "Install ${vmname}.vdi"
 VBoxManage storageattach "${vmname}" --storagectl SATA --port 2 \
-           --type hdd --nonrotational on --medium "${microsoft_path}BaseSystem.vdi"
+           --type hdd --nonrotational on --medium "BaseSystem.vdi"
 }
 
 # Configure the VM
@@ -709,24 +720,15 @@ echo "macOS Mojave 10.14 will now install and start up."
 echo ""
 
 # temporary files cleanup
-VBoxManage closemedium "${microsoft_path}BaseSystem.vdi"
-VBoxManage closemedium "${microsoft_path}Install ${vmname}.vdi"
-if [ -z "${microsoft_path}" ]; then
-    printf 'Temporary files are safe to delete. '${whiteonred}'Delete temporary files?'${defaultcolor}
-    delete=""
-    read -n 1 -p " [y/n] " delete 2>/dev/tty
-    echo ""
-    if [ "${delete}" == "y" ]; then
-        rm "BaseSystem.vdi" "Install ${vmname}.vdi"
-        rm "apple.sucatalog.tmp" "applecatalog.tmp.00" "applecatalog.tmp.01"
-    fi
-else
-    echo "You may manually delete the following temporary files:"
-    echo "\"${microsoft_path}BaseSystem.vdi\""
-    echo "\"${microsoft_path}Install ${vmname}.vdi\""
-    echo "and the temporary files \"apple*.tmp\" \"apple*.tmp.*\""
-    echo "from the script's working directory."
-    echo ""
+VBoxManage closemedium "BaseSystem.vdi"
+VBoxManage closemedium "Install ${vmname}.vdi"
+printf 'Temporary files are safe to delete. '${whiteonred}'Delete temporary files?'${defaultcolor}
+delete=""
+read -n 1 -p " [y/n] " delete 2>/dev/tty
+echo ""
+if [ "${delete,,}" == "y" ]; then
+    rm "BaseSystem.vdi" "Install ${vmname}.vdi"
+    rm "apple.sucatalog.tmp" "applecatalog.tmp.00" "applecatalog.tmp.01"
 fi
 
 printf 'macOS Mojave 10.14 installation should complete in a few minutes.
