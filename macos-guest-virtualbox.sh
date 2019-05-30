@@ -2,7 +2,7 @@
 # One-key semi-automatic installer of macOS on VirtualBox
 # (c) img2tab, licensed under GPL2.0 or higher
 # url: https://github.com/img2tab/macos-guest-virtualbox
-# version 0.62.0
+# version 0.62.1
 
 # Requirements: 37.5GB available storage on host
 # Dependencies: bash>=4.0, unzip, wget, dmg2img,
@@ -750,11 +750,11 @@ The script is divided into stages that run as separate functions.
 Add one or more stage titles to the command line to run the corresponding
 function. If the first argument is "stages" all others are ignored.
 Some examples:
-    "'"${0}"' populate_virtual_disks install_the_installer"
+    "'"${0}"' populate_virtual_disks prepare_the_installer_app"
 These stages might be useful by themselves if the VDI files and the VM are
-already set.
+already initialized.
     "'"${0}"' configure_vm"
-This stage might be useful after copying an existing VDI to a different
+This stage might be useful after copying an existing VM VDI to a different
 VirtualBox installation and having the script automatically configure the VM.
 
 Available stage titles:
