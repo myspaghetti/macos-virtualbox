@@ -2,7 +2,7 @@
 # One-key semi-automatic installer of macOS on VirtualBox
 # (c) img2tab, licensed under GPL2.0 or higher
 # url: https://github.com/img2tab/macos-guest-virtualbox
-# version 0.62.1
+# version 0.63.0
 
 # Requirements: 37.5GB available storage on host
 # Dependencies: bash>=4.0, unzip, wget, dmg2img,
@@ -102,9 +102,9 @@ fi
 # VirtualBox in ${PATH}
 # Cygwin
 if [ -n "$(cygcheck -V 2>/dev/null)" ]; then
-    if [ -n "$(cmd.exe /d /s /c call VBoxManage -v 2>/dev/null)" ]; then
+    if [ -n "$(cmd.exe /d /s /c call VBoxManage.exe -v 2>/dev/null)" ]; then
         function VBoxManage() {
-            cmd.exe /d /s /c call VBoxManage "$@"
+            cmd.exe /d /s /c call VBoxManage.exe "$@"
         }
     else
         cmd_path_VBoxManage='C:\Program Files\Oracle\VirtualBox\VBoxManage.exe'
@@ -117,15 +117,20 @@ if [ -n "$(cygcheck -V 2>/dev/null)" ]; then
             echo "Found VBoxManage"
         else
             echo "Please make sure VirtualBox is installed, and that the path to the"
-            echo "VBoxManage executable is in the PATH variable, or assigned in the script"
+            echo "VBoxManage.exe executable is in the PATH variable, or assigned in the script"
             printf 'to the variable '${whiteonblack}'cmd_path_VBoxManage'${defaultcolor}' including the name of the executable.'
             exit
         fi
     fi
 # Windows Subsystem for Linux (WSL)
 elif [[ "$(cat /proc/sys/kernel/osrelease 2>/dev/null)" =~ Microsoft ]]; then
-    wsl_path_VBoxManage='/mnt/c/Program Files/Oracle/VirtualBox/VBoxManage.exe'
-    if [ -z "$(VBoxManage -v 2>/dev/null)" ]; then
+    if [ -n "$(VBoxManage.exe -v 2>/dev/null)" ]; then
+        function VBoxManage() {
+            VBoxManage.exe "$@"
+        }
+    else
+        wsl_path_VBoxManage='/mnt/c/Program Files/Oracle/VirtualBox/VBoxManage.exe'
+        echo "Can't find VBoxManage in PATH variable,"
         echo "checking ${wsl_path_VBoxManage}"
         if [ -n "$("${wsl_path_VBoxManage}" -v 2>/dev/null)" ]; then
             function VBoxManage() {
@@ -133,8 +138,8 @@ elif [[ "$(cat /proc/sys/kernel/osrelease 2>/dev/null)" =~ Microsoft ]]; then
             }
             echo "Found VBoxManage"
         else
-            echo "Please make sure VirtualBox is installed, and that the path to the"
-            echo "VBoxManage executable is in the PATH variable, or assigned in the script"
+            echo "Please make sure VirtualBox is installed on Windows, and that the path to the"
+            echo "VBoxManage.exe executable is in the PATH variable, or assigned in the script"
             printf 'to the variable '${whiteonblack}'wsl_path_VBoxManage'${defaultcolor}' including the name of the executable.'
             exit
         fi
