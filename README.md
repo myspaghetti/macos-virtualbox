@@ -12,7 +12,7 @@ iCloud and iMessage and other connected Apple services require a valid device se
 
 ## Storage size
 
-The script assigns the minimum required storage size for the installation. After the installation is complete, the virtual disk image may be increased through VirtualBox, and then the macOS system APFS container size may be increased. Inside the virtual machine run `sudo diskutil repairDisk disk0` and then from Disk Utility delete the "Free space" partition, allowing the system APFS container to take up the available space.
+The script assigns the minimum required storage size for the installation. After the installation is complete, the storage size may be increased. First increase the virtual disk image size through VirtualBox Manager or `VBoxManage`, then in Terminal in the virtual machine run `sudo diskutil repairDisk disk0`, and then from Disk Utility delete the "Free space" partition, allowing the system APFS container to take up the available space.
 
 ## Unsupported features
 
