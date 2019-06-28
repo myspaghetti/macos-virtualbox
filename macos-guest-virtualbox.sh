@@ -2,7 +2,7 @@
 # Semi-automatic installer of macOS on VirtualBox
 # (c) img2tab, licensed under GPL2.0 or higher
 # url: https://github.com/img2tab/macos-guest-virtualbox
-# version 0.66.1
+# version 0.66.2
 
 # Requirements: 37.5GB available storage on host
 # Dependencies: bash >= 4.0, unzip, wget, dmg2img,
@@ -775,7 +775,8 @@ if [ "${delete,,}" == "y" ]; then
        "Install ${macOS_release_name}.vdi" \
        "${macOS_release_name}.sucatalog"* \
        "ApfsDriverLoader.efi" "AppleImageLoader.efi" \
-       "AppleSupport-v2.0.4-RELEASE.zip" "AppleUiSupport.efi"
+       "AppleSupport-v2.0.4-RELEASE.zip" "AppleUiSupport.efi" \
+       "startup.nsh"
 fi
 
 printf 'macOS installation should complete in a few minutes.
