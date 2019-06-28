@@ -2,7 +2,7 @@
 # Semi-automatic installer of macOS on VirtualBox
 # (c) img2tab, licensed under GPL2.0 or higher
 # url: https://github.com/img2tab/macos-guest-virtualbox
-# version 0.66.0
+# version 0.66.1
 
 # Requirements: 37.5GB available storage on host
 # Dependencies: bash >= 4.0, unzip, wget, dmg2img,
@@ -336,7 +336,7 @@ else
          ${wgetargs} \
          --output-document="${macOS_release_name}_BaseSystem.dmg"
     if [ ! -s "${macOS_release_name}_BaseSystem.dmg" ]; then
-        printf ${whiteonred}'Could not download BaseSystem.dmg'${defaultcolor}'.'
+        printf "${whiteonred}"'Could not download BaseSystem.dmg'"${defaultcolor}"'.\n'
         exit
     fi
     echo "Downloaded BaseSystem.dmg. Converting to BaseSystem.img"
