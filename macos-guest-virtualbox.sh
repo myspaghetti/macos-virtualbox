@@ -2,7 +2,7 @@
 # Semi-automatic installer of macOS on VirtualBox
 # (c) img2tab, licensed under GPL2.0 or higher
 # url: https://github.com/img2tab/macos-guest-virtualbox
-# version 0.65.2
+# version 0.66.0
 
 # Requirements: 37.5GB available storage on host
 # Dependencies: bash >= 4.0, unzip, wget, dmg2img,
@@ -341,11 +341,11 @@ else
     fi
     echo "Downloaded BaseSystem.dmg. Converting to BaseSystem.img"
     if [ -n "$("${PWD}/dmg2img.exe" -d 2>/dev/null)" ]; then
-        "${PWD}/dmg2img.exe" "${macOS_release_name}_BaseSystem.dmg" "BaseSystem.img"
+        "${PWD}/dmg2img.exe" "${macOS_release_name}_BaseSystem.dmg" "${macOS_release_name}_BaseSystem.img"
     else
-        dmg2img "${macOS_release_name}_BaseSystem.dmg" "BaseSystem.img"
+        dmg2img "${macOS_release_name}_BaseSystem.dmg" "${macOS_release_name}_BaseSystem.img"
     fi
-    VBoxManage convertfromraw --format VDI "${macOS_release_name}_BaseSystem.img" "BaseSystem.vdi"
+    VBoxManage convertfromraw --format VDI "${macOS_release_name}_BaseSystem.img" "${macOS_release_name}_BaseSystem.vdi"
     if [ -s "${macOS_release_name}_BaseSystem.vdi" ]; then
         rm "${macOS_release_name}_BaseSystem.img" 2>/dev/null
     fi
