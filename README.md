@@ -1,4 +1,6 @@
-## Semi-automatic installer of macOS Catalina (10.15), Mojave (10.14), and High Sierra (10.13) on VirtualBox
+## Semi-automatic installer of macOS on VirtualBox
+
+## Supports Catalina (10.15), Mojave (10.14), and High Sierra (10.13)
 
 The script is semi-automatic and requires a little user interaction. Most of the time the user simply has to press enter. There is one step where the user has to choose between [C]atalina, [M]ojave, or [H]igh Sierra, and a couple of instances where the user has to choose whether to delete or keep temporary files and previous installations.
 
