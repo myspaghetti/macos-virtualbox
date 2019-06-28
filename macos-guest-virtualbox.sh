@@ -777,6 +777,7 @@ if [ "${delete,,}" == "y" ]; then
        "ApfsDriverLoader.efi" "AppleImageLoader.efi" \
        "AppleSupport-v2.0.4-RELEASE.zip" "AppleUiSupport.efi" \
        "startup.nsh"
+    rm "dmg2img.exe" 2>/dev/null
 fi
 
 printf 'macOS installation should complete in a few minutes.
