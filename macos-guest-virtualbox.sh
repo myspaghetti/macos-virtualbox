@@ -2,7 +2,7 @@
 # Semi-automatic installer of macOS on VirtualBox
 # (c) img2tab, licensed under GPL2.0 or higher
 # url: https://github.com/img2tab/macos-guest-virtualbox
-# version 0.65.0
+# version 0.65.1
 
 # Requirements: 37.5GB available storage on host
 # Dependencies: bash >= 4.0, unzip, wget, dmg2img,
@@ -764,8 +764,8 @@ echo "macOS will now install and start up."
 echo ""
 
 # temporary files cleanup
-VBoxManage closemedium "${macOS_release_name}_BaseSystem.vdi"
-VBoxManage closemedium "Install ${macOS_release_name}.vdi"
+VBoxManage closemedium "${macOS_release_name}_BaseSystem.vdi" 2>/dev/null
+VBoxManage closemedium "Install ${macOS_release_name}.vdi" 2>/dev/null
 printf 'Temporary files are safe to delete. '${whiteonred}'Delete temporary files?'${defaultcolor}
 delete=""
 read -n 1 -p " [y/n] " delete 2>/dev/tty
