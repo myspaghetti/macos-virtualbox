@@ -277,7 +277,7 @@ for filename in "BaseSystem.chunklist" \
                 "BaseSystem.dmg" \
                 "InstallESDDmg.pkg"; \
     do wget "${urlbase}${filename}" \
-            ${wgetargs} --limit-rate=2000k \
+            ${wgetargs} \
             --output-document "${macOS_release_name}_${filename}"
 done
 echo ""
