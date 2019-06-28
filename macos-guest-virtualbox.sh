@@ -2,7 +2,7 @@
 # Semi-automatic installer of macOS on VirtualBox
 # (c) img2tab, licensed under GPL2.0 or higher
 # url: https://github.com/img2tab/macos-guest-virtualbox
-# version 0.66.2
+# version 0.66.3
 
 # Requirements: 37.5GB available storage on host
 # Dependencies: bash >= 4.0, unzip, wget, dmg2img,
@@ -234,6 +234,7 @@ on https://gist.github.com/nuomi1/16133b89c2b38b7eb197\n"
    exit
 fi
 echo "Found download URL: ${urlbase}"
+echo ""
 }
 # Done with dependencies
 
