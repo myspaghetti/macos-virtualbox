@@ -22,7 +22,7 @@ Developing and maintaining VirtualBox or macOS features is beyond the scope of t
 
 ## Dependencies
 
-* [VirtualBox](https://www.virtualbox.org/wiki/Downloads)≥6.0 with Extension Pack
+* [VirtualBox](https://www.virtualbox.org/wiki/Downloads)≥6 with Extension Pack
 * `Bash`≥4 (run on Windows through [Cygwin](https://cygwin.com/install.html) or WSL)
 * `coreutils`, `unzip`, `wget` (install through package manager)
 * `dmg2img` (install through package manager on Linux or WSL; let the script download it automatically on Cygwin)
