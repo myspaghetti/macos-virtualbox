@@ -1,5 +1,5 @@
 #!/bin/bash
-# One-key semi-automatic installer of macOS on VirtualBox
+# Semi-automatic installer of macOS on VirtualBox
 # (c) img2tab, licensed under GPL2.0 or higher
 # url: https://github.com/img2tab/macos-guest-virtualbox
 # version 0.65.0
