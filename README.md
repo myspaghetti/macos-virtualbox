@@ -1,6 +1,6 @@
-## One-key semi-automatic installer of macOS Mojave 10.14 on VirtualBox
+## Semi-automatic installer of macOS Catalina (10.15), Mojave (10.14), and High Sierra (10.13) on VirtualBox
 
-The "one key" is enter, which has to be pressed whenever the virtual machine is ready for the next command. (Contrary to the script's name, the user has to use more than one key! There is one instance when the right control key or "host key" is used to release the mouse from the virtual machine, and a couple of instances where the user has to choose [y]es or [n]o!)
+The script is semi-automatic and requires a little user interaction. Most of the time the user simply has to press enter. There is one step where the user has to choose between [C]atalina, [M]ojave, or [H]igh Sierra, and a couple of instances where the user has to choose whether to delete or keep temporary files and previous installations.
 
 The goal of the script is to allow for a very easy installation without any closed-source additions or extra bootloaders.
 
@@ -20,7 +20,7 @@ Developing and maintaining VirtualBox or macOS features is beyond the scope of t
 
 ## Dependencies
 
-* [VirtualBox](https://www.virtualbox.org/wiki/Downloads)≥5.2 with Extension Pack
+* [VirtualBox](https://www.virtualbox.org/wiki/Downloads)≥6.0 with Extension Pack
 * `Bash`≥4 (run on Windows through [Cygwin](https://cygwin.com/install.html) or WSL)
 * `coreutils`, `unzip`, `wget` (install through package manager)
 * `dmg2img` (install through package manager on Linux or WSL; let the script download it automatically on Cygwin)
