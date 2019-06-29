@@ -315,7 +315,8 @@ endfor' > "startup.nsh"
 
 function create_macos_installation_files_viso() {
 macOS_installation_files_volume_id="swcdn-files"
-echo "Crating VirtualBox 6 virtual ISO file with installation files from swcdn.apple.com"
+echo "Crating VirtualBox 6 virtual ISO containing the"
+echo "installation files from swcdn.apple.com"
 echo ""
 echo "Splitting InstallESDDmg.pkg into 1GB parts because VirtualBox hasn't"
 echo "implemented UDF/HFS VISO support yet and macOS doesn't support ISO 9660 Level 3"
