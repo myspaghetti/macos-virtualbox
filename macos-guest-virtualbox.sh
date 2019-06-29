@@ -2,7 +2,7 @@
 # Semi-automatic installer of macOS on VirtualBox
 # (c) img2tab, licensed under GPL2.0 or higher
 # url: https://github.com/img2tab/macos-guest-virtualbox
-# version 0.67.0
+# version 0.67.1
 
 # Requirements: 37.5GB available storage on host
 # Dependencies: bash >= 4.0, unzip, wget, dmg2img,
@@ -262,6 +262,11 @@ wget "${sucatalog}" \
 echo "Trying to find macOS ${macOS_release_name} InstallAssistant download URL"
 tac "${macOS_release_name}_sucatalog" | csplit - '/InstallAssistantAuto.smd/+1' '{*}' -f "${macOS_release_name}_sucatalog_" -s
 for catalog in "${macOS_release_name}_sucatalog_"* "error"; do
+    if [[ "${catalog}" == error ]]; then
+        rm "${macOS_release_name}_sucatalog"*
+        printf "Couldn't find the requested download URL in the Apple catalog. Exiting."
+       exit
+    fi
     urlbase="$(tail -n 1 "${catalog}" 2>/dev/null)"
     urlbase="$(expr match "${urlbase}" '.*\(http://[^<]*/\)')"
     wget "${urlbase}InstallAssistantAuto.smd" \
@@ -273,10 +278,6 @@ for catalog in "${macOS_release_name}_sucatalog_"* "error"; do
         echo ""
         rm "${macOS_release_name}_sucatalog"*
         break
-    elif [[ "${catalog}" == error ]]; then
-        rm "${macOS_release_name}_sucatalog"*
-        printf "Couldn't find the requested download URL in the Apple catalog. Exiting."
-       exit
     fi
 done
 echo "Downloading macOS installation files from swcdn.apple.com"
