@@ -2,9 +2,9 @@
 # Semi-automatic installer of macOS on VirtualBox
 # (c) img2tab, licensed under GPL2.0 or higher
 # url: https://github.com/img2tab/macos-guest-virtualbox
-# version 0.67.3
+# version 0.68.0
 
-# Requirements: 37.5GB available storage on host
+# Requirements: 40GB available storage on host
 # Dependencies: bash >= 4.0, unzip, wget, dmg2img,
 #               VirtualBox with Extension Pack >= 6.0
 
@@ -40,8 +40,8 @@ Some stages may fail due to errant keyboard presses; run the script with
 For iCloud and iMessage connectivity, you will need to provide a valid
 Apple serial number. macOS will work without it, but not Apple-connected apps.
 
-The installation requires '${whiteonred}'38GB'${defaultcolor}' of available storage, 24GB for
-temporary installation files and 14GB for the virtual machine. Deleting the
+The installation requires '${whiteonred}'40GB'${defaultcolor}' of available storage, 25GB for
+temporary installation files and 15GB for the virtual machine. Deleting the
 temporary files when prompted reduces the storage requirement by about 10GB.
 
 '${whiteonblack}'Press enter to review the script settings.'${defaultcolor}
@@ -631,6 +631,7 @@ echo "Partitioning target virtual disk."
 # get "physical" disks from largest to smallest
 kbstring='disks="$(diskutil list | grep -o "[0-9][^ ]* GB *disk[012]$" | sort -gr | grep -o disk[012])"; disks=(${disks[@]})'
 send_keys
+prompt_terminal_ready
 
 # partition largest disk as APFS
 kbstring='diskutil partitionDisk "/dev/${disks[0]}" 1 GPT APFS "'"${vmname}"'" R'
@@ -725,6 +726,9 @@ send_enter
 printf ${whiteonblack}'
 Press enter when the macOS Utilities window is ready.'${defaultcolor}
 read -p ""
+kbspecial='CTRLprs F2 CTRLrls u ENTER t ENTER'
+send_special
+prompt_terminal_ready
 
 # find largest drive
 kbstring='disks="$(diskutil list | grep -o "[0-9][^ ]* GB *disk[012]$" | sort -gr | grep -o disk[012])"; disks=(${disks[@]})'
