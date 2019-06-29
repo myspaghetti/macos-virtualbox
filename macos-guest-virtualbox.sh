@@ -2,7 +2,7 @@
 # Semi-automatic installer of macOS on VirtualBox
 # (c) img2tab, licensed under GPL2.0 or higher
 # url: https://github.com/img2tab/macos-guest-virtualbox
-# version 0.67.1
+# version 0.67.2
 
 # Requirements: 37.5GB available storage on host
 # Dependencies: bash >= 4.0, unzip, wget, dmg2img,
@@ -40,9 +40,9 @@ Some stages may fail due to errant keyboard presses; run the script with
 For iCloud and iMessage connectivity, you will need to provide a valid
 Apple serial number. macOS will work without it, but not Apple-connected apps.
 
-The installation requires '${whiteonred}'38GB'${defaultcolor}' of available storage,
-24GB for temporary installation files and 14GB for the virtual machine. Deleting
-the temporary files when prompted reduces the storage requirement by about 10GB.
+The installation requires '${whiteonred}'38GB'${defaultcolor}' of available storage, 24GB for
+temporary installation files and 14GB for the virtual machine. Deleting the
+temporary files when prompted reduces the storage requirement by about 10GB.
 
 '${whiteonblack}'Press enter to review the script settings.'${defaultcolor}
 read
