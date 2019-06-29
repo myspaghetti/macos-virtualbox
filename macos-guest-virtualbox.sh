@@ -2,7 +2,7 @@
 # Semi-automatic installer of macOS on VirtualBox
 # (c) img2tab, licensed under GPL2.0 or higher
 # url: https://github.com/img2tab/macos-guest-virtualbox
-# version 0.66.3
+# version 0.67.0
 
 # Requirements: 37.5GB available storage on host
 # Dependencies: bash >= 4.0, unzip, wget, dmg2img,
@@ -208,33 +208,17 @@ read -n 1 -p " [H/M/C] " macOS_release_name 2>/dev/tty
 echo ""
 if [ "${macOS_release_name^^}" == "H" ]; then
     macOS_release_name="HighSierra"
+    CFBundleShortVersionString="10.13"
     sucatalog="${HighSierra_sucatalog}"
 elif [ "${macOS_release_name^^}" == "M" ]; then
     macOS_release_name="Mojave"
+    CFBundleShortVersionString="10.14"
     sucatalog="${Mojave_sucatalog}"
 else
     macOS_release_name="Catalina"
+    CFBundleShortVersionString="10.15"
     sucatalog="${Catalina_beta_sucatalog}"
 fi
-
-# Find the correct download URL in the Apple catalog
-echo "Downloading Apple macOS ${macOS_release_name} software update catalog"
-wget "${sucatalog}" \
-     ${wgetargs} \
-     --output-document="${macOS_release_name}.sucatalog.tmp"
-echo "Trying to find latest macOS InstallAssistant download URL"
-tac "${macOS_release_name}.sucatalog.tmp" | csplit - '/InstallAssistantAuto.smd/+1' -f "${macOS_release_name}.sucatalog.tmp." -s
-urlbase="$(tail -n 1 "${macOS_release_name}.sucatalog.tmp.00")"
-urlbase="$(expr match "${urlbase}" '.*\(http://[^<]*/\)')"
-if [ -z "${urlbase}" ]; then
-    printf "Couldn't find the download URL in the Apple catalog. Please report this issue
-on https://github.com/img2tab/macos-guest-virtualbox/issues
-or update the URL yourself from the catalog found
-on https://gist.github.com/nuomi1/16133b89c2b38b7eb197\n"
-   exit
-fi
-echo "Found download URL: ${urlbase}"
-echo ""
 }
 # Done with dependencies
 
@@ -269,7 +253,32 @@ fi
 }
 
 function prepare_macos_installation_files() {
+# Find the correct download URL in the Apple catalog
 echo ""
+echo "Downloading Apple macOS ${macOS_release_name} software update catalog"
+wget "${sucatalog}" \
+     ${wgetargs} \
+     --output-document="${macOS_release_name}_sucatalog"
+echo "Trying to find macOS ${macOS_release_name} InstallAssistant download URL"
+tac "${macOS_release_name}_sucatalog" | csplit - '/InstallAssistantAuto.smd/+1' '{*}' -f "${macOS_release_name}_sucatalog_" -s
+for catalog in "${macOS_release_name}_sucatalog_"* "error"; do
+    urlbase="$(tail -n 1 "${catalog}" 2>/dev/null)"
+    urlbase="$(expr match "${urlbase}" '.*\(http://[^<]*/\)')"
+    wget "${urlbase}InstallAssistantAuto.smd" \
+    ${wgetargs} \
+    --output-document="${catalog}_InstallAssistantAuto.smd"
+    found_version="$(head -n 6 "${catalog}_InstallAssistantAuto.smd" | tail -n 1)"
+    if [[ "${found_version}" == *${CFBundleShortVersionString}* ]]; then
+        echo "Found download URL: ${urlbase}"
+        echo ""
+        rm "${macOS_release_name}_sucatalog"*
+        break
+    elif [[ "${catalog}" == error ]]; then
+        rm "${macOS_release_name}_sucatalog"*
+        printf "Couldn't find the requested download URL in the Apple catalog. Exiting."
+       exit
+    fi
+done
 echo "Downloading macOS installation files from swcdn.apple.com"
 for filename in "BaseSystem.chunklist" \
                 "InstallInfo.plist" \
@@ -774,7 +783,6 @@ echo ""
 if [ "${delete,,}" == "y" ]; then
     rm "${macOS_release_name}_"* \
        "Install ${macOS_release_name}.vdi" \
-       "${macOS_release_name}.sucatalog"* \
        "ApfsDriverLoader.efi" "AppleImageLoader.efi" \
        "AppleSupport-v2.0.4-RELEASE.zip" "AppleUiSupport.efi" \
        "startup.nsh"
