@@ -10,7 +10,13 @@ Tested on Cygwin and WSL, should work on most Linux distros.
 
 ## iCloud and iMessage connectivity
 
-iCloud and iMessage and other connected Apple services require a valid device serial number. Set it before the installation by replacing `NOTAVALIDSN0` with a valid serial number, or after the installation with `VBoxManage setextradata "${vmname}" "VBoxInternal/Devices/efi/0/Config/DmiSystemSerial" "${serialnumber}"`. An invalid serial number that matches the correct structure for the device name and board ID might work, too.
+iCloud and iMessage and other connected Apple services require a valid device serial number, device name, and board ID. Set them before the installation by editing the script, or after the installation with the following commands:
+```
+VBoxManage setextradata "${vmname}" "VBoxInternal/Devices/efi/0/Config/DmiSystemProduct" "${devicename}"
+VBoxManage setextradata "${vmname}" "VBoxInternal/Devices/efi/0/Config/DmiBoardProduct" "${boardid}"
+VBoxManage setextradata "${vmname}" "VBoxInternal/Devices/efi/0/Config/DmiSystemSerial" "${serialnumber}"
+```
+An invalid serial number that matches the correct structure for the device name and board ID might work, too.
 
 ## Storage size
 
