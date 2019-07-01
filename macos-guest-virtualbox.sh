@@ -2,24 +2,32 @@
 # Semi-automatic installer of macOS on VirtualBox
 # (c) img2tab, licensed under GPL2.0 or higher
 # url: https://github.com/img2tab/macos-guest-virtualbox
-# version 0.68.0
+# version 0.69.0
 
 # Requirements: 40GB available storage on host
 # Dependencies: bash >= 4.0, unzip, wget, dmg2img,
 #               VirtualBox with Extension Pack >= 6.0
 
 # Customize the installation by setting these variables:
-vmname="macOS"              # name of the VirtualBox virtual machine
-storagesize=22000           # VM disk image size in MB. minimum 22000
-cpucount=2                  # VM CPU cores, minimum 2
-memorysize=4096             # VM RAM in MB, minimum 2048
-gpuvram=128                 # VM video RAM in MB, minimum 34, maximum 128
-resolution="1280x800"       # VM display resolution
-serialnumber="NOTAVALIDSN0" # valid serial required for iCloud, iMessage.
-# Structure:  PPPYWWUUUMMM - Plant, Year, Week, Unique identifier, Model
-# Whether the serial is valid depends on the device name and board, below:
-devicename="MacBookPro11,3" # personalize to match serial if desired
-boardid="Mac-2BD1B31983FE1663"
+vmname="macOS"                    # name of the VirtualBox virtual machine
+storagesize=22000                 # VM disk image size in MB. minimum 22000
+cpucount=2                        # VM CPU cores, minimum 2
+memorysize=4096                   # VM RAM in MB, minimum 2048
+gpuvram=128                       # VM video RAM in MB, minimum 34, maximum 128
+resolution="1280x800"             # VM display resolution
+
+# The following variables can be found on a genuine Mac using the command
+# in the comment above each of the following variable assignments
+# ioreg -l | grep -m 1 product-name
+DmiSystemProduct="MacBookPro11,3"
+# ioreg -l | grep -m 1 IOPlatformSerialNumber
+DmiSystemSerial="NOTAVALIDSN0"
+# ioreg -l | grep -m 1 board-id
+DmiBoardProduct="Mac-2BD1B31983FE1663"
+# ioreg -l | grep -m 1 PlatformUUID
+DmiSystemUuid="CAFECAFE-CAFE-CAFE-CAFE-DECAFFDECAFF"
+# ioreg -l | grep -m 1 serial-number
+DmiBoardSerial="string:00000000010000000002000000000300000000040000000005000000000600000000070000000008123456"
 
 # welcome message
 whiteonred="\e[48;2;255;0;0m\e[38;2;255;255;255m"
@@ -55,11 +63,6 @@ cpucount='"${cpucount}"'                  # VM CPU cores, minimum 2
 memorysize='"${memorysize}"'             # VM RAM in MB, minimum 2048
 gpuvram='"${gpuvram}"'                 # VM video RAM in MB, minimum 34, maximum 128
 resolution="'"${resolution}"'"       # VM display resolution
-serialnumber="'"${serialnumber}"'" # valid serial required for iCloud, iMessage.
-# Structure:  PPPYWWUUUMMM - Plant, Year, Week, Unique identifier, Model
-# Whether the serial is valid depends on the device name and board, below:
-devicename="'"${devicename}"'" # personalize to match serial if desired
-boardid="'"${boardid}"'"
 
 These values may be customized by editing them at the top of the script file.
 
@@ -412,11 +415,19 @@ VBoxManage modifyvm "${vmname}" --cpus "${cpucount}" --memory "${memorysize}" \
  --boot4 none --firmware efi --rtcuseutc on --usbxhci on --chipset ich9 \
  --mouse usbtablet --keyboard usb --audiocontroller hda --audiocodec stac9221
 VBoxManage setextradata "${vmname}" \
- "VBoxInternal/Devices/efi/0/Config/DmiSystemProduct" "${devicename}"
+ "VBoxInternal/Devices/efi/0/Config/DmiSystemProduct" "${DmiSystemProduct}"
+VBoxManage setextradata "${vmname}" \
+ "VBoxInternal/Devices/efi/0/Config/DmiBoardProduct" "${DmiBoardProduct}"
+VBoxManage setextradata "${vmname}" \
+ "VBoxInternal/Devices/efi/0/Config/DmiSystemUuid" "${DmiSystemUuid}"
+VBoxManage setextradata "${vmname}" \
+ "VBoxInternal/Devices/efi/0/Config/DmiSystemSerial" "${DmiSystemSerial}"
+VBoxManage setextradata "${vmname}" \
+ "VBoxInternal/Devices/efi/0/Config/DmiBoardSerial" "${DmiBoardSerial}"
+VBoxManage setextradata "${vmname}" \
+ "VBoxInternal/Devices/efi/0/Config/DmiSystemVendor" "Apple Inc."
 VBoxManage setextradata "${vmname}" \
  "VBoxInternal/Devices/efi/0/Config/DmiSystemVersion" "1.0"
-VBoxManage setextradata "${vmname}" \
- "VBoxInternal/Devices/efi/0/Config/DmiBoardProduct" "${boardid}"
 VBoxManage setextradata "${vmname}" \
  "VBoxInternal/Devices/smc/0/Config/DeviceKey" \
  "ourhardworkbythesewordsguardedpleasedontsteal(c)AppleComputerInc"
@@ -424,8 +435,6 @@ VBoxManage setextradata "${vmname}" \
  "VBoxInternal/Devices/smc/0/Config/GetKeyFromRealSMC" 1
 VBoxManage setextradata "${vmname}" \
  "VBoxInternal2/EfiGraphicsResolution" "${resolution}"
-VBoxManage setextradata "${vmname}" \
- "VBoxInternal/Devices/efi/0/Config/DmiSystemSerial" "${serialnumber}"
 }
 
 # QWERTY-to-scancode dictionary. Hex scancodes, keydown and keyup event.
