@@ -2,7 +2,7 @@
 # Semi-automatic installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/img2tab/macos-guest-virtualbox
-# version 0.69.4
+# version 0.69.5
 
 # Requirements: 40GB available storage on host
 # Dependencies: bash >= 4.0, unzip, wget, dmg2img,
@@ -736,8 +736,6 @@ echo ""
 echo "Copying open-source APFS drivers to EFI partition"
 
 # move drivers into path on EFI partition
-kbstring='disks="$(diskutil list | grep -o "[0-9][^ ]* GB *disk[012]$" | sort -gr | grep -o disk[012])"; disks=(${disks[@]})'
-send_keys
 kbstring='mkdir -p "/Volumes/'"${vmname}"'/mount_efi" && mount_msdos /dev/${disks[0]}s1 "/Volumes/'"${vmname}"'/mount_efi" && mkdir -p "/Volumes/'"${vmname}"'/mount_efi/EFI/driver/" && cp "/Volumes/'"${macOS_installation_files_volume_id}"'/"*.efi "/Volumes/'"${vmname}"'/mount_efi/EFI/driver/"'
 send_keys
 prompt_terminal_ready
