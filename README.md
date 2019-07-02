@@ -10,13 +10,7 @@ Tested on Cygwin and WSL, should work on most Linux distros.
 
 ## iCloud and iMessage connectivity
 
-iCloud and iMessage and other connected Apple services require a valid device serial number, device name, and board ID. Set them before the installation by editing the script, or after the installation with the following commands:
-```
-VBoxManage setextradata "${vmname}" "VBoxInternal/Devices/efi/0/Config/DmiSystemProduct" "${devicename}"
-VBoxManage setextradata "${vmname}" "VBoxInternal/Devices/efi/0/Config/DmiBoardProduct" "${boardid}"
-VBoxManage setextradata "${vmname}" "VBoxInternal/Devices/efi/0/Config/DmiSystemSerial" "${serialnumber}"
-```
-An invalid serial number that matches the correct structure for the device name and board ID might work, too.
+iCloud, iMessage, and other connected Apple services require a valid device name and serial number, board ID and serial number, and other genuine (or genuine-like) Apple parameters, some of which are not passed to the virtual machine by VirtualBox. These parameters may be set by [attaching an ISO of the bootloader Clover](https://sourceforge.net/projects/cloverefiboot/files/Installer/) and changing the parameters on the Clover SMBIOS options screen, however this script is not compatible with booting macOS from Clover on VirtualBox.
 
 ## Storage size
 
