@@ -2,7 +2,7 @@
 # Semi-automatic installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/img2tab/macos-guest-virtualbox
-# version 0.69.1
+# version 0.69.2
 
 # Requirements: 40GB available storage on host
 # Dependencies: bash >= 4.0, unzip, wget, dmg2img,
@@ -21,13 +21,15 @@ resolution="1280x800"             # VM display resolution
 # ioreg -l | grep -m 1 product-name
 DmiSystemProduct="MacBookPro11,3"
 # ioreg -l | grep -m 1 IOPlatformSerialNumber
-DmiSystemSerial="NOTAVALIDSN0"
+DmiSystemSerial="NO_DEVICE_SN"
 # ioreg -l | grep -m 1 board-id
 DmiBoardProduct="Mac-2BD1B31983FE1663"
 # nvram 4D1EDE05-38C7-4A6A-9CC6-4BCCA8B38C14:MLB | awk '{ print $NF }'
-DmiBoardSerial="NOTAVALIDBOARDSN0"
+DmiBoardSerial="NO_LOGIC_BOARD_SN"
 # ioreg -l | grep -m 1 PlatformUUID
 DmiSystemUuid="CAFECAFE-CAFE-CAFE-CAFE-DECAFFDECAFF"
+# ioreg -l | grep -m 1 '"system-id"'
+UUID="bytes:qqq7u8zM3d3u7v//AAAREQ=="
 
 # welcome message
 whiteonred="\e[48;2;255;0;0m\e[38;2;255;255;255m"
@@ -416,14 +418,16 @@ VBoxManage modifyvm "${vmname}" --cpus "${cpucount}" --memory "${memorysize}" \
  --mouse usbtablet --keyboard usb --audiocontroller hda --audiocodec stac9221
 VBoxManage setextradata "${vmname}" \
  "VBoxInternal/Devices/efi/0/Config/DmiSystemProduct" "${DmiSystemProduct}"
+ VBoxManage setextradata "${vmname}" \
+ "VBoxInternal/Devices/efi/0/Config/DmiSystemSerial" "${DmiSystemSerial}"
 VBoxManage setextradata "${vmname}" \
  "VBoxInternal/Devices/efi/0/Config/DmiBoardProduct" "${DmiBoardProduct}"
+ VBoxManage setextradata "${vmname}" \
+ "VBoxInternal/Devices/efi/0/Config/DmiBoardSerial" "${DmiBoardSerial}"
 VBoxManage setextradata "${vmname}" \
  "VBoxInternal/Devices/efi/0/Config/DmiSystemUuid" "${DmiSystemUuid}"
 VBoxManage setextradata "${vmname}" \
- "VBoxInternal/Devices/efi/0/Config/DmiSystemSerial" "${DmiSystemSerial}"
-VBoxManage setextradata "${vmname}" \
- "VBoxInternal/Devices/efi/0/Config/DmiBoardSerial" "${DmiBoardSerial}"
+ "VBoxInternal/Devices/efi/0/Config/UUID" "${UUID}"
 VBoxManage setextradata "${vmname}" \
  "VBoxInternal/Devices/efi/0/Config/DmiSystemVendor" "Apple Inc."
 VBoxManage setextradata "${vmname}" \
@@ -432,7 +436,7 @@ VBoxManage setextradata "${vmname}" \
  "VBoxInternal/Devices/smc/0/Config/DeviceKey" \
  "ourhardworkbythesewordsguardedpleasedontsteal(c)AppleComputerInc"
 VBoxManage setextradata "${vmname}" \
- "VBoxInternal/Devices/smc/0/Config/GetKeyFromRealSMC" 1
+ "VBoxInternal/Devices/smc/0/Config/GetKeyFromRealSMC" 0
 VBoxManage setextradata "${vmname}" \
  "VBoxInternal2/EfiGraphicsResolution" "${resolution}"
 }
