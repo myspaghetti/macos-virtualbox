@@ -2,7 +2,7 @@
 # Semi-automatic installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/img2tab/macos-guest-virtualbox
-# version 0.69.2
+# version 0.69.3
 
 # Requirements: 40GB available storage on host
 # Dependencies: bash >= 4.0, unzip, wget, dmg2img,
@@ -28,7 +28,7 @@ DmiBoardProduct="Mac-2BD1B31983FE1663"
 DmiBoardSerial="NO_LOGIC_BOARD_SN"
 # ioreg -l | grep -m 1 PlatformUUID
 DmiSystemUuid="CAFECAFE-CAFE-CAFE-CAFE-DECAFFDECAFF"
-# ioreg -l | grep -m 1 '"system-id"'
+# ioreg -l -p IODeviceTree | grep \"system-id
 UUID="bytes:qqq7u8zM3d3u7v//AAAREQ=="
 
 # welcome message
