@@ -24,7 +24,7 @@ DmiSystemProduct="MacBookPro11,3"
 DmiSystemSerial="NOTAVALIDSN0"
 # ioreg -l | grep -m 1 board-id
 DmiBoardProduct="Mac-2BD1B31983FE1663"
-# ioreg -l | nvram 4D1EDE05-38C7-4A6A-9CC6-4BCCA8B38C14:MLB | awk '{ print $NF }'
+# nvram 4D1EDE05-38C7-4A6A-9CC6-4BCCA8B38C14:MLB | awk '{ print $NF }'
 DmiBoardSerial="NOTAVALIDBOARDSN0"
 # ioreg -l | grep -m 1 PlatformUUID
 DmiSystemUuid="CAFECAFE-CAFE-CAFE-CAFE-DECAFFDECAFF"
