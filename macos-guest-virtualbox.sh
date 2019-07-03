@@ -2,7 +2,7 @@
 # Semi-automatic installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/img2tab/macos-guest-virtualbox
-# version 0.70.0
+# version 0.70.1
 
 # Requirements: 40GB available storage on host
 # Dependencies: bash >= 4.0, unzip, wget, dmg2img,
@@ -16,19 +16,20 @@ memorysize=4096                  # VM RAM in MB, minimum 2048
 gpuvram=128                      # VM video RAM in MB, minimum 34, maximum 128
 resolution="1280x800"            # VM display resolution
 
-# The following commands may provide the values for the parameters of the
-# Clover SMBIOS options screen. Run them on a genuine Mac.
-# ioreg -l | grep -m 1 "Device Model Name"
-# ioreg -l | grep -m 1 product-name
-DmiSystemProduct="MacBookPro11,3"
-# ioreg -l | grep -m 1 IOPlatformSerialNumber
-DmiSystemSerial="NO_DEVICE_SN"
+# The following commented commands may provide the values for the parameters
+# of the Clover SMBIOS options screen. Run them on a genuine Mac.
+# system_profiler SPHardwareDataType
+DmiSystemFamily="MacBook Pro"        # Model Name
+DmiSystemProduct="MacBookPro11,2"    # Model Identifier
+DmiSystemSerial="NO_DEVICE_SN"       # Serial Number (system)
+DmiSystemUuid="CAFECAFE-CAFE-CAFE-CAFE-DECAFFDECAFF" # Hardware UUID
+DmiOEMVBoxVer="MBP5"                 # Apple ROM Info
+DmiOEMVBoxRev=".6.7.8"               # Apple ROM Info
+DmiBIOSVersion="MBP1.2.3.4"          # Boot ROM Version
 # ioreg -l | grep -m 1 board-id
 DmiBoardProduct="Mac-2BD1B31983FE1663"
 # nvram 4D1EDE05-38C7-4A6A-9CC6-4BCCA8B38C14:MLB | awk '{ print $NF }'
 DmiBoardSerial="NO_LOGIC_BOARD_SN"
-# ioreg -l | grep -m 1 PlatformUUID
-DmiSystemUuid="CAFECAFE-CAFE-CAFE-CAFE-DECAFFDECAFF"
 # ioreg -l -p IODeviceTree | grep \"system-id
 UUID="bytes:qqq7u8zM3d3u7v//AAAREQ=="
 
@@ -418,16 +419,25 @@ VBoxManage modifyvm "${vmname}" --cpus "${cpucount}" --memory "${memorysize}" \
  --vram "${gpuvram}" --pae on --boot1 dvd --boot2 disk --boot3 none \
  --boot4 none --firmware efi --rtcuseutc on --usbxhci on --chipset ich9 \
  --mouse usbtablet --keyboard usb --audiocontroller hda --audiocodec stac9221
+
+VBoxManage setextradata "${vmname}" \
+ "VBoxInternal/Devices/efi/0/Config/DmiSystemFamily" "${DmiSystemFamily}"
 VBoxManage setextradata "${vmname}" \
  "VBoxInternal/Devices/efi/0/Config/DmiSystemProduct" "${DmiSystemProduct}"
 VBoxManage setextradata "${vmname}" \
  "VBoxInternal/Devices/efi/0/Config/DmiSystemSerial" "${DmiSystemSerial}"
 VBoxManage setextradata "${vmname}" \
+ "VBoxInternal/Devices/efi/0/Config/DmiSystemUuid" "${DmiSystemUuid}"
+VBoxManage setextradata "${vmname}" \
+ "VBoxInternal/Devices/efi/0/Config/DmiOEMVBoxVer" "${DmiOEMVBoxVer}"
+VBoxManage setextradata "${vmname}" \
+ "VBoxInternal/Devices/efi/0/Config/DmiOEMVBoxRev" "${DmiOEMVBoxRev}"
+VBoxManage setextradata "${vmname}" \
+ "VBoxInternal/Devices/efi/0/Config/DmiBIOSVersion" "${DmiBIOSVersion}"
+VBoxManage setextradata "${vmname}" \
  "VBoxInternal/Devices/efi/0/Config/DmiBoardProduct" "${DmiBoardProduct}"
 VBoxManage setextradata "${vmname}" \
  "VBoxInternal/Devices/efi/0/Config/DmiBoardSerial" "${DmiBoardSerial}"
-VBoxManage setextradata "${vmname}" \
- "VBoxInternal/Devices/efi/0/Config/DmiSystemUuid" "${DmiSystemUuid}"
 VBoxManage setextradata "${vmname}" \
  "VBoxInternal/Devices/efi/0/Config/UUID" "${UUID}"
 VBoxManage setextradata "${vmname}" \
