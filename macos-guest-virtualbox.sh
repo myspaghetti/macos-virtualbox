@@ -27,7 +27,7 @@ DmiOEMVBoxVer="MBP5"                 # Apple ROM Info
 DmiOEMVBoxRev=".6.7.8"               # Apple ROM Info
 DmiBIOSVersion="MBP1.2.3.4"          # Boot ROM Version
 # ioreg -l | grep -m 1 board-id
-DmiBoardProduct="Mac-2BD1B31983FE1663"
+DmiBoardProduct="Mac-3CBD00234E554E41"
 # nvram 4D1EDE05-38C7-4A6A-9CC6-4BCCA8B38C14:MLB | awk '{ print $NF }'
 DmiBoardSerial="NO_LOGIC_BOARD_SN"
 # ioreg -l -p IODeviceTree | grep \"system-id
