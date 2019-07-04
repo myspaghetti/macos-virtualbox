@@ -2,7 +2,7 @@
 # Semi-automatic installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/img2tab/macos-guest-virtualbox
-# version 0.70.2
+# version 0.70.3
 
 # Requirements: 40GB available storage on host
 # Dependencies: bash >= 4.0, unzip, wget, dmg2img,
@@ -23,23 +23,39 @@ DmiSystemFamily="MacBook Pro"        # Model Name
 DmiSystemProduct="MacBookPro11,2"    # Model Identifier
 DmiSystemSerial="NO_DEVICE_SN"       # Serial Number (system)
 DmiSystemUuid="CAFECAFE-CAFE-CAFE-CAFE-DECAFFDECAFF" # Hardware UUID
-DmiOEMVBoxVer="MBP5"                 # Apple ROM Info
-DmiOEMVBoxRev=".6.7.8"               # Apple ROM Info
-DmiBIOSVersion="MBP1.2.3.4"          # Boot ROM Version
+DmiOEMVBoxVer="string:1"             # Apple ROM Info
+DmiOEMVBoxRev="string:.23456"        # Apple ROM Info
+DmiBIOSVersion="string:MBP7.89"      # Boot ROM Version
 # ioreg -l | grep -m 1 board-id
 DmiBoardProduct="Mac-3CBD00234E554E41"
 # nvram 4D1EDE05-38C7-4A6A-9CC6-4BCCA8B38C14:MLB | awk '{ print $NF }'
 DmiBoardSerial="NO_LOGIC_BOARD_SN"
+MLB="bytes:$(echo -n "${DmiBoardSerial}" | base64)"
+# nvram 4D1EDE05-38C7-4A6A-9CC6-4BCCA8B38C14:ROM | awk '{ print $NF }'
+ROM='%aa*%bbg%cc%dd'
 # ioreg -l -p IODeviceTree | grep \"system-id
-UUID="bytes:qqq7u8zM3d3u7v//AAAREQ=="
+UUID="aabbccddeeff00112233445566778899"
+# The if statement below converts the Mac output into VBox-readable values
+# This is only necessary if you want to run connected Apple applications
+# such as iCloud, iMessage, etc.
+# Make sure the package xxd is installed, otherwise the conversion will fail.
+if [ -n "$(echo -n "aabbccddee" | xxd -r -p 2>/dev/null)" ]; then
+    # Apologies for the one-liner below; it convers the mixed-ASCII-and-base16
+    # ROM value above into an ASCII string that represents a base16 number.
+    ROM_b16="$(for (( i=0; i<${#ROM}; )); do let j=i+1; if [ "${ROM:${i}:1}" == "%" ]; then echo -n "${ROM:${j}:2}"; let i=i+3; else x="$(echo -n "${ROM:${i}:1}" | od -t x1 -An | tr -d ' ')"; echo -n "${x}"; let i=i+1; fi; done)"
+    ROM_b64="$(echo -n "${ROM_b16}" | xxd -r -p | base64)"
+    ROM="bytes:${ROM_b64}"
+    UUID_b64="$(echo -n "${UUID}" | xxd -r -p | base64)"
+    UUID="bytes:${UUID_b64}"
+else
+    ROM="bytes:qiq7Z8zd"                  # base64 of the example ROM
+    UUID="bytes:qrvM3e7/ABEiM0RVZneImQ==" # base64 of the example UUID
+fi
 
 # welcome message
 white_on_red="\e[48;2;255;0;0m\e[38;2;255;255;255m"
 white_on_black="\e[48;2;0;0;9m\e[38;2;255;255;255m"
 default_color="\033[0m"
-
-# other globals
-macOS_installation_files_volume_id="swcdn-files"
 
 function welcome() {
 printf '
@@ -343,11 +359,12 @@ function create_macos_installation_files_viso() {
 echo "Crating VirtualBox 6 virtual ISO containing the"
 echo "installation files from swcdn.apple.com"
 echo ""
-echo "Splitting InstallESDDmg.pkg into 1GB parts because VirtualBox hasn't"
-echo "implemented UDF/HFS VISO support yet and macOS doesn't support ISO 9660 Level 3"
+echo "Splitting the several-GB InstallESDDmg.pkg into 1GB parts because"
+echo "VirtualBox hasn't implemented UDF/HFS VISO support yet and macOS"
+echo "doesn't support ISO 9660 Level 3 with files larger than 2GB."
 split -a 2 -d -b 1000000000 "${macOS_release_name}_InstallESDDmg.pkg" "${macOS_release_name}_InstallESD.part"
 echo "--iprt-iso-maker-file-marker-bourne-sh 57c0ec7d-2112-4c24-a93f-32e6f08702b9
---volume-id=${macOS_installation_files_volume_id}
+--volume-id=${macOS_release_name:0:5}-files
 /AppleDiagnostics.chunklist=${macOS_release_name}_AppleDiagnostics.chunklist
 /AppleDiagnostics.dmg=${macOS_release_name}_AppleDiagnostics.dmg
 /BaseSystem.chunklist=${macOS_release_name}_BaseSystem.chunklist
@@ -365,27 +382,22 @@ done
 
 # Create the macOS base system virtual disk image:
 function create_basesystem_vdi() {
-if [ -r "${macOS_release_name}_BaseSystem.vdi" ]; then
+if [ -s "${macOS_release_name}_BaseSystem.vdi" ]; then
     echo "${macOS_release_name}_BaseSystem.vdi bootstrap virtual disk image ready."
-else
-    echo "Downloading BaseSystem.dmg from swcdn.apple.com"
-    wget "${urlbase}BaseSystem.dmg" \
-         ${wgetargs} \
-         --output-document="${macOS_release_name}_BaseSystem.dmg"
-    if [ ! -s "${macOS_release_name}_BaseSystem.dmg" ]; then
-        printf "${white_on_red}"'Could not download BaseSystem.dmg'"${default_color}"'.\n'
+elif [ ! -s "${macOS_release_name}_BaseSystem.dmg" ]; then
+        echo ""
+        echo "Could not find ${macOS_release_name}_BaseSystem.dmg; exiting."
         exit
-    fi
-    echo "Downloaded BaseSystem.dmg. Converting to BaseSystem.img"
-    if [ -n "$("${PWD}/dmg2img.exe" -d 2>/dev/null)" ]; then
-        "${PWD}/dmg2img.exe" "${macOS_release_name}_BaseSystem.dmg" "${macOS_release_name}_BaseSystem.img"
-    else
-        dmg2img "${macOS_release_name}_BaseSystem.dmg" "${macOS_release_name}_BaseSystem.img"
-    fi
-    VBoxManage convertfromraw --format VDI "${macOS_release_name}_BaseSystem.img" "${macOS_release_name}_BaseSystem.vdi"
-    if [ -s "${macOS_release_name}_BaseSystem.vdi" ]; then
-        rm "${macOS_release_name}_BaseSystem.img" 2>/dev/null
-    fi
+fi
+echo "Converting to BaseSystem.dmg to BaseSystem.img"
+if [ -n "$("${PWD}/dmg2img.exe" -d 2>/dev/null)" ]; then
+    "${PWD}/dmg2img.exe" "${macOS_release_name}_BaseSystem.dmg" "${macOS_release_name}_BaseSystem.img"
+else
+    dmg2img "${macOS_release_name}_BaseSystem.dmg" "${macOS_release_name}_BaseSystem.img"
+fi
+VBoxManage convertfromraw --format VDI "${macOS_release_name}_BaseSystem.img" "${macOS_release_name}_BaseSystem.vdi"
+if [ -s "${macOS_release_name}_BaseSystem.vdi" ]; then
+    rm "${macOS_release_name}_BaseSystem.img" 2>/dev/null
 fi
 }
 
@@ -456,14 +468,26 @@ VBoxManage setextradata "${vmname}" \
 VBoxManage setextradata "${vmname}" \
  "VBoxInternal/Devices/efi/0/Config/DmiBoardSerial" "${DmiBoardSerial}"
 VBoxManage setextradata "${vmname}" \
- "VBoxInternal/Devices/efi/0/Config/UUID" "${UUID}"
+ "VBoxInternal/Devices/efi/0/LUN#0/Config/Vars/0000/Uuid" "4D1EDE05-38C7-4A6A-9CC6-4BCCA8B38C14"
+VBoxManage setextradata "${vmname}" \
+ "VBoxInternal/Devices/efi/0/LUN#0/Config/Vars/0000/Name" "MLB"
+VBoxManage setextradata "${vmname}" \
+ "VBoxInternal/Devices/efi/0/LUN#0/Config/Vars/0000/Value" "${MLB}"
+VBoxManage setextradata "${vmname}" \
+ "VBoxInternal/Devices/efi/0/LUN#0/Config/Vars/0001/Uuid" "4D1EDE05-38C7-4A6A-9CC6-4BCCA8B38C14"
+VBoxManage setextradata "${vmname}" \
+ "VBoxInternal/Devices/efi/0/LUN#0/Config/Vars/0001/Name" "ROM"
+VBoxManage setextradata "${vmname}" \
+ "VBoxInternal/Devices/efi/0/LUN#0/Config/Vars/0001/Value" "${ROM}"
+VBoxManage setextradata "${vmname}" \
+ "VBoxInternal/Devices/efi/0/Config/Uuid" "${UUID}"
 VBoxManage setextradata "${vmname}" \
  "VBoxInternal/Devices/efi/0/Config/DmiSystemVendor" "Apple Inc."
 VBoxManage setextradata "${vmname}" \
  "VBoxInternal/Devices/efi/0/Config/DmiSystemVersion" "1.0"
 VBoxManage setextradata "${vmname}" \
  "VBoxInternal/Devices/smc/0/Config/DeviceKey" \
- "ourhardworkbythesewordsguardedpleasedontsteal(c)AppleComputerInc"
+  "ourhardworkbythesewordsguardedpleasedontsteal(c)AppleComputerInc"
 VBoxManage setextradata "${vmname}" \
  "VBoxInternal/Devices/smc/0/Config/GetKeyFromRealSMC" 0
 VBoxManage setextradata "${vmname}" \
@@ -691,7 +715,7 @@ echo ""
 echo "Loading base system onto installer virtual disk"
 
 # Create secondary base system and shut down the virtual machine
-kbstring='asr restore --source "/Volumes/'"${macOS_installation_files_volume_id}"'/BaseSystem.dmg" --target /Volumes/Install --erase --noprompt'
+kbstring='asr restore --source "/Volumes/'"${macOS_release_name:0:5}-files"'/BaseSystem.dmg" --target /Volumes/Install --erase --noprompt'
 send_keys
 
 prompt_terminal_ready
@@ -719,7 +743,7 @@ prompt_terminal_ready
 echo ""
 echo "Moving installation files to installer virtual disk."
 echo "The virtual machine may report that disk space is critically low; this is fine."
-kbstring='app_path="$(ls -d /Install*.app)" && mount -rw / && install_path="${app_path}/Contents/SharedSupport/" && mkdir -p "${install_path}" && cd "/Volumes/'"${macOS_installation_files_volume_id}/"'" && cp *.chunklist *.plist *.dmg "${install_path}" && cat InstallESD.part* > "${install_path}/InstallESD.dmg"'
+kbstring='app_path="$(ls -d /Install*.app)" && mount -rw / && install_path="${app_path}/Contents/SharedSupport/" && mkdir -p "${install_path}" && cd "/Volumes/'"${macOS_release_name:0:5}-files/"'" && cp *.chunklist *.plist *.dmg "${install_path}" && cat InstallESD.part* > "${install_path}/InstallESD.dmg"'
 send_keys
 
 # update InstallInfo.plist
@@ -781,14 +805,14 @@ echo ""
 echo "Copying open-source APFS drivers to EFI partition"
 
 # move drivers into path on EFI partition
-kbstring='mkdir -p "/Volumes/'"${vmname}"'/mount_efi" && mount_msdos /dev/${disks[0]}s1 "/Volumes/'"${vmname}"'/mount_efi" && mkdir -p "/Volumes/'"${vmname}"'/mount_efi/EFI/driver/" && cp "/Volumes/'"${macOS_installation_files_volume_id}"'/"*.efi "/Volumes/'"${vmname}"'/mount_efi/EFI/driver/"'
+kbstring='mkdir -p "/Volumes/'"${vmname}"'/mount_efi" && mount_msdos /dev/${disks[0]}s1 "/Volumes/'"${vmname}"'/mount_efi" && mkdir -p "/Volumes/'"${vmname}"'/mount_efi/EFI/driver/" && cp "/Volumes/'"${macOS_release_name:0:5}-files"'/"*.efi "/Volumes/'"${vmname}"'/mount_efi/EFI/driver/"'
 send_keys
 prompt_terminal_ready
 
 # place startup.nsh EFI script
 echo ""
 echo "Placing EFI startup script that searches for boot.efi on the EFI partition"
-kbstring='cp "/Volumes/'"${macOS_installation_files_volume_id}"'/startup.nsh" "/Volumes/'"${vmname}"'/mount_efi/startup.nsh"'
+kbstring='cp "/Volumes/'"${macOS_release_name:0:5}-files"'/startup.nsh" "/Volumes/'"${vmname}"'/mount_efi/startup.nsh"'
 send_keys
 
 }
