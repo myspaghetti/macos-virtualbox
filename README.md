@@ -10,7 +10,7 @@ Tested on Cygwin and WSL, should work on most Linux distros.
 
 ## iCloud and iMessage connectivity
 
-iCloud, iMessage, and other connected Apple services require a valid device name and serial number, board ID and serial number, and other genuine (or genuine-like) Apple parameters, some of which are not passed to the virtual machine by VirtualBox. These parameters may be set by [attaching an ISO of the bootloader Clover](https://sourceforge.net/projects/cloverefiboot/files/Bootable_ISO/) and changing the parameters on the Clover SMBIOS options screen, however this script is not compatible with booting macOS from Clover on VirtualBox.
+iCloud, iMessage, and other connected Apple services require a valid device name and serial number, board ID and serial number, and other genuine (or genuine-like) Apple parameters. These parameters may be set in the script before installation, or set after installation and applied with `./macos-guest-virtualbox.sh configure_vm`
 
 ## Storage size
 
