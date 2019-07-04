@@ -2,7 +2,7 @@
 # Semi-automatic installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/img2tab/macos-guest-virtualbox
-# version 0.70.1
+# version 0.70.2
 
 # Requirements: 40GB available storage on host
 # Dependencies: bash >= 4.0, unzip, wget, dmg2img,
@@ -34,9 +34,9 @@ DmiBoardSerial="NO_LOGIC_BOARD_SN"
 UUID="bytes:qqq7u8zM3d3u7v//AAAREQ=="
 
 # welcome message
-whiteonred="\e[48;2;255;0;0m\e[38;2;255;255;255m"
-whiteonblack="\e[48;2;0;0;9m\e[38;2;255;255;255m"
-defaultcolor="\033[0m"
+white_on_red="\e[48;2;255;0;0m\e[38;2;255;255;255m"
+white_on_black="\e[48;2;0;0;9m\e[38;2;255;255;255m"
+default_color="\033[0m"
 
 function welcome() {
 printf '
@@ -47,17 +47,17 @@ This script installs only open-source software and unmodified Apple binaries.
 
 The script checks for dependencies and will prompt to install them if unmet.
 Some stages may fail due to errant keyboard presses; run the script with
-"'${whiteonblack}"${0}"' stages'${defaultcolor}'" to see how to run only certain stages.
+"'${white_on_black}"${0}"' stages'${default_color}'" to see how to run only certain stages.
 
 For iCloud and iMessage connectivity, you will need to install Clover and
 configure the SMBIOS options. macOS will work without these parameters, but not
 Apple-connected apps.
 
-The installation requires '${whiteonred}'40GB'${defaultcolor}' of available storage, 25GB for
+The installation requires '${white_on_red}'40GB'${default_color}' of available storage, 25GB for
 temporary installation files and 15GB for the virtual machine. Deleting the
 temporary files when prompted reduces the storage requirement by about 10GB.
 
-'${whiteonblack}'Press enter to review the script settings.'${defaultcolor}
+'${white_on_black}'Press enter to review the script settings.'${default_color}
 read
 
 # custom settings prompt
@@ -71,7 +71,7 @@ resolution="'"${resolution}"'"      # VM display resolution
 
 These values may be customized by editing them at the top of the script file.
 
-'${whiteonblack}'Press enter to continue, CTRL-C to exit.'${defaultcolor}
+'${white_on_black}'Press enter to continue, CTRL-C to exit.'${default_color}
 read
 }
 
@@ -127,7 +127,7 @@ if [ -n "$(cygcheck -V 2>/dev/null)" ]; then
         else
             echo "Please make sure VirtualBox is installed, and that the path to the"
             echo "VBoxManage.exe executable is in the PATH variable, or assigned in the script"
-            printf 'to the variable '${whiteonblack}'cmd_path_VBoxManage'${defaultcolor}' including the name of the executable.'
+            printf 'to the variable '${white_on_black}'cmd_path_VBoxManage'${default_color}' including the name of the executable.'
             exit
         fi
     fi
@@ -149,7 +149,7 @@ elif [[ "$(cat /proc/sys/kernel/osrelease 2>/dev/null)" =~ Microsoft ]]; then
         else
             echo "Please make sure VirtualBox is installed on Windows, and that the path to the"
             echo "VBoxManage.exe executable is in the PATH variable, or assigned in the script"
-            printf 'to the variable '${whiteonblack}'wsl_path_VBoxManage'${defaultcolor}' including the name of the executable.'
+            printf 'to the variable '${white_on_black}'wsl_path_VBoxManage'${default_color}' including the name of the executable.'
             exit
         fi
     fi
@@ -205,8 +205,8 @@ Mojave_sucatalog='https://swscan.apple.com/content/catalogs/others/index-10.14-1
 Catalina_beta_sucatalog='https://swscan.apple.com/content/catalogs/others/index-10.15seed-10.15-10.14-10.13-10.12-10.11-10.10-10.9-mountainlion-lion-snowleopard-leopard.merged-1.sucatalog'
 # Catalina public release not yet available
 # Catalina_sucatalog='https://swscan.apple.com/content/catalogs/others/index-10.15-10.14-10.13-10.12-10.11-10.10-10.9-mountainlion-lion-snowleopard-leopard.merged-1.sucatalog'
-printf "${whiteonblack}"'
-Press a key to select the macOS version to install on the virtual machine:'"${defaultcolor}"'
+printf "${white_on_black}"'
+Press a key to select the macOS version to install on the virtual machine:'"${default_color}"'
  [H]igh Sierra (10.13)
  [M]ojave (10.14)
  [C]atalina (10.15 beta)
@@ -233,14 +233,14 @@ fi
 function prompt_delete_existing_vm() {
 if [ -n "$(VBoxManage showvminfo "${vmname}" 2>/dev/null)" ]; then
     printf '\n"'"${vmname}"'" virtual machine already exists.
-'${whiteonred}'Delete existing virtual machine "'"${vmname}"'"?'${defaultcolor}
+'${white_on_red}'Delete existing virtual machine "'"${vmname}"'"?'${default_color}
     delete=""
     read -n 1 -p " [y/n] " delete 2>/dev/tty
     echo ""
     if [ "${delete,,}" == "y" ]; then
         VBoxManage unregistervm "${vmname}" --delete
     else
-        printf '\n'${whiteonblack}'Please assign a different VM name to variable "vmname" by editing the script,'${defaultcolor}'
+        printf '\n'${white_on_black}'Please assign a different VM name to variable "vmname" by editing the script,'${default_color}'
 or skip this check manually as described in "'"${0}"' stages".\n'
         exit
     fi
@@ -251,7 +251,7 @@ fi
 function create_vm() {
 if [ -n "$(VBoxManage createvm --name "${vmname}" --ostype "MacOS1013_64" --register 2>&1 1>/dev/null)" ]; then
     printf '\nError: Could not create virtual machine "'"${vmname}"'".
-'${whiteonblack}'Please delete exising "'"${vmname}"'" VirtualBox configuration files '${whiteonred}'manually'${defaultcolor}'.
+'${white_on_black}'Please delete exising "'"${vmname}"'" VirtualBox configuration files '${white_on_red}'manually'${default_color}'.
 
 Error message:
 '
@@ -267,6 +267,21 @@ echo "Downloading Apple macOS ${macOS_release_name} software update catalog"
 wget "${sucatalog}" \
      ${wgetargs} \
      --output-document="${macOS_release_name}_sucatalog"
+
+# if file was not downloaded correctly
+if [ ! -s "${macOS_release_name}_sucatalog" ]; then
+    wget --debug -O /dev/null -o "${macOS_release_name}_wget.log" "${sucatalog}"
+    echo ""
+    echo "Couldn't download the Apple software update catalog."
+    if [ "$(expr match "$(cat "${macOS_release_name}_wget.log")" '.*ERROR[[:print:]]*is not trusted')" -gt "0" ]; then
+        printf '
+Make sure certificates from a certificate authority are installed.
+Certificates are often installed through the package manager with
+a package named '"${white_on_black}"'ca-certificates'"${default_color}"
+    fi
+    echo "Exiting."
+    exit
+fi
 echo "Trying to find macOS ${macOS_release_name} InstallAssistant download URL"
 tac "${macOS_release_name}_sucatalog" | csplit - '/InstallAssistantAuto.smd/+1' '{*}' -f "${macOS_release_name}_sucatalog_" -s
 for catalog in "${macOS_release_name}_sucatalog_"* "error"; do
@@ -356,7 +371,7 @@ else
          ${wgetargs} \
          --output-document="${macOS_release_name}_BaseSystem.dmg"
     if [ ! -s "${macOS_release_name}_BaseSystem.dmg" ]; then
-        printf "${whiteonred}"'Could not download BaseSystem.dmg'"${defaultcolor}"'.\n'
+        printf "${white_on_red}"'Could not download BaseSystem.dmg'"${default_color}"'.\n'
         exit
     fi
     echo "Downloaded BaseSystem.dmg. Converting to BaseSystem.img"
@@ -623,13 +638,13 @@ function send_enter() {
 }
 
 function prompt_lang_utils() {
-    printf ${whiteonblack}'
-Press enter when the Language window is ready.'${defaultcolor}
+    printf ${white_on_black}'
+Press enter when the Language window is ready.'${default_color}
     read -p ""
     send_enter
 
-    printf ${whiteonblack}'
-Press enter when the macOS Utilities window is ready.'${defaultcolor}
+    printf ${white_on_black}'
+Press enter when the macOS Utilities window is ready.'${default_color}
     read -p ""
 
     kbspecial='CTRLprs F2 CTRLrls u ENTER t ENTER'
@@ -637,8 +652,8 @@ Press enter when the macOS Utilities window is ready.'${defaultcolor}
 }
 
 function prompt_terminal_ready() {
-    printf ${whiteonblack}'
-Press enter when the Terminal command prompt is ready.'${defaultcolor}
+    printf ${white_on_black}'
+Press enter when the Terminal command prompt is ready.'${default_color}
     read -p ""
 }
 
@@ -682,9 +697,9 @@ prompt_terminal_ready
 kbstring='shutdown -h now'
 send_keys
 
-printf ${whiteonblack}'
+printf ${white_on_black}'
 Shutting down the virtual machine.
-Press enter when the virtual machine shutdown is complete.'${defaultcolor}
+Press enter when the virtual machine shutdown is complete.'${default_color}
 read -p ""
 echo ""
 echo "Detaching initial base system and starting virtual machine."
@@ -714,9 +729,9 @@ send_keys
 prompt_terminal_ready
 kbstring='shutdown -h now'
 send_keys
-printf ${whiteonblack}'
+printf ${white_on_black}'
 Shutting down virtual machine.
-Press enter when the virtual machine shutdown is complete.'${defaultcolor}
+Press enter when the virtual machine shutdown is complete.'${default_color}
 read -p ""
 }
 
@@ -728,10 +743,10 @@ prompt_terminal_ready
 # Start the installer.
 kbstring='app_path="$(ls -d /Install*.app)" && cd "/${app_path}/Contents/Resources/"; ./startosinstall --volume "/Volumes/'"${vmname}"'"'
 send_keys
-printf ${whiteonblack}'
+printf ${white_on_black}'
 Installer started. Please wait for the license prompt to appear at
 the bottom of the virtual machine terminal, then press enter here.
-This will accept the license on the virtual machine.'${defaultcolor}
+This will accept the license on the virtual machine.'${default_color}
 read -p ""
 kbspecial="A ENTER"
 send_special
@@ -742,14 +757,14 @@ echo "into the base system, not the installer."
 }
 
 function place_efi_apfs_drivers {
-printf ${whiteonblack}'
-After the VM boots, press enter when either the Language window'${defaultcolor}'
-'${whiteonblack}'or Utilities window is ready.'${defaultcolor}
+printf ${white_on_black}'
+After the VM boots, press enter when either the Language window'${default_color}'
+'${white_on_black}'or Utilities window is ready.'${default_color}
 read -p ""
 send_enter
 
-printf ${whiteonblack}'
-Press enter when the macOS Utilities window is ready.'${defaultcolor}
+printf ${white_on_black}'
+Press enter when the macOS Utilities window is ready.'${default_color}
 read -p ""
 kbspecial='CTRLprs F2 CTRLrls u ENTER t ENTER'
 send_special
@@ -778,16 +793,16 @@ send_keys
 
 function detach_installer_vdi_and_viso() {
 # Shut down the virtual machine
-printf ${whiteonblack}'
-Press enter when the terminal is ready.'${defaultcolor}
+printf ${white_on_black}'
+Press enter when the terminal is ready.'${default_color}
 read -p ""
 kbstring='shutdown -h now'
 send_keys
 
 echo ""
 echo "Shutting down virtual machine."
-printf ${whiteonblack}'
-Press enter when the virtual machine shutdown is complete.'${defaultcolor}
+printf ${white_on_black}'
+Press enter when the virtual machine shutdown is complete.'${default_color}
 read -p ""
 
 # detach installer from virtual machine
@@ -805,7 +820,7 @@ echo ""
 # temporary files cleanup
 VBoxManage closemedium "${macOS_release_name}_BaseSystem.vdi" 2>/dev/null
 VBoxManage closemedium "Install ${macOS_release_name}.vdi" 2>/dev/null
-printf 'Temporary files are safe to delete. '${whiteonred}'Delete temporary files?'${defaultcolor}
+printf 'Temporary files are safe to delete. '${white_on_red}'Delete temporary files?'${default_color}
 delete=""
 read -n 1 -p " [y/n] " delete 2>/dev/tty
 echo ""
@@ -831,7 +846,7 @@ That'\''s it. Enjoy your virtual machine.
 }
 
 function stages() {
-printf '\nUSAGE: '${whiteonblack}${0}' [STAGE]...'${defaultcolor}'
+printf '\nUSAGE: '${white_on_black}${0}' [STAGE]...'${default_color}'
 
 The script is divided into stages that run as separate functions.
 Add one or more stage titles to the command line to run the corresponding
