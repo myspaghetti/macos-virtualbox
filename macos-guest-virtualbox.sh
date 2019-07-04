@@ -38,6 +38,9 @@ white_on_red="\e[48;2;255;0;0m\e[38;2;255;255;255m"
 white_on_black="\e[48;2;0;0;9m\e[38;2;255;255;255m"
 default_color="\033[0m"
 
+# other globals
+macOS_installation_files_volume_id="swcdn-files"
+
 function welcome() {
 printf '
                 Semi-automatic installer of macOS on VirtualBox
@@ -337,7 +340,6 @@ endfor' > "startup.nsh"
 }
 
 function create_macos_installation_files_viso() {
-macOS_installation_files_volume_id="swcdn-files"
 echo "Crating VirtualBox 6 virtual ISO containing the"
 echo "installation files from swcdn.apple.com"
 echo ""
