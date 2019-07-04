@@ -2,7 +2,7 @@
 # Semi-automatic installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/img2tab/macos-guest-virtualbox
-# version 0.70.3
+# version 0.71.0
 
 # Requirements: 40GB available storage on host
 # Dependencies: bash >= 4.0, unzip, wget, dmg2img,
@@ -17,7 +17,11 @@ gpuvram=128                      # VM video RAM in MB, minimum 34, maximum 128
 resolution="1280x800"            # VM display resolution
 
 # The following commented commands may provide the values for the parameters
-# of the Clover SMBIOS options screen. Run them on a genuine Mac.
+# required by iCloud, iMessage, and other connected Apple applications.
+# Parameters taken from a genuine Mac will result in a "Call customer support"
+# message because one required parameter, 'system-id' (UUID), is still not
+# being passed to the virtual machine. That said, non-genuine parameters work.
+
 # system_profiler SPHardwareDataType
 DmiSystemFamily="MacBook Pro"        # Model Name
 DmiSystemProduct="MacBookPro11,2"    # Model Identifier
@@ -68,9 +72,8 @@ The script checks for dependencies and will prompt to install them if unmet.
 Some stages may fail due to errant keyboard presses; run the script with
 "'${white_on_black}"${0}"' stages'${default_color}'" to see how to run only certain stages.
 
-For iCloud and iMessage connectivity, you will need to install Clover and
-configure the SMBIOS options. macOS will work without these parameters, but not
-Apple-connected apps.
+For iCloud and iMessage connectivity, the script needs to be edited with genuine or genuine-like
+Apple parameters. macOS will work without these parameters, but not Apple-connected apps.
 
 The installation requires '${white_on_red}'40GB'${default_color}' of available storage, 25GB for
 temporary installation files and 15GB for the virtual machine. Deleting the
