@@ -2,7 +2,7 @@
 # Semi-automatic installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/img2tab/macos-guest-virtualbox
-# version 0.71.0
+# version 0.71.1
 
 # Requirements: 40GB available storage on host
 # Dependencies: bash >= 4.0, unzip, wget, dmg2img,
@@ -75,7 +75,7 @@ Some stages may fail due to errant keyboard presses; run the script with
 For iCloud and iMessage connectivity, the script needs to be edited with genuine or genuine-like
 Apple parameters. macOS will work without these parameters, but not Apple-connected apps.
 
-The installation requires '${white_on_red}'40GB'${default_color}' of available storage, 25GB for
+The installation requires about '${white_on_red}'40GB'${default_color}' of available storage, 25GB for
 temporary installation files and 15GB for the virtual machine. Deleting the
 temporary files when prompted reduces the storage requirement by about 10GB.
 
@@ -249,6 +249,7 @@ else
     CFBundleShortVersionString="10.15"
     sucatalog="${Catalina_beta_sucatalog}"
 fi
+echo "${macOS_release_name} selected"
 }
 # Done with dependencies
 
