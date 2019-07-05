@@ -2,7 +2,7 @@
 # Semi-automatic installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/img2tab/macos-guest-virtualbox
-# version 0.71.1
+# version 0.71.2
 
 # Requirements: 40GB available storage on host
 # Dependencies: bash >= 4.0, unzip, wget, dmg2img,
@@ -263,7 +263,8 @@ if [ -n "$(VBoxManage showvminfo "${vmname}" 2>/dev/null)" ]; then
     if [ "${delete,,}" == "y" ]; then
         VBoxManage unregistervm "${vmname}" --delete
     else
-        printf '\n'${white_on_black}'Please assign a different VM name to variable "vmname" by editing the script,'${default_color}'
+        printf '
+'"${white_on_black}"'Please assign a different VM name to variable "vmname" by editing the script,'"${default_color}"'
 or skip this check manually as described in "'"${0}"' stages".\n'
         exit
     fi
@@ -389,19 +390,20 @@ function create_basesystem_vdi() {
 if [ -s "${macOS_release_name}_BaseSystem.vdi" ]; then
     echo "${macOS_release_name}_BaseSystem.vdi bootstrap virtual disk image ready."
 elif [ ! -s "${macOS_release_name}_BaseSystem.dmg" ]; then
-        echo ""
-        echo "Could not find ${macOS_release_name}_BaseSystem.dmg; exiting."
-        exit
-fi
-echo "Converting to BaseSystem.dmg to BaseSystem.img"
-if [ -n "$("${PWD}/dmg2img.exe" -d 2>/dev/null)" ]; then
-    "${PWD}/dmg2img.exe" "${macOS_release_name}_BaseSystem.dmg" "${macOS_release_name}_BaseSystem.img"
+    echo ""
+    echo "Could not find ${macOS_release_name}_BaseSystem.dmg; exiting."
+    exit
 else
-    dmg2img "${macOS_release_name}_BaseSystem.dmg" "${macOS_release_name}_BaseSystem.img"
-fi
-VBoxManage convertfromraw --format VDI "${macOS_release_name}_BaseSystem.img" "${macOS_release_name}_BaseSystem.vdi"
-if [ -s "${macOS_release_name}_BaseSystem.vdi" ]; then
-    rm "${macOS_release_name}_BaseSystem.img" 2>/dev/null
+    echo "Converting to BaseSystem.dmg to BaseSystem.img"
+    if [ -n "$("${PWD}/dmg2img.exe" -d 2>/dev/null)" ]; then
+        "${PWD}/dmg2img.exe" "${macOS_release_name}_BaseSystem.dmg" "${macOS_release_name}_BaseSystem.img"
+    else
+        dmg2img "${macOS_release_name}_BaseSystem.dmg" "${macOS_release_name}_BaseSystem.img"
+    fi
+    VBoxManage convertfromraw --format VDI "${macOS_release_name}_BaseSystem.img" "${macOS_release_name}_BaseSystem.vdi"
+    if [ -s "${macOS_release_name}_BaseSystem.vdi" ]; then
+        rm "${macOS_release_name}_BaseSystem.img" 2>/dev/null
+    fi
 fi
 }
 
@@ -411,7 +413,7 @@ if [ -w "${vmname}.vdi" ]; then
     echo "${vmname}.vdi target system virtual disk image ready."
 elif [ "${storagesize}" -lt 22000 ]; then
     echo "Attempting to install macOS on a disk smaller than 22000MB will fail."
-    echo "Please assign a larger virtual disk image size."
+    echo "Please assign a larger virtual disk image size. Exiting."
     exit
 else
     echo "Creating ${vmname} target system virtual disk image."
@@ -484,7 +486,7 @@ VBoxManage setextradata "${vmname}" \
 VBoxManage setextradata "${vmname}" \
  "VBoxInternal/Devices/efi/0/LUN#0/Config/Vars/0001/Value" "${ROM}"
 VBoxManage setextradata "${vmname}" \
- "VBoxInternal/Devices/efi/0/Config/Uuid" "${UUID}"
+ "VBoxInternal/Devices/efi/0/Config/UUID" "${UUID}"
 VBoxManage setextradata "${vmname}" \
  "VBoxInternal/Devices/efi/0/Config/DmiSystemVendor" "Apple Inc."
 VBoxManage setextradata "${vmname}" \
