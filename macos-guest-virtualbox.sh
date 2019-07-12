@@ -2,11 +2,11 @@
 # Semi-automatic installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/img2tab/macos-guest-virtualbox
-# version 0.71.2
+# version 0.71.3
 
 # Requirements: 40GB available storage on host
 # Dependencies: bash >= 4.0, unzip, wget, dmg2img,
-#               VirtualBox with Extension Pack >= 6.0
+#               VirtualBox with Extension Pack >= 5.2.2
 
 # Customize the installation by setting these variables:
 vmname="macOS"                   # name of the VirtualBox virtual machine
@@ -147,9 +147,10 @@ if [ -n "$(cygcheck -V 2>/dev/null)" ]; then
             }
             echo "Found VBoxManage"
         else
-            echo "Please make sure VirtualBox is installed, and that the path to the"
-            echo "VBoxManage.exe executable is in the PATH variable, or assigned in the script"
-            printf 'to the variable '${white_on_black}'cmd_path_VBoxManage'${default_color}' including the name of the executable.'
+            echo "Please make sure VirtualBox version 5.2.2 or higher is installed, and that"
+            echo "the path to the VBoxManage.exe executable is in the PATH variable, or assign"
+            echo "in the script the full path including the name of the executable to"
+            printf 'the variable '"${white_on_black}"'cmd_path_VBoxManage'"${default_color}"
             exit
         fi
     fi
@@ -177,7 +178,7 @@ elif [[ "$(cat /proc/sys/kernel/osrelease 2>/dev/null)" =~ Microsoft ]]; then
     fi
 # everything else (not cygwin and not wsl)
 elif [ -z "$(VBoxManage -v 2>/dev/null)" ]; then
-    echo "Please make sure VirtualBox version 6.0 or higher is installed,"
+    echo "Please make sure VirtualBox version 5.2.2 or higher is installed,"
     echo "and that the path to the VBoxManage executable is in the PATH variable."
     exit
 fi
@@ -187,8 +188,8 @@ vbox_version="$(VBoxManage -v 2>/dev/null)"
 if [ -z "${vbox_version}" ]; then
     echo "Can't determine VirtualBox version. Exiting."
     exit
-elif [ "${vbox_version:0:1}" -lt 6 ]; then
-    echo "Please make sure VirtualBox version 6.0 or higher is installed."
+elif [[ ! ${vbox_version:0:1} == 6 && ! "${vbox_version:0:6}" =~ 5\.2\.1[0-9] && ! "${vbox_version:0:5}" =~ 5\.2\.[2-9] ]]; then
+    echo "Please make sure VirtualBox version 5.2.2 or higher is installed."
     exit
 fi
 
