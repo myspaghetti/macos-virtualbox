@@ -2,7 +2,7 @@
 # Semi-automatic installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/img2tab/macos-guest-virtualbox
-# version 0.71.3
+# version 0.71.4
 
 # Requirements: 40GB available storage on host
 # Dependencies: bash >= 4.0, unzip, wget, dmg2img,
@@ -188,7 +188,7 @@ vbox_version="$(VBoxManage -v 2>/dev/null)"
 if [ -z "${vbox_version}" ]; then
     echo "Can't determine VirtualBox version. Exiting."
     exit
-elif [[ ! ${vbox_version:0:1} == 6 && ! "${vbox_version:0:6}" =~ 5\.2\.1[0-9] && ! "${vbox_version:0:5}" =~ 5\.2\.[2-9] ]]; then
+elif [[ ! ${vbox_version:0:1} == 6 && ! "${vbox_version:0:6}" =~ 5\.2\.1[0-9] && ! "${vbox_version:0:5}" =~ 5\.2\.[2-9] && ! "${vbox_version:0:3}" =~ 5\.[3-9] ]]; then
     echo "Please make sure VirtualBox version 5.2.2 or higher is installed."
     exit
 fi
