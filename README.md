@@ -1,6 +1,6 @@
 ## Semi-automatic installer of macOS on VirtualBox
 
-### supports macOS Catalina (10.15), Mojave (10.14), and High Sierra (10.13)
+### Supports macOS Catalina (10.15), Mojave (10.14), and High Sierra (10.13)
 
 The script is semi-automatic and requires a little user interaction. Most of the time the user simply has to press enter. There is one step where the user has to choose between [C]atalina, [M]ojave, or [H]igh Sierra, and a couple of instances where the user has to choose whether to delete or keep temporary files and previous installations.
 
@@ -22,7 +22,7 @@ Developing and maintaining VirtualBox or macOS features is beyond the scope of t
 
 ## Dependencies
 
-* [VirtualBox](https://www.virtualbox.org/wiki/Downloads)≥6 with Extension Pack
+* [VirtualBox](https://www.virtualbox.org/wiki/Downloads)≥5.2.2 with Extension Pack
 * `Bash`≥4 (run on Windows through [Cygwin](https://cygwin.com/install.html) or WSL)
 * `coreutils`, `unzip`, `wget` (install through package manager)
 * `dmg2img` (install through package manager on Linux or WSL; let the script download it automatically on Cygwin)
