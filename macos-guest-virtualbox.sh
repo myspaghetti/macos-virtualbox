@@ -56,6 +56,7 @@ else
         ROM="bytes:qiq7Z8zd"                  # base64 of the example ROM
         UUID="bytes:qrvM3e7/ABEiM0RVZneImQ==" # base64 of the example UUID
      else
+        echo ""
         echo "ROM and UUID variables have been assigned non-default values. Applying these"
         echo "values to the virtual machine requires the package xxd. Please make sure the"
         echo "package xxd is installed."
