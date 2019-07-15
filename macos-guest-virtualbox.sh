@@ -2,7 +2,7 @@
 # Semi-automatic installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/img2tab/macos-guest-virtualbox
-# version 0.71.4
+# version 0.71.5
 
 # Requirements: 40GB available storage on host
 # Dependencies: bash >= 4.0, unzip, wget, dmg2img,
@@ -52,8 +52,16 @@ if [ -n "$(echo -n "aabbccddee" | xxd -r -p 2>/dev/null)" ]; then
     UUID_b64="$(echo -n "${UUID}" | xxd -r -p | base64)"
     UUID="bytes:${UUID_b64}"
 else
-    ROM="bytes:qiq7Z8zd"                  # base64 of the example ROM
-    UUID="bytes:qrvM3e7/ABEiM0RVZneImQ==" # base64 of the example UUID
+    if [ "${ROM}" = '%aa*%bbg%cc%dd' -a "${UUID}" = "aabbccddeeff00112233445566778899" ]; then
+        ROM="bytes:qiq7Z8zd"                  # base64 of the example ROM
+        UUID="bytes:qrvM3e7/ABEiM0RVZneImQ==" # base64 of the example UUID
+     else
+        echo "ROM and UUID variables have been assigned non-default values. Applying these"
+        echo "values to the virtual machine requires the package xxd. Please make sure the"
+        echo "package xxd is installed."
+        echo "Exiting."
+        exit
+    fi
 fi
 
 # welcome message
