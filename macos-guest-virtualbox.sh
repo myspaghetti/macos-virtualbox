@@ -2,7 +2,7 @@
 # Semi-automatic installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/img2tab/macos-guest-virtualbox
-# version 0.71.5
+# version 0.71.6
 
 # Requirements: 40GB available storage on host
 # Dependencies: bash >= 4.0, unzip, wget, dmg2img,
@@ -56,7 +56,6 @@ else
         ROM="bytes:qiq7Z8zd"                  # base64 of the example ROM
         UUID="bytes:qrvM3e7/ABEiM0RVZneImQ==" # base64 of the example UUID
      else
-        echo ""
         echo "ROM and UUID variables have been assigned non-default values. Applying these"
         echo "values to the virtual machine requires the package xxd. Please make sure the"
         echo "package xxd is installed."
@@ -81,8 +80,9 @@ The script checks for dependencies and will prompt to install them if unmet.
 Some stages may fail due to errant keyboard presses; run the script with
 "'${white_on_black}"${0}"' stages'${default_color}'" to see how to run only certain stages.
 
-For iCloud and iMessage connectivity, the script needs to be edited with genuine or genuine-like
-Apple parameters. macOS will work without these parameters, but not Apple-connected apps.
+For iCloud and iMessage connectivity, the script needs to be edited with genuine
+or genuine-like Apple parameters. macOS will work without these parameters, but
+Apple-connected apps will not.
 
 The installation requires about '${white_on_red}'40GB'${default_color}' of available storage, 25GB for
 temporary installation files and 15GB for the virtual machine. Deleting the
