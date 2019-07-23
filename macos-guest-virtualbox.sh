@@ -2,11 +2,11 @@
 # Semi-automatic installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/img2tab/macos-guest-virtualbox
-# version 0.71.6
+# version 0.71.7
 
 # Requirements: 40GB available storage on host
 # Dependencies: bash >= 4.0, unzip, wget, dmg2img,
-#               VirtualBox with Extension Pack >= 5.2.2
+#               VirtualBox with Extension Pack >= 6.0
 
 # Customize the installation by setting these variables:
 vmname="macOS"                   # name of the VirtualBox virtual machine
@@ -78,17 +78,17 @@ This script installs only open-source software and unmodified Apple binaries.
 
 The script checks for dependencies and will prompt to install them if unmet.
 Some stages may fail due to errant keyboard presses; run the script with
-"'${white_on_black}"${0}"' stages'${default_color}'" to see how to run only certain stages.
+"'"${white_on_black}${0}"' stages'"${default_color}"'" to see how to run only certain stages.
 
 For iCloud and iMessage connectivity, the script needs to be edited with genuine
 or genuine-like Apple parameters. macOS will work without these parameters, but
 Apple-connected apps will not.
 
-The installation requires about '${white_on_red}'40GB'${default_color}' of available storage, 25GB for
+The installation requires about '"${white_on_red}"'40GB'"${default_color}"' of available storage, 25GB for
 temporary installation files and 15GB for the virtual machine. Deleting the
 temporary files when prompted reduces the storage requirement by about 10GB.
 
-'${white_on_black}'Press enter to review the script settings.'${default_color}
+'"${white_on_black}"'Press enter to review the script settings.'"${default_color}"
 read
 
 # custom settings prompt
@@ -102,7 +102,7 @@ resolution="'"${resolution}"'"      # VM display resolution
 
 These values may be customized by editing them at the top of the script file.
 
-'${white_on_black}'Press enter to continue, CTRL-C to exit.'${default_color}
+'"${white_on_black}"'Press enter to continue, CTRL-C to exit.'"${default_color}"
 read
 }
 
@@ -156,7 +156,7 @@ if [ -n "$(cygcheck -V 2>/dev/null)" ]; then
             }
             echo "Found VBoxManage"
         else
-            echo "Please make sure VirtualBox version 5.2.2 or higher is installed, and that"
+            echo "Please make sure VirtualBox version 6.0 or higher is installed, and that"
             echo "the path to the VBoxManage.exe executable is in the PATH variable, or assign"
             echo "in the script the full path including the name of the executable to"
             printf 'the variable '"${white_on_black}"'cmd_path_VBoxManage'"${default_color}"
@@ -181,13 +181,13 @@ elif [[ "$(cat /proc/sys/kernel/osrelease 2>/dev/null)" =~ Microsoft ]]; then
         else
             echo "Please make sure VirtualBox is installed on Windows, and that the path to the"
             echo "VBoxManage.exe executable is in the PATH variable, or assigned in the script"
-            printf 'to the variable '${white_on_black}'wsl_path_VBoxManage'${default_color}' including the name of the executable.'
+            printf 'to the variable '"${white_on_black}"'wsl_path_VBoxManage'"${default_color}"' including the name of the executable.'
             exit
         fi
     fi
 # everything else (not cygwin and not wsl)
 elif [ -z "$(VBoxManage -v 2>/dev/null)" ]; then
-    echo "Please make sure VirtualBox version 5.2.2 or higher is installed,"
+    echo "Please make sure VirtualBox version 6.0 or higher is installed,"
     echo "and that the path to the VBoxManage executable is in the PATH variable."
     exit
 fi
@@ -197,9 +197,18 @@ vbox_version="$(VBoxManage -v 2>/dev/null)"
 if [ -z "${vbox_version}" ]; then
     echo "Can't determine VirtualBox version. Exiting."
     exit
-elif [[ ! ${vbox_version:0:1} == 6 && ! "${vbox_version:0:6}" =~ 5\.2\.1[0-9] && ! "${vbox_version:0:5}" =~ 5\.2\.[2-9] && ! "${vbox_version:0:3}" =~ 5\.[3-9] ]]; then
-    echo "Please make sure VirtualBox version 5.2.2 or higher is installed."
+elif [[ ! ${vbox_version:0:1} == 6 && ! "${vbox_version:0:6}" =~ 5\.2\.1[0-9] && ! "${vbox_version:0:5}" =~ 5\.2\.[2-9] ]]; then
+    echo "Please make sure VirtualBox version 6.0 or higher is installed."
     exit
+elif [ "${vbox_version:0:1}" -lt 6 ]; then
+    echo ""
+    printf 'VirtualBox version '"${white_on_black}${vbox_version}${default_color}"' detected. Please see the following\n'
+    echo "URL for issues with the VISO filesystem on VirtualBox 5.2 to 5.2.32:"
+    echo ""
+    echo "  https://github.com/myspaghetti/macos-guest-virtualbox/issues/86"
+    echo ""
+    printf "${white_on_black}"'Press enter to continue, CTRL-C to exit.'"${default_color}"
+    read
 fi
 
 # Oracle VM VirtualBox Extension Pack
@@ -207,7 +216,8 @@ extpacks="$(VBoxManage list extpacks 2>/dev/null)"
 if [ "$(expr match "${extpacks}" '.*Oracle VM VirtualBox Extension Pack')" -le "0" \
     -o "$(expr match "${extpacks}" '.*Usable:[[:blank:]]*false')" -gt "0" ]; then
     echo "Please make sure Oracle VM VirtualBox Extension Pack is installed, and that"
-    echo "all installed VirtualBox extensions are listed as usable in \"VBoxManage list extpacks\""
+    echo "all installed VirtualBox extensions are listed as usable when"
+    echo "running the command \"VBoxManage list extpacks\""
     exit
 fi
 
@@ -266,7 +276,7 @@ echo "${macOS_release_name} selected"
 function prompt_delete_existing_vm() {
 if [ -n "$(VBoxManage showvminfo "${vmname}" 2>/dev/null)" ]; then
     printf '\n"'"${vmname}"'" virtual machine already exists.
-'${white_on_red}'Delete existing virtual machine "'"${vmname}"'"?'${default_color}
+'"${white_on_red}"'Delete existing virtual machine "'"${vmname}"'"?'"${default_color}"
     delete=""
     read -n 1 -p " [y/n] " delete 2>/dev/tty
     echo ""
@@ -285,7 +295,7 @@ fi
 function create_vm() {
 if [ -n "$(VBoxManage createvm --name "${vmname}" --ostype "MacOS1013_64" --register 2>&1 1>/dev/null)" ]; then
     printf '\nError: Could not create virtual machine "'"${vmname}"'".
-'${white_on_black}'Please delete exising "'"${vmname}"'" VirtualBox configuration files '${white_on_red}'manually'${default_color}'.
+'"${white_on_black}"'Please delete exising "'"${vmname}"'" VirtualBox configuration files '"${white_on_red}"'manually'"${default_color}"'.
 
 Error message:
 '
@@ -680,13 +690,13 @@ function send_enter() {
 }
 
 function prompt_lang_utils() {
-    printf ${white_on_black}'
-Press enter when the Language window is ready.'${default_color}
+    printf "${white_on_black}"'
+Press enter when the Language window is ready.'"${default_color}"
     read -p ""
     send_enter
 
-    printf ${white_on_black}'
-Press enter when the macOS Utilities window is ready.'${default_color}
+    printf "${white_on_black}"'
+Press enter when the macOS Utilities window is ready.'"${default_color}"
     read -p ""
 
     kbspecial='CTRLprs F2 CTRLrls u ENTER t ENTER'
@@ -694,8 +704,8 @@ Press enter when the macOS Utilities window is ready.'${default_color}
 }
 
 function prompt_terminal_ready() {
-    printf ${white_on_black}'
-Press enter when the Terminal command prompt is ready.'${default_color}
+    printf "${white_on_black}"'
+Press enter when the Terminal command prompt is ready.'"${default_color}"
     read -p ""
 }
 
@@ -739,9 +749,9 @@ prompt_terminal_ready
 kbstring='shutdown -h now'
 send_keys
 
-printf ${white_on_black}'
+printf "${white_on_black}"'
 Shutting down the virtual machine.
-Press enter when the virtual machine shutdown is complete.'${default_color}
+Press enter when the virtual machine shutdown is complete.'"${default_color}"
 read -p ""
 echo ""
 echo "Detaching initial base system and starting virtual machine."
@@ -771,9 +781,9 @@ send_keys
 prompt_terminal_ready
 kbstring='shutdown -h now'
 send_keys
-printf ${white_on_black}'
+printf "${white_on_black}"'
 Shutting down virtual machine.
-Press enter when the virtual machine shutdown is complete.'${default_color}
+Press enter when the virtual machine shutdown is complete.'"${default_color}"
 read -p ""
 }
 
@@ -785,10 +795,10 @@ prompt_terminal_ready
 # Start the installer.
 kbstring='app_path="$(ls -d /Install*.app)" && cd "/${app_path}/Contents/Resources/"; ./startosinstall --volume "/Volumes/'"${vmname}"'"'
 send_keys
-printf ${white_on_black}'
+printf "${white_on_black}"'
 Installer started. Please wait for the license prompt to appear at
 the bottom of the virtual machine terminal, then press enter here.
-This will accept the license on the virtual machine.'${default_color}
+This will accept the license on the virtual machine.'"${default_color}"
 read -p ""
 kbspecial="A ENTER"
 send_special
@@ -799,14 +809,14 @@ echo "into the base system, not the installer."
 }
 
 function place_efi_apfs_drivers {
-printf ${white_on_black}'
-After the VM boots, press enter when either the Language window'${default_color}'
-'${white_on_black}'or Utilities window is ready.'${default_color}
+printf "${white_on_black}"'
+After the VM boots, press enter when either the Language window'"${default_color}"'
+'"${white_on_black}"'or Utilities window is ready.'"${default_color}"
 read -p ""
 send_enter
 
-printf ${white_on_black}'
-Press enter when the macOS Utilities window is ready.'${default_color}
+printf "${white_on_black}"'
+Press enter when the macOS Utilities window is ready.'"${default_color}"
 read -p ""
 kbspecial='CTRLprs F2 CTRLrls u ENTER t ENTER'
 send_special
@@ -835,16 +845,16 @@ send_keys
 
 function detach_installer_vdi_and_viso() {
 # Shut down the virtual machine
-printf ${white_on_black}'
-Press enter when the terminal is ready.'${default_color}
+printf "${white_on_black}"'
+Press enter when the terminal is ready.'"${default_color}"
 read -p ""
 kbstring='shutdown -h now'
 send_keys
 
 echo ""
 echo "Shutting down virtual machine."
-printf ${white_on_black}'
-Press enter when the virtual machine shutdown is complete.'${default_color}
+printf "${white_on_black}"'
+Press enter when the virtual machine shutdown is complete.'"${default_color}"
 read -p ""
 
 # detach installer from virtual machine
@@ -862,7 +872,7 @@ echo ""
 # temporary files cleanup
 VBoxManage closemedium "${macOS_release_name}_BaseSystem.vdi" 2>/dev/null
 VBoxManage closemedium "Install ${macOS_release_name}.vdi" 2>/dev/null
-printf 'Temporary files are safe to delete. '${white_on_red}'Delete temporary files?'${default_color}
+printf 'Temporary files are safe to delete. '"${white_on_red}"'Delete temporary files?'"${default_color}"
 delete=""
 read -n 1 -p " [y/n] " delete 2>/dev/tty
 echo ""
@@ -888,7 +898,7 @@ That'\''s it. Enjoy your virtual machine.
 }
 
 function stages() {
-printf '\nUSAGE: '${white_on_black}${0}' [STAGE]...'${default_color}'
+printf '\nUSAGE: '"${white_on_black}${0}"' [STAGE]...'"${default_color}"'
 
 The script is divided into stages that run as separate functions.
 Add one or more stage titles to the command line to run the corresponding
