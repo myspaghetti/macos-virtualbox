@@ -110,8 +110,9 @@ read
 function check_dependencies() {
 # check if running on macOS
 if [ -n "$(sw_vers 2>/dev/null)" ]; then
-    printf '\nThis script is not tested on macOS hosts. Exiting.\n'
-    exit
+    printf '\nThis script is not completely tested on macOS hosts.\nVisit https://github.com/myspaghetti/macos-guest-virtualbox/issues/39 for more information\n'
+    read -p "Press enter to continue.\n"
+    export PATH="/usr/local/opt/coreutils/libexec/gnubin:$PATH"
 fi
 
 # check Bash version
