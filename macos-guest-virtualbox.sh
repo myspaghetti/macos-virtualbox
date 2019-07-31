@@ -2,7 +2,7 @@
 # Semi-automatic installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/img2tab/macos-guest-virtualbox
-# version 0.71.7
+# version 0.72.0
 
 # Requirements: 40GB available storage on host
 # Dependencies: bash >= 4.0, unzip, wget, dmg2img,
@@ -108,9 +108,13 @@ read
 
 # check dependencies
 function check_dependencies() {
-# check if running on macOS
-if [ -n "$(sw_vers 2>/dev/null)" ]; then
-    printf '\nThis script is not tested on macOS hosts. Exiting.\n'
+# check if running on macOS and non-GNU coreutils
+if [ -n "$(sw_vers 2>/dev/null)" -a -z "$(csplit --help 2>/dev/null)" ]; then
+    printf 'macOS detected. Please use a package manager such as '"${white_on_black}"'homebrew'"${default_color}"', '"${white_on_black}"'nix'"${default_color}"', or '"${white_on_black}"'MacPorts'"${default_color}"'.\n'
+    echo "Please make sure the following packages are installed and that"
+    echo "their path is in the PATH variable:"
+    printf "${white_on_black}"'bash  coreutils  wget  unzip  dmg2img'"${default_color}"'\n'
+    echo "Please make sure bash and coreutils are the GNU variant."
     exit
 fi
 
@@ -125,10 +129,11 @@ fi
 
 # check for unzip, coreutils, wget
 if [ -z "$(unzip -hh 2>/dev/null)" \
-     -o -z "$(head --version 2>/dev/null)" \
+     -o -z "$(csplit --help 2>/dev/null)" \
      -o -z "$(wget --version 2>/dev/null)" ]; then
     echo "Please make sure the following packages are installed:"
     echo "coreutils   unzip   wget"
+    echo "Please make sure coreutils is the GNU variant."
     exit
 fi
 
