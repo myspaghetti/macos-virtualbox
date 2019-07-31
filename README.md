@@ -6,7 +6,7 @@ The script is semi-automatic and requires a little user interaction. Most of the
 
 The goal of the script is to allow for a very easy installation without any closed-source additions or extra bootloaders.
 
-Tested on Cygwin and WSL, should work on most Linux distros.
+Tested on Cygwin and WSL, should work on most Linux distros and macOS.
 
 ## iCloud and iMessage connectivity
 
@@ -23,6 +23,8 @@ Developing and maintaining VirtualBox or macOS features is beyond the scope of t
 ## Dependencies
 
 * [VirtualBox](https://www.virtualbox.org/wiki/Downloads)≥6.0 with Extension Pack
-* `Bash`≥4 (run on Windows through [Cygwin](https://cygwin.com/install.html) or WSL)
-* `coreutils`, `unzip`, `wget` (install through package manager)
+* `Bash`≥4 (GNU variant; run on Windows through [Cygwin](https://cygwin.com/install.html) or WSL)
+* `coreutils` (GNU variant; install through package manager)
+* `unzip` (install through package manager)
+* `wget` (install through package manager)
 * `dmg2img` (install through package manager on Linux or WSL; let the script download it automatically on Cygwin)
