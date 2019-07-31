@@ -111,7 +111,7 @@ function check_dependencies() {
 # check if running on macOS
 if [ -n "$(sw_vers 2>/dev/null)" ]; then
     printf '\nThis script is not completely tested on macOS hosts.\nVisit https://github.com/myspaghetti/macos-guest-virtualbox/issues/39 for more information\n'
-    read -p "Press enter to continue.\n"
+    read -p "Press enter to continue."
     export PATH="/usr/local/opt/coreutils/libexec/gnubin:$PATH"
 fi
 
