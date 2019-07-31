@@ -111,7 +111,8 @@ function check_dependencies() {
 # check if running on macOS and non-GNU coreutils
 if [ -n "$(sw_vers 2>/dev/null)" -a -z "$(csplit --help 2>/dev/null)" ]; then
     printf 'macOS detected. Please use a package manager such as '"${white_on_black}"'homebrew'"${default_color}"', '"${white_on_black}"'nix'"${default_color}"', or '"${white_on_black}"'MacPorts'"${default_color}"'.\n'
-    echo "Please make sure the following packages are installed and their path is in the PATH variable:"
+    echo "Please make sure the following packages are installed and that"
+    echo "their path is in the PATH variable:"
     printf "${white_on_black}"'bash  coreutils  wget  unzip  dmg2img'"${default_color}"'\n'
     echo "Please make sure bash and coreutils are the GNU variant."
     exit
