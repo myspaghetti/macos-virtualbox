@@ -2,7 +2,7 @@
 # Semi-automatic installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/img2tab/macos-guest-virtualbox
-# version 0.72.0
+# version 0.73.0
 
 # Requirements: 40GB available storage on host
 # Dependencies: bash >= 4.0, unzip, wget, dmg2img,
@@ -18,9 +18,9 @@ resolution="1280x800"            # VM display resolution
 
 # The following commented commands may provide the values for the parameters
 # required by iCloud, iMessage, and other connected Apple applications.
-# Parameters taken from a genuine Mac will result in a "Call customer support"
-# message because one required parameter, 'system-id' (UUID), is still not
-# being passed to the virtual machine. That said, non-genuine parameters work.
+# Parameters taken from a genuine Mac may result in a "Call customer support"
+# message if they do not match the genuine Mac exactly.
+# Non-genuine yet genuine-like parameters usually work.
 
 # system_profiler SPHardwareDataType
 DmiSystemFamily="MacBook Pro"        # Model Name
@@ -38,7 +38,7 @@ MLB="bytes:$(echo -n "${DmiBoardSerial}" | base64)"
 # nvram 4D1EDE05-38C7-4A6A-9CC6-4BCCA8B38C14:ROM | awk '{ print $NF }'
 ROM='%aa*%bbg%cc%dd'
 # ioreg -l -p IODeviceTree | grep \"system-id
-UUID="aabbccddeeff00112233445566778899"
+SYSTEM_UUID="aabbccddeeff00112233445566778899"
 # The if statement below converts the Mac output into VBox-readable values
 # This is only necessary if you want to run connected Apple applications
 # such as iCloud, iMessage, etc.
@@ -49,12 +49,12 @@ if [ -n "$(echo -n "aabbccddee" | xxd -r -p 2>/dev/null)" ]; then
     ROM_b16="$(for (( i=0; i<${#ROM}; )); do let j=i+1; if [ "${ROM:${i}:1}" == "%" ]; then echo -n "${ROM:${j}:2}"; let i=i+3; else x="$(echo -n "${ROM:${i}:1}" | od -t x1 -An | tr -d ' ')"; echo -n "${x}"; let i=i+1; fi; done)"
     ROM_b64="$(echo -n "${ROM_b16}" | xxd -r -p | base64)"
     ROM="bytes:${ROM_b64}"
-    UUID_b64="$(echo -n "${UUID}" | xxd -r -p | base64)"
-    UUID="bytes:${UUID_b64}"
+    SYSTEM_UUID_b64="$(echo -n "${SYSTEM_UUID}" | xxd -r -p | base64)"
+    SYSTEM_UUID="bytes:${SYSTEM_UUID_b64}"
 else
-    if [ "${ROM}" = '%aa*%bbg%cc%dd' -a "${UUID}" = "aabbccddeeff00112233445566778899" ]; then
-        ROM="bytes:qiq7Z8zd"                  # base64 of the example ROM
-        UUID="bytes:qrvM3e7/ABEiM0RVZneImQ==" # base64 of the example UUID
+    if [ "${ROM}" = '%aa*%bbg%cc%dd' -a "${SYSTEM_UUID}" = "aabbccddeeff00112233445566778899" ]; then
+        ROM="bytes:qiq7Z8zd"                         # base64 of the example ROM
+        SYSTEM_UUID="bytes:qrvM3e7/ABEiM0RVZneImQ==" # base64 of the example UUID
      else
         echo "ROM and UUID variables have been assigned non-default values. Applying these"
         echo "values to the virtual machine requires the package xxd. Please make sure the"
@@ -512,7 +512,11 @@ VBoxManage setextradata "${vmname}" \
 VBoxManage setextradata "${vmname}" \
  "VBoxInternal/Devices/efi/0/LUN#0/Config/Vars/0001/Value" "${ROM}"
 VBoxManage setextradata "${vmname}" \
- "VBoxInternal/Devices/efi/0/Config/UUID" "${UUID}"
+ "VBoxInternal/Devices/efi/0/LUN#0/Config/Vars/0001/Uuid" "7C436110-AB2A-4BBB-A880-FE41995C9F82"
+VBoxManage setextradata "${vmname}" \
+ "VBoxInternal/Devices/efi/0/LUN#0/Config/Vars/0001/Name" "system-id"
+VBoxManage setextradata "${vmname}" \
+ "VBoxInternal/Devices/efi/0/LUN#0/Config/Vars/0001/Value" "${SYSTEM_UUID}"
 VBoxManage setextradata "${vmname}" \
  "VBoxInternal/Devices/efi/0/Config/DmiSystemVendor" "Apple Inc."
 VBoxManage setextradata "${vmname}" \
