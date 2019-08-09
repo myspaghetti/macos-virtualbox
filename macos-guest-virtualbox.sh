@@ -512,11 +512,11 @@ VBoxManage setextradata "${vmname}" \
 VBoxManage setextradata "${vmname}" \
  "VBoxInternal/Devices/efi/0/LUN#0/Config/Vars/0001/Value" "${ROM}"
 VBoxManage setextradata "${vmname}" \
- "VBoxInternal/Devices/efi/0/LUN#0/Config/Vars/0001/Uuid" "7C436110-AB2A-4BBB-A880-FE41995C9F82"
+ "VBoxInternal/Devices/efi/0/LUN#0/Config/Vars/0002/Uuid" "7C436110-AB2A-4BBB-A880-FE41995C9F82"
 VBoxManage setextradata "${vmname}" \
- "VBoxInternal/Devices/efi/0/LUN#0/Config/Vars/0001/Name" "system-id"
+ "VBoxInternal/Devices/efi/0/LUN#0/Config/Vars/0002/Name" "system-id"
 VBoxManage setextradata "${vmname}" \
- "VBoxInternal/Devices/efi/0/LUN#0/Config/Vars/0001/Value" "${SYSTEM_UUID}"
+ "VBoxInternal/Devices/efi/0/LUN#0/Config/Vars/0002/Value" "${SYSTEM_UUID}"
 VBoxManage setextradata "${vmname}" \
  "VBoxInternal/Devices/efi/0/Config/DmiSystemVendor" "Apple Inc."
 VBoxManage setextradata "${vmname}" \
