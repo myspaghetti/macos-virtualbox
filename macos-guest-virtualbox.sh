@@ -2,7 +2,7 @@
 # Semi-automatic installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/img2tab/macos-guest-virtualbox
-# version 0.73.4
+# version 0.73.5
 
 # Requirements: 40GB available storage on host
 # Dependencies: bash >= 4.0, unzip, wget, dmg2img,
@@ -939,8 +939,12 @@ already initialized.
     "'"${0}"' configure_vm"
 This stage might be useful after copying an existing VM VDI to a different
 VirtualBox installation and having the script automatically configure the VM.
+Dependency-checking and variable-setting is always performed first, whether
+or not these stages are specified.
 
 Available stage titles:
+    check_bash_version
+    set_variables
     welcome
     check_dependencies
     prompt_delete_existing_vm
