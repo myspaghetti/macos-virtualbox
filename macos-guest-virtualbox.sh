@@ -2,12 +2,13 @@
 # Semi-automatic installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/img2tab/macos-guest-virtualbox
-# version 0.73.2
+# version 0.73.3
 
 # Requirements: 40GB available storage on host
 # Dependencies: bash >= 4.0, unzip, wget, dmg2img,
 #               VirtualBox with Extension Pack >= 6.0
 
+function set_variables() {
 # Customize the installation by setting these variables:
 vmname="macOS"                   # name of the VirtualBox virtual machine
 storagesize=22000                # VM disk image size in MB. minimum 22000
@@ -71,11 +72,12 @@ else
     fi
 fi
 
-# welcome message
 white_on_red="\e[48;2;255;0;0m\e[38;2;255;255;255m"
 white_on_black="\e[48;2;0;0;9m\e[38;2;255;255;255m"
 default_color="\033[0m"
+}
 
+# welcome message
 function welcome() {
 printf '
                 Semi-automatic installer of macOS on VirtualBox
@@ -114,6 +116,18 @@ read
 }
 
 # check dependencies
+
+function check_bash_version() {
+# check Bash version
+if [ -z "${BASH_VERSION}" ]; then
+    echo "Can't determine BASH_VERSION. Exiting."
+    exit
+elif [ "${BASH_VERSION:0:1}" -lt 4 ]; then
+    echo "Please run this script on BASH 4.0 or higher."
+    exit
+fi
+}
+
 function check_dependencies() {
 # check if running on macOS and non-GNU coreutils
 if [ -n "$(sw_vers 2>/dev/null)" -a -z "$(csplit --help 2>/dev/null)" ]; then
@@ -123,15 +137,6 @@ if [ -n "$(sw_vers 2>/dev/null)" -a -z "$(csplit --help 2>/dev/null)" ]; then
     echo "their path is in the PATH variable:"
     printf "${white_on_black}"'bash  coreutils  wget  unzip  dmg2img'"${default_color}"'\n'
     echo "Please make sure bash and coreutils are the GNU variant."
-    exit
-fi
-
-# check Bash version
-if [ -z "${BASH_VERSION}" ]; then
-    echo "Can't determine BASH_VERSION. Exiting."
-    exit
-elif [ "${BASH_VERSION:0:1}" -lt 4 ]; then
-    echo "Please run this script on BASH 4.0 or higher."
     exit
 fi
 
@@ -956,6 +961,8 @@ Available stage titles:
 }
 
 if [ -z "${1}" ]; then
+    check_bash_version
+    set_variables
     welcome
     check_dependencies
     prompt_delete_existing_vm
@@ -975,6 +982,8 @@ if [ -z "${1}" ]; then
     boot_macos_and_clean_up
 else
     if [ "${1}" != "stages" ]; then
+        check_bash_version
+        set_variables
         check_dependencies
         for argument in "$@"; do ${argument}; done
     else
