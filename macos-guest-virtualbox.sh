@@ -2,7 +2,7 @@
 # Semi-automatic installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/img2tab/macos-guest-virtualbox
-# version 0.73.3
+# version 0.73.4
 
 # Requirements: 40GB available storage on host
 # Dependencies: bash >= 4.0, unzip, wget, dmg2img,
@@ -303,7 +303,8 @@ if [ -n "$(VBoxManage showvminfo "${vmname}" 2>/dev/null)" ]; then
     else
         printf '
 '"${white_on_black}"'Please assign a different VM name to variable "vmname" by editing the script,'"${default_color}"'
-or skip this check manually as described in "'"${0}"' stages".\n'
+or skip this check manually as described when running the following command:
+'"${0}"' stages\n'
         exit
     fi
 fi
