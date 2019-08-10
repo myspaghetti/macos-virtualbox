@@ -2,7 +2,7 @@
 # Semi-automatic installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/img2tab/macos-guest-virtualbox
-# version 0.73.1
+# version 0.73.2
 
 # Requirements: 40GB available storage on host
 # Dependencies: bash >= 4.0, unzip, wget, dmg2img,
@@ -39,7 +39,10 @@ MLB="bytes:$(echo -n "${DmiBoardSerial}" | base64)"
 ROM='%aa*%bbg%cc%dd'
 # ioreg -l -p IODeviceTree | grep \"system-id
 SYSTEM_UUID="aabbccddeeff00112233445566778899"
-# The if statement below converts the Mac output into VBox-readable values
+# csrutil status
+SYSTEM_INTEGRITY_PROTECTION='0x10'  # '0x10' - enabled, '0x77' - disabled
+
+# The if-statement below converts the Mac output into VBox-readable values.
 # This is only necessary if you want to run connected Apple applications
 # such as iCloud, iMessage, etc.
 # Make sure the package xxd is installed, otherwise the conversion will fail.
@@ -51,14 +54,18 @@ if [ -n "$(echo -n "aabbccddee" | xxd -r -p 2>/dev/null)" ]; then
     ROM="bytes:${ROM_b64}"
     SYSTEM_UUID_b64="$(echo -n "${SYSTEM_UUID}" | xxd -r -p | base64)"
     SYSTEM_UUID="bytes:${SYSTEM_UUID_b64}"
+    SYSTEM_INTEGRITY_PROTECTION_b64="$(echo -n "${SYSTEM_INTEGRITY_PROTECTION}" | xxd -r -p | base64)"
+    SYSTEM_INTEGRITY_PROTECTION="bytes:${SYSTEM_INTEGRITY_PROTECTION_b64}"
 else
-    if [ "${ROM}" = '%aa*%bbg%cc%dd' -a "${SYSTEM_UUID}" = "aabbccddeeff00112233445566778899" ]; then
-        ROM="bytes:qiq7Z8zd"                         # base64 of the example ROM
-        SYSTEM_UUID="bytes:qrvM3e7/ABEiM0RVZneImQ==" # base64 of the example UUID
+    if [ "${ROM}" = '%aa*%bbg%cc%dd' -a "${SYSTEM_UUID}" = "aabbccddeeff00112233445566778899" -a "${SYSTEM_INTEGRITY_PROTECTION}" = '0x10' ]; then
+        # base64 of the example values
+        ROM="bytes:qiq7Z8zd"
+        SYSTEM_UUID="bytes:qrvM3e7/ABEiM0RVZneImQ=="
+        SYSTEM_INTEGRITY_PROTECTION="bytes:EA=="
      else
-        echo "ROM and UUID variables have been assigned non-default values. Applying these"
-        echo "values to the virtual machine requires the package xxd. Please make sure the"
-        echo "package xxd is installed."
+        echo "ROM, UUID, and SIP variables have been assigned non-default values. Applying"
+        echo "these values to the virtual machine requires the package xxd. Please make sure"
+        echo "the package xxd is installed."
         echo "Exiting."
         exit
     fi
@@ -517,6 +524,12 @@ VBoxManage setextradata "${vmname}" \
  "VBoxInternal/Devices/efi/0/LUN#0/Config/Vars/0002/Name" "system-id"
 VBoxManage setextradata "${vmname}" \
  "VBoxInternal/Devices/efi/0/LUN#0/Config/Vars/0002/Value" "${SYSTEM_UUID}"
+VBoxManage setextradata "${vmname}" \
+ "VBoxInternal/Devices/efi/0/LUN#0/Config/Vars/0003/Uuid" "7C436110-AB2A-4BBB-A880-FE41995C9F82"
+VBoxManage setextradata "${vmname}" \
+ "VBoxInternal/Devices/efi/0/LUN#0/Config/Vars/0003/Name" "csr-active-config"
+VBoxManage setextradata "${vmname}" \
+ "VBoxInternal/Devices/efi/0/LUN#0/Config/Vars/0003/Value" "${SYSTEM_INTEGRITY_PROTECTION}"
 VBoxManage setextradata "${vmname}" \
  "VBoxInternal/Devices/efi/0/Config/DmiSystemVendor" "Apple Inc."
 VBoxManage setextradata "${vmname}" \
