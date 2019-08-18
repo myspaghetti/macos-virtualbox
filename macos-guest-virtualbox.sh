@@ -2,7 +2,7 @@
 # Semi-automatic installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/img2tab/macos-guest-virtualbox
-# version 0.73.5
+# version 0.73.6
 
 # Requirements: 40GB available storage on host
 # Dependencies: bash >= 4.0, unzip, wget, dmg2img,
@@ -400,7 +400,7 @@ endfor' > "startup.nsh"
 }
 
 function create_macos_installation_files_viso() {
-echo "Crating VirtualBox 6 virtual ISO containing the"
+echo "Creating VirtualBox 6 virtual ISO containing the"
 echo "installation files from swcdn.apple.com"
 echo ""
 echo "Splitting the several-GB InstallESDDmg.pkg into 1GB parts because"
