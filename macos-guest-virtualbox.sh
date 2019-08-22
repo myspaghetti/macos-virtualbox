@@ -2,7 +2,7 @@
 # Semi-automatic installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/img2tab/macos-guest-virtualbox
-# version 0.74.0
+# version 0.75.0
 
 # Requirements: 40GB available storage on host
 # Dependencies: bash >= 4.0, unzip, wget, dmg2img,
@@ -192,7 +192,7 @@ elif [[ "$(cat /proc/sys/kernel/osrelease 2>/dev/null)" =~ Microsoft ]]; then
         echo "Can't find VBoxManage in PATH variable,"
         echo "checking ${wsl_path_VBoxManage}"
         if [ -n "$("${wsl_path_VBoxManage}" -v 2>/dev/null)" ]; then
-            PATH="${PATH}:${wsl_path_VBoxManage}"
+            PATH="${PATH}:${wsl_path_VBoxManage%/*}"
             function VBoxManage() {
                 VBoxManage.exe "$@"
             }
