@@ -72,6 +72,11 @@ else
     fi
 fi
 
+# Homebrew doesn't add GNU coreutils to PATH. If they exist, use them.
+if [ -d '/usr/local/opt/coreutils/libexec/gnubin' ]; then
+  PATH="/usr/local/opt/coreutils/libexec/gnubin:$PATH"
+fi
+
 white_on_red="\e[48;2;255;0;0m\e[38;2;255;255;255m"
 white_on_black="\e[48;2;0;0;9m\e[38;2;255;255;255m"
 default_color="\033[0m"
