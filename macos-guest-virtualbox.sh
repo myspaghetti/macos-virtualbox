@@ -129,6 +129,13 @@ fi
 }
 
 function check_dependencies() {
+# Homebrew installs the gnu coreutils with 'g' prefixes by default
+if [ -n "$(gcsplit --help 2>/dev/null)" ]; then
+  csplit() {
+    gcsplit "$@"
+  }
+fi
+
 # check if running on macOS and non-GNU coreutils
 if [ -n "$(sw_vers 2>/dev/null)" -a -z "$(csplit --help 2>/dev/null)" ]; then
     echo ""
