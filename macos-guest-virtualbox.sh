@@ -72,11 +72,6 @@ else
     fi
 fi
 
-# Homebrew doesn't add GNU coreutils to PATH. If they exist, use them.
-if [ -d '/usr/local/opt/coreutils/libexec/gnubin' ]; then
-  PATH="/usr/local/opt/coreutils/libexec/gnubin:$PATH"
-fi
-
 white_on_red="\e[48;2;255;0;0m\e[38;2;255;255;255m"
 white_on_black="\e[48;2;0;0;9m\e[38;2;255;255;255m"
 default_color="\033[0m"
@@ -134,15 +129,24 @@ fi
 }
 
 function check_dependencies() {
+
 # check if running on macOS and non-GNU coreutils
-if [ -n "$(sw_vers 2>/dev/null)" -a -z "$(csplit --help 2>/dev/null)" ]; then
-    echo ""
-    printf 'macOS detected. Please use a package manager such as '"${white_on_black}"'homebrew'"${default_color}"', '"${white_on_black}"'nix'"${default_color}"', or '"${white_on_black}"'MacPorts'"${default_color}"'.\n'
-    echo "Please make sure the following packages are installed and that"
-    echo "their path is in the PATH variable:"
-    printf "${white_on_black}"'bash  coreutils  wget  unzip  dmg2img'"${default_color}"'\n'
-    echo "Please make sure bash and coreutils are the GNU variant."
-    exit
+if [ -n "$(sw_vers 2>/dev/null)" ]; then
+    # Add Homebrew GNU coreutils to PATH if path exists
+    homebrew_gnubin="/usr/local/opt/coreutils/libexec/gnubin"
+    if [ -d "${homebrew_gnubin}" ]; then
+        PATH="${homebrew_gnubin}:${PATH}"
+    fi
+    # if csplit isn't GNU variant, exit
+    if [ -z "$(csplit --help 2>/dev/null)" ]; then
+        echo ""
+        printf 'macOS detected. Please use a package manager such as '"${white_on_black}"'homebrew'"${default_color}"', '"${white_on_black}"'nix'"${default_color}"', or '"${white_on_black}"'MacPorts'"${default_color}"'.\n'
+        echo "Please make sure the following packages are installed and that"
+        echo "their path is in the PATH variable:"
+        printf "${white_on_black}"'bash  coreutils  wget  unzip  dmg2img'"${default_color}"'\n'
+        echo "Please make sure bash and coreutils are the GNU variant."
+        exit
+    fi
 fi
 
 # check for unzip, coreutils, wget
