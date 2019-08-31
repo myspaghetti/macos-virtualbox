@@ -2,7 +2,7 @@
 # Semi-automatic installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/img2tab/macos-guest-virtualbox
-# version 0.75.0
+# version 0.75.1
 
 # Requirements: 40GB available storage on host
 # Dependencies: bash >= 4.0, unzip, wget, dmg2img,
@@ -129,15 +129,24 @@ fi
 }
 
 function check_dependencies() {
+
 # check if running on macOS and non-GNU coreutils
-if [ -n "$(sw_vers 2>/dev/null)" -a -z "$(csplit --help 2>/dev/null)" ]; then
-    echo ""
-    printf 'macOS detected. Please use a package manager such as '"${white_on_black}"'homebrew'"${default_color}"', '"${white_on_black}"'nix'"${default_color}"', or '"${white_on_black}"'MacPorts'"${default_color}"'.\n'
-    echo "Please make sure the following packages are installed and that"
-    echo "their path is in the PATH variable:"
-    printf "${white_on_black}"'bash  coreutils  wget  unzip  dmg2img'"${default_color}"'\n'
-    echo "Please make sure bash and coreutils are the GNU variant."
-    exit
+if [ -n "$(sw_vers 2>/dev/null)" ]; then
+    # Add Homebrew GNU coreutils to PATH if path exists
+    homebrew_gnubin="/usr/local/opt/coreutils/libexec/gnubin"
+    if [ -d "${homebrew_gnubin}" ]; then
+        PATH="${homebrew_gnubin}:${PATH}"
+    fi
+    # if csplit isn't GNU variant, exit
+    if [ -z "$(csplit --help 2>/dev/null)" ]; then
+        echo ""
+        printf 'macOS detected. Please use a package manager such as '"${white_on_black}"'homebrew'"${default_color}"', '"${white_on_black}"'nix'"${default_color}"', or '"${white_on_black}"'MacPorts'"${default_color}"'.\n'
+        echo "Please make sure the following packages are installed and that"
+        echo "their path is in the PATH variable:"
+        printf "${white_on_black}"'bash  coreutils  wget  unzip  dmg2img'"${default_color}"'\n'
+        echo "Please make sure bash and coreutils are the GNU variant."
+        exit
+    fi
 fi
 
 # check for unzip, coreutils, wget
