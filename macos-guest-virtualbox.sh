@@ -2,7 +2,7 @@
 # Semi-automatic installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/img2tab/macos-guest-virtualbox
-# version 0.75.2
+# version 0.75.3
 
 # Requirements: 40GB available storage on host
 # Dependencies: bash >= 4.0, unzip, wget, dmg2img,
@@ -832,19 +832,12 @@ prompt_lang_utils
 prompt_terminal_ready
 
 # Start the installer.
-kbstring='app_path="$(ls -d /Install*.app)" && cd "/${app_path}/Contents/Resources/"; ./startosinstall --volume "/Volumes/'"${vmname}"'"'
+kbstring='app_path="$(ls -d /Install*.app)" && cd "/${app_path}/Contents/Resources/"; ./startosinstall --agreetolicense --volume "/Volumes/'"${vmname}"'"'
 send_keys
-printf "${white_on_black}"'
-Installer started. Please wait for the license prompt to appear at
-the bottom of the virtual machine terminal, then press enter here.
-This will accept the license on the virtual machine.'"${default_color}"
-read -p ""
-kbspecial="A ENTER"
-send_special
-
 echo ""
+echo "Installer started."
 echo "When the installer finishes preparing, the virtual machine will reboot"
-echo "into the base system, not the installer."
+echo "into the base system again, not the installer."
 }
 
 function place_efi_apfs_drivers {
