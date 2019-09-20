@@ -2,7 +2,7 @@
 # Semi-automatic installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/img2tab/macos-guest-virtualbox
-# version 0.75.3
+# version 0.75.4
 
 # Requirements: 40GB available storage on host
 # Dependencies: bash >= 4.0, unzip, wget, dmg2img,
@@ -11,7 +11,7 @@
 function set_variables() {
 # Customize the installation by setting these variables:
 vmname="macOS"                   # name of the VirtualBox virtual machine
-storagesize=22000                # VM disk image size in MB. minimum 22000
+storagesize=25000                # VM disk image size in MB. minimum 22000
 cpucount=2                       # VM CPU cores, minimum 2
 memorysize=4096                  # VM RAM in MB, minimum 2048
 gpuvram=128                      # VM video RAM in MB, minimum 34, maximum 128
