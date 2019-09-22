@@ -2,7 +2,7 @@
 # Semi-automatic installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/img2tab/macos-guest-virtualbox
-# version 0.75.4
+# version 0.75.5
 
 # Requirements: 40GB available storage on host
 # Dependencies: bash >= 4.0, unzip, wget, dmg2img,
@@ -192,6 +192,15 @@ if [ -n "$(cygcheck -V 2>/dev/null)" ]; then
     fi
 # Windows Subsystem for Linux (WSL)
 elif [[ "$(cat /proc/sys/kernel/osrelease 2>/dev/null)" =~ Microsoft ]]; then
+    if [[ ! ( "$(cat /proc/sys/kernel/osrelease 2>/dev/null)" =~ 18362-Microsoft ) ]]; then
+        echo ""
+        echo "The script requires Windows 10 version 1903 or higher to run properly on WSL."
+        echo "For lower versions, please run the script on a path on the Windows filesystem,"
+        printf 'for example  '"${white_on_black}"'/mnt/c/Users/Public/Documents'"${default_color}"
+        echo ""
+        printf "${white_on_black}"'Press enter to continue, CTRL-C to exit.'"${default_color}"
+        read
+    fi
     if [ -n "$(VBoxManage.exe -v 2>/dev/null)" ]; then
         function VBoxManage() {
             VBoxManage.exe "$@"
