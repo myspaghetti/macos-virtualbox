@@ -2,7 +2,7 @@
 # Semi-automatic installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/img2tab/macos-guest-virtualbox
-# version 0.75.5
+# version 0.75.6
 
 # Requirements: 40GB available storage on host
 # Dependencies: bash >= 4.0, unzip, wget, dmg2img,
@@ -281,14 +281,12 @@ fi
 # prompt for macOS version
 HighSierra_sucatalog='https://swscan.apple.com/content/catalogs/others/index-10.13-10.12-10.11-10.10-10.9-mountainlion-lion-snowleopard-leopard.merged-1.sucatalog'
 Mojave_sucatalog='https://swscan.apple.com/content/catalogs/others/index-10.14-10.13-10.12-10.11-10.10-10.9-mountainlion-lion-snowleopard-leopard.merged-1.sucatalog'
-Catalina_beta_sucatalog='https://swscan.apple.com/content/catalogs/others/index-10.15seed-10.15-10.14-10.13-10.12-10.11-10.10-10.9-mountainlion-lion-snowleopard-leopard.merged-1.sucatalog'
-# Catalina public release not yet available
-# Catalina_sucatalog='https://swscan.apple.com/content/catalogs/others/index-10.15-10.14-10.13-10.12-10.11-10.10-10.9-mountainlion-lion-snowleopard-leopard.merged-1.sucatalog'
+Catalina_sucatalog='https://swscan.apple.com/content/catalogs/others/index-10.15-10.14-10.13-10.12-10.11-10.10-10.9-mountainlion-lion-snowleopard-leopard.merged-1.sucatalog'
 printf "${white_on_black}"'
 Press a key to select the macOS version to install on the virtual machine:'"${default_color}"'
  [H]igh Sierra (10.13)
  [M]ojave (10.14)
- [C]atalina (10.15 beta)
+ [C]atalina (10.15)
 
 '
 read -n 1 -p " [H/M/C] " macOS_release_name 2>/dev/tty
@@ -304,7 +302,7 @@ elif [ "${macOS_release_name^^}" == "M" ]; then
 else
     macOS_release_name="Catalina"
     CFBundleShortVersionString="10.15"
-    sucatalog="${Catalina_beta_sucatalog}"
+    sucatalog="${Catalina_sucatalog}"
 fi
 echo "${macOS_release_name} selected"
 }
