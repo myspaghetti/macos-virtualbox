@@ -2,7 +2,7 @@
 # Semi-automatic installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/img2tab/macos-guest-virtualbox
-# version 0.75.8
+# version 0.76.0
 
 # Requirements: 40GB available storage on host
 # Dependencies: bash >= 4.0, unzip, wget, dmg2img,
@@ -408,11 +408,14 @@ load fs0:\EFI\driver\AppleUiSupport.efi
 load fs0:\EFI\driver\ApfsDriverLoader.efi
 map -r
 for %a run (1 5)
-  fs%a:
-  cd "macOS Install Data\Locked Files\Boot Files"
-  boot.efi
-  cd "System\Library\CoreServices"
-  boot.efi
+  if exist "fs%a:\macOS Install Data\Locked Files\Boot Files\boot.efi" then
+    "fs%a:\macOS Install Data\Locked Files\Boot Files\boot.efi"
+  endif
+endfor
+for %a run (1 5)
+  if exist "fs%a:\System\Library\CoreServices\boot.efi" then
+    "fs%a:\System\Library\CoreServices\boot.efi"
+  endif
 endfor' > "startup.nsh"
 }
 
