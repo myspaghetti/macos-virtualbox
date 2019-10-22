@@ -1,8 +1,8 @@
 #!/bin/bash
 # Semi-automatic installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
-# url: https://github.com/img2tab/macos-guest-virtualbox
-# version 0.76.0
+# url: https://github.com/myspaghetti/macos-guest-virtualbox
+# version 0.76.1
 
 # Requirements: 40GB available storage on host
 # Dependencies: bash >= 4.0, unzip, wget, dmg2img,
@@ -64,7 +64,7 @@ else
         SYSTEM_UUID="bytes:qrvM3e7/ABEiM0RVZneImQ=="
         SYSTEM_INTEGRITY_PROTECTION="bytes:EA=="
      else
-        echo "ROM, UUID, and SIP variables have been assigned non-default values. Applying"
+        echo "ROM, UUID, or SIP variables have been assigned non-default values. Applying"
         echo "these values to the virtual machine requires the package xxd. Please make sure"
         echo "the package xxd is installed."
         echo "Exiting."
