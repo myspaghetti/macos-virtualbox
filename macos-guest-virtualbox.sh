@@ -566,7 +566,7 @@ VBoxManage setextradata "${vmname}" \
 VBoxManage setextradata "${vmname}" \
  "VBoxInternal/Devices/smc/0/Config/GetKeyFromRealSMC" 0
 VBoxManage setextradata "${vmname}" \
- "VBoxInternal2/EfiGraphicsResolution" "${resolution}"
+ "CustomVideoMode1" "${resolution}x32"
 }
 
 # QWERTY-to-scancode dictionary. Hex scancodes, keydown and keyup event.
