@@ -2,7 +2,7 @@
 # Semi-automatic installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-guest-virtualbox
-# version 0.76.1
+# version 0.76.2
 
 # Requirements: 40GB available storage on host
 # Dependencies: bash >= 4.0, unzip, wget, dmg2img,
@@ -17,8 +17,9 @@ memorysize=4096                  # VM RAM in MB, minimum 2048
 gpuvram=128                      # VM video RAM in MB, minimum 34, maximum 128
 resolution="1280x800"            # VM display resolution
 
-# The following commented commands may provide the values for the parameters
-# required by iCloud, iMessage, and other connected Apple applications.
+# The following commented commands, when run on a genuine Mac,
+# may provide the values for the parameters required by iCloud, iMessage,
+# and other connected Apple applications.
 # Parameters taken from a genuine Mac may result in a "Call customer support"
 # message if they do not match the genuine Mac exactly.
 # Non-genuine yet genuine-like parameters usually work.
