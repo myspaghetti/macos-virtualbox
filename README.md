@@ -6,7 +6,7 @@ The script is semi-automatic and requires a little user interaction. Most of the
 
 The goal of the script is to allow for a very easy installation without any closed-source additions or extra bootloaders.
 
-Tested on Cygwin and WSL, should work on most Linux distros and macOS.
+Tested on Cygwin. Works on macOS and WSL, should work on most Linux distros.
 
 ## iCloud and iMessage connectivity
 
@@ -18,7 +18,7 @@ The script by default assigns the minimum required storage size for the installa
 
 ## Performance and unsupported features
 
-Developing and maintaining VirtualBox or macOS features is beyond the scope of this script. Some features may behave unexpectedly, such as USB device support, [audio support](https://github.com/chris1111/VoodooHDA-2.9.2-Clover-V13/releases), and other features.
+Developing and maintaining VirtualBox or macOS features is beyond the scope of this script. Some features may behave unexpectedly, such as USB device support, audio support, and other features.
 
 After successfully creating a working macOS virtual machine, consider importing it into QEMU/KVM so it can run with hardware passthrough at near-native performance.
 
