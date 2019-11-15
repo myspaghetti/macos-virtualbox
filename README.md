@@ -20,7 +20,7 @@ The script by default assigns the minimum required storage size for the installa
 
 Developing and maintaining VirtualBox or macOS features is beyond the scope of this script. Some features may behave unexpectedly, such as USB device support, audio support, and other features.
 
-After successfully creating a working macOS virtual machine, consider importing it into QEMU/KVM so it can run with hardware passthrough at near-native performance.
+After successfully creating a working macOS virtual machine, consider importing it into QEMU/KVM so it can run with hardware passthrough at near-native performance. This requires additional configuration that is beyond the scope of  the script.
 
 ## Dependencies
 
