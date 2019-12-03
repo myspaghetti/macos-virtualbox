@@ -2,7 +2,7 @@
 # Semi-automatic installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-guest-virtualbox
-# version 0.76.3
+# version 0.76.4
 
 # Requirements: 40GB available storage on host
 # Dependencies: bash >= 4.0, unzip, wget, dmg2img,
@@ -196,8 +196,16 @@ if [ -n "$(cygcheck -V 2>/dev/null)" ]; then
         fi
     fi
 # Windows Subsystem for Linux (WSL)
-elif [[ "$(cat /proc/sys/kernel/osrelease 2>/dev/null)" =~ Microsoft ]]; then
-    if [[ ! ( "$(cat /proc/sys/kernel/osrelease 2>/dev/null)" =~ 18362-Microsoft ) ]]; then
+elif [[ "$(cat /proc/sys/kernel/osrelease 2>/dev/null)" =~ [Mm]icrosoft ]]; then
+    osrelease="$(cat /proc/sys/kernel/osrelease 2>/dev/null)"
+    if [[ "${osrelease}" =~ microsoft ]]; then # WSL2
+        echo ""
+        echo "The script is not tested with WSL2, which uses Hyper-V."
+        echo "VirtualBox Hyper-V support is experimental."
+        echo ""
+        printf "${white_on_black}"'Press enter to continue, CTRL-C to exit.'"${default_color}"
+        read
+    elif [[ ! ( "${osrelease}" =~ 18362-Microsoft ) ]]; then
         echo ""
         echo "The script requires Windows 10 version 1903 or higher to run properly on WSL."
         echo "For lower versions, please run the script on a path on the Windows filesystem,"
