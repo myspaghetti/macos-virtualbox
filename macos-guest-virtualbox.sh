@@ -2,7 +2,7 @@
 # Semi-automatic installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-guest-virtualbox
-# version 0.76.4
+# version 0.76.5-Catalina-10.15.2-workaround
 
 # Requirements: 40GB available storage on host
 # Dependencies: bash >= 4.0, unzip, wget, dmg2img,
@@ -377,6 +377,13 @@ a package named '"${white_on_black}"'ca-certificates'"${default_color}"
 fi
 echo "Trying to find macOS ${macOS_release_name} InstallAssistant download URL"
 tac "${macOS_release_name}_sucatalog" | csplit - '/InstallAssistantAuto.smd/+1' '{*}' -f "${macOS_release_name}_sucatalog_" -s
+###
+# BELOW IS AN EMERGENCY WORKAROUND THAT AVOIDS CATALINA 10.15.2.0.0.1575534587
+###
+rm Catalina_sucatalog_00 2>/dev/null
+# The above removes the lastest match of the Catalina installer,
+# and instead relies on the next-to-latest match. This won't work
+# when a new version is released. It's a temporary emergency workaround.
 for catalog in "${macOS_release_name}_sucatalog_"* "error"; do
     if [[ "${catalog}" == error ]]; then
         rm "${macOS_release_name}_sucatalog"*
