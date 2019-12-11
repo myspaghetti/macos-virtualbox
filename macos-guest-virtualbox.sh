@@ -2,7 +2,7 @@
 # Semi-automatic installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-guest-virtualbox
-# version 0.76.5-Catalina-10.15.2-workaround
+# version 0.76.6
 
 # Requirements: 40GB available storage on host
 # Dependencies: bash >= 4.0, unzip, wget, dmg2img,
@@ -304,18 +304,21 @@ Press a key to select the macOS version to install on the virtual machine:'"${de
 '
 read -n 1 -p " [H/M/C] " macOS_release_name 2>/dev/tty
 echo ""
-if [ "${macOS_release_name^^}" == "H" ]; then
-    macOS_release_name="HighSierra"
-    CFBundleShortVersionString="10.13"
-    sucatalog="${HighSierra_sucatalog}"
-elif [ "${macOS_release_name^^}" == "M" ]; then
-    macOS_release_name="Mojave"
-    CFBundleShortVersionString="10.14"
-    sucatalog="${Mojave_sucatalog}"
-else
+if [ "${macOS_release_name^^}" == "C" ]; then
     macOS_release_name="Catalina"
     CFBundleShortVersionString="10.15"
     sucatalog="${Catalina_sucatalog}"
+    printf 'As of 2019-12-11, macOS Catalina 10.15.2 '"${white_on_red}"'does not boot'"${default_color}"' on VirtualBox.\n'
+    printf "${white_on_black}"'Press enter to continue, CTRL-C to exit.'"${default_color}"
+    read
+elif [ "${macOS_release_name^^}" == "H" ]; then
+    macOS_release_name="HighSierra"
+    CFBundleShortVersionString="10.13"
+    sucatalog="${HighSierra_sucatalog}"
+else
+    macOS_release_name="Mojave"
+    CFBundleShortVersionString="10.14"
+    sucatalog="${Mojave_sucatalog}"
 fi
 echo "${macOS_release_name} selected"
 }
@@ -386,7 +389,7 @@ rm Catalina_sucatalog_00 2>/dev/null
 # when a new version is released. It's a temporary emergency workaround.
 for catalog in "${macOS_release_name}_sucatalog_"* "error"; do
     if [[ "${catalog}" == error ]]; then
-        rm "${macOS_release_name}_sucatalog"*
+        # rm "${macOS_release_name}_sucatalog"*
         printf "Couldn't find the requested download URL in the Apple catalog. Exiting."
        exit
     fi
@@ -399,7 +402,7 @@ for catalog in "${macOS_release_name}_sucatalog_"* "error"; do
     if [[ "${found_version}" == *${CFBundleShortVersionString}* ]]; then
         echo "Found download URL: ${urlbase}"
         echo ""
-        rm "${macOS_release_name}_sucatalog"*
+        # rm "${macOS_release_name}_sucatalog"*
         break
     fi
 done
