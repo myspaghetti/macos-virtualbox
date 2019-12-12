@@ -2,7 +2,7 @@
 # Semi-automatic installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-guest-virtualbox
-# version 0.76.7
+# version 0.76.8
 
 # Requirements: 40GB available storage on host
 # Dependencies: bash >= 4.0, unzip, wget, dmg2img,
@@ -247,8 +247,15 @@ vbox_version="$(VBoxManage -v 2>/dev/null)"
 if [ -z "${vbox_version}" ]; then
     echo "Can't determine VirtualBox version. Exiting."
     exit
-elif [[ ! ${vbox_version:0:1} == 6 && ! "${vbox_version:0:6}" =~ 5\.2\.1[0-9] && ! "${vbox_version:0:5}" =~ 5\.2\.[2-9] ]]; then
-    echo "Please make sure VirtualBox version 6.0 or higher is installed."
+elif [[ "${vbox_version}" =~ ^6\.1 ]]; then
+    echo ""
+    echo "VirtualBox version 6.1 detected; its NVRAM driver cannot be loaded."
+    printf "${white_on_black}"'iCloud, iMessage, and other Apple-conneted apps will not work.'"${default_color}\n"
+    echo ""
+    printf "${white_on_black}"'Press enter to continue, CTRL-C to exit.'"${default_color}"
+    read
+elif [[ ! ${vbox_version:0:1} == 6 && ! "${vbox_version:0:6}" =~ ^5\.2\.1[0-9] && ! "${vbox_version:0:5}" =~ ^5\.2\.[2-9] ]]; then
+    echo "Please make sure VirtualBox version 6.0 is installed."
     exit
 elif [ "${vbox_version:0:1}" -lt 6 ]; then
     echo ""
@@ -531,6 +538,8 @@ VBoxManage modifyvm "${vmname}" --cpus "${cpucount}" --memory "${memorysize}" \
  --mouse usbtablet --keyboard usb --audiocontroller hda --audiocodec stac9221
 
 VBoxManage setextradata "${vmname}" \
+ "VBoxInternal2/EfiGraphicsResolution" "${resolution}"
+VBoxManage setextradata "${vmname}" \
  "VBoxInternal/Devices/efi/0/Config/DmiSystemFamily" "${DmiSystemFamily}"
 VBoxManage setextradata "${vmname}" \
  "VBoxInternal/Devices/efi/0/Config/DmiSystemProduct" "${DmiSystemProduct}"
@@ -549,30 +558,6 @@ VBoxManage setextradata "${vmname}" \
 VBoxManage setextradata "${vmname}" \
  "VBoxInternal/Devices/efi/0/Config/DmiBoardSerial" "${DmiBoardSerial}"
 VBoxManage setextradata "${vmname}" \
- "VBoxInternal/Devices/efi/0/LUN#0/Config/Vars/0000/Uuid" "4D1EDE05-38C7-4A6A-9CC6-4BCCA8B38C14"
-VBoxManage setextradata "${vmname}" \
- "VBoxInternal/Devices/efi/0/LUN#0/Config/Vars/0000/Name" "MLB"
-VBoxManage setextradata "${vmname}" \
- "VBoxInternal/Devices/efi/0/LUN#0/Config/Vars/0000/Value" "${MLB}"
-VBoxManage setextradata "${vmname}" \
- "VBoxInternal/Devices/efi/0/LUN#0/Config/Vars/0001/Uuid" "4D1EDE05-38C7-4A6A-9CC6-4BCCA8B38C14"
-VBoxManage setextradata "${vmname}" \
- "VBoxInternal/Devices/efi/0/LUN#0/Config/Vars/0001/Name" "ROM"
-VBoxManage setextradata "${vmname}" \
- "VBoxInternal/Devices/efi/0/LUN#0/Config/Vars/0001/Value" "${ROM}"
-VBoxManage setextradata "${vmname}" \
- "VBoxInternal/Devices/efi/0/LUN#0/Config/Vars/0002/Uuid" "7C436110-AB2A-4BBB-A880-FE41995C9F82"
-VBoxManage setextradata "${vmname}" \
- "VBoxInternal/Devices/efi/0/LUN#0/Config/Vars/0002/Name" "system-id"
-VBoxManage setextradata "${vmname}" \
- "VBoxInternal/Devices/efi/0/LUN#0/Config/Vars/0002/Value" "${SYSTEM_UUID}"
-VBoxManage setextradata "${vmname}" \
- "VBoxInternal/Devices/efi/0/LUN#0/Config/Vars/0003/Uuid" "7C436110-AB2A-4BBB-A880-FE41995C9F82"
-VBoxManage setextradata "${vmname}" \
- "VBoxInternal/Devices/efi/0/LUN#0/Config/Vars/0003/Name" "csr-active-config"
-VBoxManage setextradata "${vmname}" \
- "VBoxInternal/Devices/efi/0/LUN#0/Config/Vars/0003/Value" "${SYSTEM_INTEGRITY_PROTECTION}"
-VBoxManage setextradata "${vmname}" \
  "VBoxInternal/Devices/efi/0/Config/DmiSystemVendor" "Apple Inc."
 VBoxManage setextradata "${vmname}" \
  "VBoxInternal/Devices/efi/0/Config/DmiSystemVersion" "1.0"
@@ -581,8 +566,32 @@ VBoxManage setextradata "${vmname}" \
   "ourhardworkbythesewordsguardedpleasedontsteal(c)AppleComputerInc"
 VBoxManage setextradata "${vmname}" \
  "VBoxInternal/Devices/smc/0/Config/GetKeyFromRealSMC" 0
-VBoxManage setextradata "${vmname}" \
- "VBoxInternal2/EfiGraphicsResolution" "${resolution}"
+if [[ ! "$(VBoxManage -v 2>/dev/null)" =~ ^6\.1 ]]; then
+    VBoxManage setextradata "${vmname}" \
+     "VBoxInternal/Devices/efi/0/LUN#0/Config/Vars/0000/Uuid" "4D1EDE05-38C7-4A6A-9CC6-4BCCA8B38C14"
+    VBoxManage setextradata "${vmname}" \
+     "VBoxInternal/Devices/efi/0/LUN#0/Config/Vars/0000/Name" "MLB"
+    VBoxManage setextradata "${vmname}" \
+     "VBoxInternal/Devices/efi/0/LUN#0/Config/Vars/0000/Value" "${MLB}"
+    VBoxManage setextradata "${vmname}" \
+     "VBoxInternal/Devices/efi/0/LUN#0/Config/Vars/0001/Uuid" "4D1EDE05-38C7-4A6A-9CC6-4BCCA8B38C14"
+    VBoxManage setextradata "${vmname}" \
+     "VBoxInternal/Devices/efi/0/LUN#0/Config/Vars/0001/Name" "ROM"
+    VBoxManage setextradata "${vmname}" \
+     "VBoxInternal/Devices/efi/0/LUN#0/Config/Vars/0001/Value" "${ROM}"
+    VBoxManage setextradata "${vmname}" \
+     "VBoxInternal/Devices/efi/0/LUN#0/Config/Vars/0002/Uuid" "7C436110-AB2A-4BBB-A880-FE41995C9F82"
+    VBoxManage setextradata "${vmname}" \
+     "VBoxInternal/Devices/efi/0/LUN#0/Config/Vars/0002/Name" "system-id"
+    VBoxManage setextradata "${vmname}" \
+     "VBoxInternal/Devices/efi/0/LUN#0/Config/Vars/0002/Value" "${SYSTEM_UUID}"
+    VBoxManage setextradata "${vmname}" \
+     "VBoxInternal/Devices/efi/0/LUN#0/Config/Vars/0003/Uuid" "7C436110-AB2A-4BBB-A880-FE41995C9F82"
+    VBoxManage setextradata "${vmname}" \
+     "VBoxInternal/Devices/efi/0/LUN#0/Config/Vars/0003/Name" "csr-active-config"
+    VBoxManage setextradata "${vmname}" \
+     "VBoxInternal/Devices/efi/0/LUN#0/Config/Vars/0003/Value" "${SYSTEM_INTEGRITY_PROTECTION}"
+fi
 }
 
 # QWERTY-to-scancode dictionary. Hex scancodes, keydown and keyup event.
