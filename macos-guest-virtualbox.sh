@@ -2,7 +2,7 @@
 # Semi-automatic installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-guest-virtualbox
-# version 0.77.0
+# version 0.77.1
 
 # Requirements: 40GB available storage on host
 # Dependencies: bash >= 4.0, unzip, wget, dmg2img,
@@ -880,14 +880,14 @@ fi
 function place_efi_apfs_drivers {
 # VirtualBox 6.1 has own EFI APFS drivers, doesn't require acidanthera drivers
 if [[ ! "$(VBoxManage -v 2>/dev/null)" =~ ^6\.1 ]]; then
-    printf "${white_on_black}"'
-    After the VM boots, press enter when either the Language window'"${default_color}"'
-    '"${white_on_black}"'or Utilities window is ready.'"${default_color}"
+    echo ""
+    printf "${white_on_black}"'After the VM boots, press enter when either the Language window'"${default_color}"
+    printf "${white_on_black}"'or Utilities window is ready.'"${default_color}"
     read -p ""
     send_enter
 
-    printf "${white_on_black}"'
-    Press enter when the macOS Utilities window is ready.'"${default_color}"
+    echo ""
+    printf "${white_on_black}"'Press enter when the macOS Utilities window is ready.'"${default_color}"
     read -p ""
     kbspecial='CTRLprs F2 CTRLrls u ENTER t ENTER'
     send_special
@@ -919,16 +919,16 @@ function detach_installer_vdi_and_viso() {
 #gets a chance to detach the installer and VISO
 if [[ ! "$(VBoxManage -v 2>/dev/null)" =~ ^6\.1 ]]; then
     # Shut down the virtual machine
-    printf "${white_on_black}"'
-    Press enter when the terminal is ready.'"${default_color}"
+    echo ""
+    printf "${white_on_black}"'Press enter when the terminal is ready.'"${default_color}"
     read -p ""
     kbstring='shutdown -h now'
     send_keys
 
     echo ""
     echo "Shutting down virtual machine."
-    printf "${white_on_black}"'
-    Press enter when the virtual machine shutdown is complete.'"${default_color}"
+    echo ""
+    printf "${white_on_black}"'Press enter when the virtual machine shutdown is complete.'"${default_color}"
     read -p ""
 
     # detach installer from virtual machine
