@@ -10,7 +10,7 @@ The goal of the script is to allow for a very easy installation without any clos
 Tested on Cygwin. Works on macOS and WSL, should work on most Linux distros.
 
 ## iCloud and iMessage connectivity
-### Due to VirtualBox 6.1 NVRAM issues, iCloud and iMesasge connectivity is not available on VirtualBox 6.1 as of the date of its release. Please use VirtualBox 6.0 instead.
+### Due to VirtualBox 6.1 NVRAM issues, iCloud and iMessage connectivity is not available on VirtualBox 6.1 as of the date of its release. Please use VirtualBox 6.0 instead.
 
 iCloud, iMessage, and other connected Apple services require a valid device name and serial number, board ID and serial number, and other genuine (or genuine-like) Apple parameters. These parameters may be set in the script before installation, or set after installation and applied with `./macos-guest-virtualbox.sh configure_vm`
 
