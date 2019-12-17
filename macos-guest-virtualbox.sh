@@ -2,7 +2,7 @@
 # Semi-automatic installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-guest-virtualbox
-# version 0.76.8
+# version 0.77.0
 
 # Requirements: 40GB available storage on host
 # Dependencies: bash >= 4.0, unzip, wget, dmg2img,
@@ -871,72 +871,93 @@ kbstring='app_path="$(ls -d /Install*.app)" && cd "/${app_path}/Contents/Resourc
 send_keys
 echo ""
 echo "Installer started."
-echo "When the installer finishes preparing, the virtual machine will reboot"
-echo "into the base system again, not the installer."
+if [[ ! "$(VBoxManage -v 2>/dev/null)" =~ ^6\.1 ]]; then
+    echo "When the installer finishes preparing, the virtual machine will reboot"
+    echo "into the base system again, not the installer."
+fi
 }
 
 function place_efi_apfs_drivers {
-printf "${white_on_black}"'
-After the VM boots, press enter when either the Language window'"${default_color}"'
-'"${white_on_black}"'or Utilities window is ready.'"${default_color}"
-read -p ""
-send_enter
+# VirtualBox 6.1 has own EFI APFS drivers, doesn't require acidanthera drivers
+if [[ ! "$(VBoxManage -v 2>/dev/null)" =~ ^6\.1 ]]; then
+    printf "${white_on_black}"'
+    After the VM boots, press enter when either the Language window'"${default_color}"'
+    '"${white_on_black}"'or Utilities window is ready.'"${default_color}"
+    read -p ""
+    send_enter
 
-printf "${white_on_black}"'
-Press enter when the macOS Utilities window is ready.'"${default_color}"
-read -p ""
-kbspecial='CTRLprs F2 CTRLrls u ENTER t ENTER'
-send_special
-prompt_terminal_ready
+    printf "${white_on_black}"'
+    Press enter when the macOS Utilities window is ready.'"${default_color}"
+    read -p ""
+    kbspecial='CTRLprs F2 CTRLrls u ENTER t ENTER'
+    send_special
+    prompt_terminal_ready
 
-# find largest drive
-kbstring='disks="$(diskutil list | grep -o "[0-9][^ ]* GB *disk[012]$" | sort -gr | grep -o disk[012])"; disks=(${disks[@]})'
-send_keys
-prompt_terminal_ready
+    # find largest drive
+    kbstring='disks="$(diskutil list | grep -o "[0-9][^ ]* GB *disk[012]$" | sort -gr | grep -o disk[012])"; disks=(${disks[@]})'
+    send_keys
+    prompt_terminal_ready
 
-echo ""
-echo "Copying open-source APFS drivers to EFI partition"
+    echo ""
+    echo "Copying open-source APFS drivers to EFI partition"
 
-# move drivers into path on EFI partition
-kbstring='mkdir -p "/Volumes/'"${vmname}"'/mount_efi" && mount_msdos /dev/${disks[0]}s1 "/Volumes/'"${vmname}"'/mount_efi" && mkdir -p "/Volumes/'"${vmname}"'/mount_efi/EFI/driver/" && cp "/Volumes/'"${macOS_release_name:0:5}-files"'/"*.efi "/Volumes/'"${vmname}"'/mount_efi/EFI/driver/"'
-send_keys
-prompt_terminal_ready
+    # move drivers into path on EFI partition
+    kbstring='mkdir -p "/Volumes/'"${vmname}"'/mount_efi" && mount_msdos /dev/${disks[0]}s1 "/Volumes/'"${vmname}"'/mount_efi" && mkdir -p "/Volumes/'"${vmname}"'/mount_efi/EFI/driver/" && cp "/Volumes/'"${macOS_release_name:0:5}-files"'/"*.efi "/Volumes/'"${vmname}"'/mount_efi/EFI/driver/"'
+    send_keys
+    prompt_terminal_ready
 
-# place startup.nsh EFI script
-echo ""
-echo "Placing EFI startup script that searches for boot.efi on the EFI partition"
-kbstring='cp "/Volumes/'"${macOS_release_name:0:5}-files"'/startup.nsh" "/Volumes/'"${vmname}"'/mount_efi/startup.nsh"'
-send_keys
-
+    # place startup.nsh EFI script
+    echo ""
+    echo "Placing EFI startup script that searches for boot.efi on the EFI partition"
+    kbstring='cp "/Volumes/'"${macOS_release_name:0:5}-files"'/startup.nsh" "/Volumes/'"${vmname}"'/mount_efi/startup.nsh"'
+    send_keys
+fi
 }
 
 function detach_installer_vdi_and_viso() {
-# Shut down the virtual machine
-printf "${white_on_black}"'
-Press enter when the terminal is ready.'"${default_color}"
-read -p ""
-kbstring='shutdown -h now'
-send_keys
+#VirtualBox 6.1 completes the installation before the script
+#gets a chance to detach the installer and VISO
+if [[ ! "$(VBoxManage -v 2>/dev/null)" =~ ^6\.1 ]]; then
+    # Shut down the virtual machine
+    printf "${white_on_black}"'
+    Press enter when the terminal is ready.'"${default_color}"
+    read -p ""
+    kbstring='shutdown -h now'
+    send_keys
 
-echo ""
-echo "Shutting down virtual machine."
-printf "${white_on_black}"'
-Press enter when the virtual machine shutdown is complete.'"${default_color}"
-read -p ""
+    echo ""
+    echo "Shutting down virtual machine."
+    printf "${white_on_black}"'
+    Press enter when the virtual machine shutdown is complete.'"${default_color}"
+    read -p ""
 
-# detach installer from virtual machine
-VBoxManage storageattach "${vmname}" --storagectl SATA --port 1 --medium none
-VBoxManage storageattach "${vmname}" --storagectl SATA --port 3 --medium none
+    # detach installer from virtual machine
+    VBoxManage storageattach "${vmname}" --storagectl SATA --port 1 --medium none
+    VBoxManage storageattach "${vmname}" --storagectl SATA --port 3 --medium none
+fi
 }
 
 function boot_macos_and_clean_up() {
 echo "The VM will boot from the target virtual disk image."
-VBoxManage startvm "${vmname}"
+if [[ ! "$(VBoxManage -v 2>/dev/null)" =~ ^6\.1 ]]; then
+    #VM was not previously shut down on 6.1, no need to start
+    VBoxManage startvm "${vmname}"
+fi
 echo ""
-echo "macOS will now install and start up."
+echo "macOS will now install and start up. This will take several minutes."
 echo ""
 
 # temporary files cleanup
+if [[ "$(VBoxManage -v 2>/dev/null)" =~ ^6\.1 ]]; then
+    # detach installer from virtual machine for VirtualBox 6.1
+    # because the script didn't have a chance to shut down the VM
+    echo 'Please allow the installer to finish, then complete the initial boot setup.'
+    echo 'After macOS is set up, shut down the virtual machine to delete temporary files.'
+    printf "${white_on_black}"'Press enter when shutdown is complete.'"${default_color}"
+    read -p ""
+    VBoxManage storageattach "${vmname}" --storagectl SATA --port 1 --medium none
+    VBoxManage storageattach "${vmname}" --storagectl SATA --port 3 --medium none
+fi
 VBoxManage closemedium "${macOS_release_name}_BaseSystem.vdi" 2>/dev/null
 VBoxManage closemedium "Install ${macOS_release_name}.vdi" 2>/dev/null
 printf 'Temporary files are safe to delete. '"${white_on_red}"'Delete temporary files?'"${default_color}"
@@ -948,13 +969,12 @@ if [ "${delete,,}" == "y" ]; then
        "Install ${macOS_release_name}.vdi" \
        "ApfsDriverLoader.efi" "AppleImageLoader.efi" \
        "AppleSupport-v2.0.4-RELEASE.zip" "AppleUiSupport.efi" \
-       "startup.nsh"
+       "startup.nsh" 2>/dev/null
     rm "dmg2img.exe" 2>/dev/null
 fi
 
-printf 'macOS installation should complete in a few minutes.
-
-After the installation is complete, the virtual disk image may be increased
+printf '
+When the virtual machine is shut down, the virtual disk image may be increased
 through VirtualBox, and then the macOS system APFS container size may be
 increased. Inside the virtual machine run "sudo diskutil repairDisk disk0"
 and then from Disk Utility delete the "Free space" partition, allowing the
