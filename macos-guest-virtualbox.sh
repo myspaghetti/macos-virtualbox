@@ -2,7 +2,7 @@
 # Semi-automatic installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-guest-virtualbox
-# version 0.77.2
+# version 0.77.3
 
 # Requirements: 40GB available storage on host
 # Dependencies: bash >= 4.0, unzip, wget, dmg2img,
@@ -209,8 +209,7 @@ elif [[ "$(cat /proc/sys/kernel/osrelease 2>/dev/null)" =~ [Mm]icrosoft ]]; then
         echo ""
         echo "The script requires Windows 10 version 1903 or higher to run properly on WSL."
         echo "For lower versions, please run the script on a path on the Windows filesystem,"
-        printf 'for example  '"${white_on_black}"'/mnt/c/Users/Public/Documents'"${default_color}"
-        echo ""
+        printf 'for example  '"${white_on_black}"'/mnt/c/Users/Public/Documents'"${default_color}"'\n\n'
         printf "${white_on_black}"'Press enter to continue, CTRL-C to exit.'"${default_color}"
         read
     fi
@@ -250,8 +249,7 @@ if [ -z "${vbox_version}" ]; then
 elif [[ "${vbox_version}" =~ ^6\.1 ]]; then
     echo ""
     echo "VirtualBox version 6.1 detected; its NVRAM driver cannot be loaded."
-    printf "${white_on_black}"'iCloud, iMessage, and other Apple-conneted apps will not work.'"${default_color}\n"
-    echo ""
+    printf "${white_on_black}"'iCloud, iMessage, and other Apple-conneted apps will not work.'"${default_color}"'\n\n'
     printf "${white_on_black}"'Press enter to continue, CTRL-C to exit.'"${default_color}"
     read
 elif [[ ! ${vbox_version:0:1} == 6 && ! "${vbox_version:0:6}" =~ ^5\.2\.1[0-9] && ! "${vbox_version:0:5}" =~ ^5\.2\.[2-9] ]]; then
@@ -881,7 +879,7 @@ function place_efi_apfs_drivers {
 # VirtualBox 6.1 has own EFI APFS drivers, doesn't require acidanthera drivers
 if [[ ! "$(VBoxManage -v 2>/dev/null)" =~ ^6\.1 ]]; then
     echo ""
-    printf "${white_on_black}"'After the VM boots, press enter when either the Language window'"${default_color}"
+    printf "${white_on_black}"'After the VM boots, press enter when either the Language window'"${default_color}"'\n'
     printf "${white_on_black}"'or Utilities window is ready.'"${default_color}"
     read -p ""
     send_enter
