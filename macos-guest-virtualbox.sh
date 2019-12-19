@@ -2,7 +2,7 @@
 # Semi-automatic installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-guest-virtualbox
-# version 0.77.1
+# version 0.77.2
 
 # Requirements: 40GB available storage on host
 # Dependencies: bash >= 4.0, unzip, wget, dmg2img,
@@ -952,7 +952,9 @@ if [[ "$(VBoxManage -v 2>/dev/null)" =~ ^6\.1 ]]; then
     # detach installer from virtual machine for VirtualBox 6.1
     # because the script didn't have a chance to shut down the VM
     echo 'Please allow the installer to finish, then complete the initial boot setup.'
-    echo 'After macOS is set up, shut down the virtual machine to delete temporary files.'
+    echo 'After macOS is set up, shut down the virtual machine so the script can'
+    echo 'release the temporary files and prompt to delete them.'
+    echo ''
     printf "${white_on_black}"'Press enter when shutdown is complete.'"${default_color}"
     read -p ""
     VBoxManage storageattach "${vmname}" --storagectl SATA --port 1 --medium none
