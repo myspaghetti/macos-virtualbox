@@ -2,7 +2,7 @@
 # Semi-automatic installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-guest-virtualbox
-# version 0.77.5
+# version 0.77.6
 
 # Requirements: 40GB available storage on host
 # Dependencies: bash >= 4.0, unzip, wget, dmg2img,
@@ -47,11 +47,6 @@ SYSTEM_INTEGRITY_PROTECTION='0x10'  # '0x10' - enabled, '0x77' - disabled
 # This is only necessary if you want to run connected Apple applications
 # such as iCloud, iMessage, etc.
 # Make sure the package xxd is installed, otherwise the conversion will fail.
-if [ -n "$(gbase64 --help 2>/dev/null)" ]; then
-    function base64() {
-        gbase64 "$@"
-    }
-fi
 MLB="bytes:$(echo -n "${DmiBoardSerial}" | base64)"
 if [ -n "$(echo -n "aabbccddee" | xxd -r -p 2>/dev/null)" ]; then
     # Apologies for the one-liner below; it convers the mixed-ASCII-and-base16
@@ -125,7 +120,6 @@ read
 # check dependencies
 
 function check_bash_version() {
-# check Bash version
 if [ -z "${BASH_VERSION}" ]; then
     echo "Can't determine BASH_VERSION. Exiting."
     exit
@@ -139,6 +133,23 @@ elif [ "${BASH_VERSION:0:1}" -lt 4 ]; then
 fi
 }
 
+function check_gnu_coreutils_prefix() {
+if [ -n "$(gcsplit --help 2>/dev/null)" ]; then
+    function csplit() {
+        gcsplit "$@"
+    }
+    function tac() {
+        gtac "$@"
+    }
+    function split() {
+        gsplit"$@"
+    }
+    function base64() {
+        gbase64 "$@"
+    }
+fi
+}
+
 function check_dependencies() {
 
 # check if running on macOS and non-GNU coreutils
@@ -149,17 +160,7 @@ if [ -n "$(sw_vers 2>/dev/null)" ]; then
         PATH="${homebrew_gnubin}:${PATH}"
     fi
     # if csplit isn't GNU variant, exit
-    if [ -n "$(gcsplit --help 2>/dev/null)" ]; then
-        function csplit() {
-            gcsplit "$@"
-        }
-        function tac() {
-            gtac "$@"
-        }
-        function split() {
-            gsplit"$@"
-        }
-    elif [ -z "$(csplit --help 2>/dev/null)" ]; then
+    if [ -z "$(csplit --help 2>/dev/null)" ]; then
         echo ""
         printf 'macOS detected.\nPlease use a package manager such as '"${white_on_black}"'homebrew'"${default_color}"', '"${white_on_black}"'pkgsrc'"${default_color}"', '"${white_on_black}"'nix'"${default_color}"', or '"${white_on_black}"'MacPorts'"${default_color}"'.\n'
         echo "Please make sure the following packages are installed and that"
@@ -1018,6 +1019,7 @@ or not these stages are specified.
 
 Available stage titles:
     check_bash_version
+    check_gnu_coreutils_prefix
     set_variables
     welcome
     check_dependencies
@@ -1041,6 +1043,7 @@ Available stage titles:
 
 if [ -z "${1}" ]; then
     check_bash_version
+    check_gnu_coreutils_prefix
     set_variables
     welcome
     check_dependencies
@@ -1062,6 +1065,7 @@ if [ -z "${1}" ]; then
 else
     if [ "${1}" != "stages" ]; then
         check_bash_version
+        check_gnu_coreutils_prefix
         set_variables
         check_dependencies
         for argument in "$@"; do ${argument}; done
