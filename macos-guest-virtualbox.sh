@@ -2,7 +2,7 @@
 # Semi-automatic installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-guest-virtualbox
-# version 0.77.4
+# version 0.77.5
 
 # Requirements: 40GB available storage on host
 # Dependencies: bash >= 4.0, unzip, wget, dmg2img,
@@ -36,7 +36,6 @@ DmiBIOSVersion="string:MBP7.89"      # Boot ROM Version
 DmiBoardProduct="Mac-3CBD00234E554E41"
 # nvram 4D1EDE05-38C7-4A6A-9CC6-4BCCA8B38C14:MLB | awk '{ print $NF }'
 DmiBoardSerial="NO_LOGIC_BOARD_SN"
-MLB="bytes:$(echo -n "${DmiBoardSerial}" | base64)"
 # nvram 4D1EDE05-38C7-4A6A-9CC6-4BCCA8B38C14:ROM | awk '{ print $NF }'
 ROM='%aa*%bbg%cc%dd'
 # ioreg -l -p IODeviceTree | grep \"system-id
@@ -44,10 +43,16 @@ SYSTEM_UUID="aabbccddeeff00112233445566778899"
 # csrutil status
 SYSTEM_INTEGRITY_PROTECTION='0x10'  # '0x10' - enabled, '0x77' - disabled
 
-# The if-statement below converts the Mac output into VBox-readable values.
+# The code below converts the Mac output into VBox-readable values.
 # This is only necessary if you want to run connected Apple applications
 # such as iCloud, iMessage, etc.
 # Make sure the package xxd is installed, otherwise the conversion will fail.
+if [ -n "$(gbase64 --help 2>/dev/null)" ]; then
+    function base64() {
+        gbase64 "$@"
+    }
+fi
+MLB="bytes:$(echo -n "${DmiBoardSerial}" | base64)"
 if [ -n "$(echo -n "aabbccddee" | xxd -r -p 2>/dev/null)" ]; then
     # Apologies for the one-liner below; it convers the mixed-ASCII-and-base16
     # ROM value above into an ASCII string that represents a base16 number.
@@ -73,6 +78,7 @@ else
     fi
 fi
 
+# color highlights
 white_on_red="\e[48;2;255;0;0m\e[38;2;255;255;255m"
 white_on_black="\e[48;2;0;0;9m\e[38;2;255;255;255m"
 default_color="\033[0m"
