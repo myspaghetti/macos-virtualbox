@@ -27,7 +27,7 @@ After successfully creating a working macOS virtual machine, consider importing 
 ## Dependencies
 
 * [VirtualBox](https://www.virtualbox.org/wiki/Downloads)≥6.0 with Extension Pack
-* `Bash`≥4 (GNU variant; run on Windows through [Cygwin](https://cygwin.com/install.html) or WSL)
+* `Bash`≥4.3 (GNU variant; run on Windows through [Cygwin](https://cygwin.com/install.html) or WSL)
 * `coreutils` (GNU variant; install through package manager)
 * `unzip` (install through package manager)
 * `wget` (install through package manager)
