@@ -2,10 +2,10 @@
 # Semi-automatic installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-guest-virtualbox
-# version 0.78.0
+# version 0.78.1
 
 # Requirements: 40GB available storage on host
-# Dependencies: bash >= 4.0, unzip, wget, dmg2img,
+# Dependencies: bash >= 4.3, unzip, wget, dmg2img,
 #               VirtualBox with Extension Pack >= 6.0
 
 function set_variables() {
@@ -124,11 +124,14 @@ if [ -z "${BASH_VERSION}" ]; then
     echo "Can't determine BASH_VERSION. Exiting."
     exit
 elif [ "${BASH_VERSION:0:1}" -lt 4 ]; then
-    echo "Please run this script on Bash 4.0 or higher."
+    echo "Please run this script on Bash 4.3 or higher."
     if [ -n "$(sw_vers 2>/dev/null)" ]; then
         echo "macOS detected. Make sure the script is not running on"
         echo "the default /bin/bash which is version 3."
     fi
+    exit
+elif [ "${BASH_VERSION:0:1}" -eq 4 -a "${BASH_VERSION:2:1}" -le 2 ]; then
+    echo "Please run this script on Bash 4.3 or higher."
     exit
 fi
 }
