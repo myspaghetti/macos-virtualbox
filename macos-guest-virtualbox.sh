@@ -96,7 +96,7 @@ or genuine-like Apple parameters. macOS will work without these parameters, but
 Apple-connected apps will not.
 
 The installation requires about '"${white_on_red}"'40GB'"${default_color}"' of available storage, 25GB for
-temporary installation files and 15GB for the virtual machine's dynamically
+temporary installation files and 15GB for the virtual machine'\''s dynamically
 allocated storage disk image.
 
 '"${white_on_black}"'Press enter to review the script settings.'"${default_color}"
