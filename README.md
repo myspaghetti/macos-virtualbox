@@ -3,16 +3,14 @@
 ### Supports macOS Mojave (10.14) and High Sierra (10.13)
 ### macOS Catalina 10.15.2 fails to boot on VirtualBox as of the date of its release. Earlier versions of Catalina work, but they are not currently being distributed by Apple's software update servers, from which the script fetches the installer.
 
-The script is semi-automatic and requires a little user interaction. Most of the time the user simply has to press enter. There is one step where the user has to choose between [C]atalina, [M]ojave, or [H]igh Sierra, and a couple of instances where the user has to choose whether to delete or keep temporary files and previous installations.
+The script is semi-automatic and requires a little user interaction. A default fresh install only requires the user to sit patiently and, ten times, press enter when prompted.
 
 The goal of the script is to allow for a very easy installation without any closed-source additions or extra bootloaders.
 
 Tested on Cygwin. Works on macOS and WSL, should work on most Linux distros.
 
 ## iCloud and iMessage connectivity
-### Due to VirtualBox 6.1 NVRAM issues, iCloud and iMessage connectivity is not available on VirtualBox 6.1 as of the date of its release. Please use VirtualBox 6.0 instead.
-
-iCloud, iMessage, and other connected Apple services require a valid device name and serial number, board ID and serial number, and other genuine (or genuine-like) Apple parameters. These parameters may be set in the script before installation, or set after installation and applied with `./macos-guest-virtualbox.sh configure_vm`
+iCloud, iMessage, and other connected Apple services require a valid device name and serial number, board ID and serial number, and other genuine (or genuine-like) Apple parameters. These parameters may be set in the script before installation, or set after installation and applied with `./macos-guest-virtualbox.sh configure_nvram_parameters`
 
 ## Storage size
 
@@ -29,6 +27,5 @@ After successfully creating a working macOS virtual machine, consider importing 
 * [VirtualBox](https://www.virtualbox.org/wiki/Downloads)≥6.0 with Extension Pack
 * `Bash`≥4.3 (GNU variant; run on Windows through [Cygwin](https://cygwin.com/install.html) or WSL)
 * `coreutils` (GNU variant; install through package manager)
-* `unzip` (install through package manager)
-* `wget` (install through package manager)
+* `xxd`, `unzip`, `gzip`, `wget` (install through package manager)
 * `dmg2img` (install through package manager on Linux, macOS, or WSL; let the script download it automatically on Cygwin)
