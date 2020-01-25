@@ -2,7 +2,7 @@
 # Semi-automatic installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-guest-virtualbox
-# version 0.82.1
+# version 0.83.0
 
 # Requirements: 40GB available storage on host
 # Dependencies: bash >= 4.3, xxd, gzip, unzip, wget, dmg2img,
@@ -44,14 +44,13 @@ ROM='%aa*%bbg%cc%dd'
 SYSTEM_UUID="aabbccddeeff00112233445566778899"
 # csrutil status
 SYSTEM_INTEGRITY_PROTECTION='10'  # '10' - enabled, '77' - disabled
-
+}
 
 # terminal text colors
 warning_color="\e[48;2;255;0;0m\e[38;2;255;255;255m" # white on red
 highlight_color="\e[48;2;0;0;9m\e[38;2;255;255;255m" # white on black
 low_contrast_color="\e[48;2;0;0;9m\e[38;2;128;128;128m" # grey on black
 default_color="\033[0m"
-}
 
 # prints positional parameters in low contrast preceded and followed by newline
 function print_dimly() {
@@ -82,7 +81,7 @@ temporary installation files and 15GB for the virtual machine'"'"'s dynamically
 allocated storage disk image.
 
 The script can be resumed by stages, as described in the following command:
-"'"${highlight_color}${0}"' stages'"${default_color}"'"
+    '"${highlight_color}${0}"' documentation'"${default_color}"'
 
 '"${highlight_color}"'Press enter to review the script settings.'"${default_color}"
 clear_input_buffer_then_read
@@ -341,7 +340,8 @@ if [ -n "$(VBoxManage showvminfo "${vmname}" 2>/dev/null)" ]; then
         printf '
 '"${highlight_color}"'Please assign a different VM name to variable "vmname" by editing the script,'"${default_color}"'
 or skip this check manually as described when running the following command:
-'"${0}"' stages\n'
+'"${0}"' documentation
+'
         exit
     fi
 fi
@@ -466,13 +466,13 @@ function generate_nvram_bin_file() {
     # terminate string with two null bytes
     local name="$(for (( i=0; i<"${#namestring}"; i++ )); do printf -- "${namestring:${i}:1}" | xxd -p | tr -d '\n'; printf '00'; done; printf '0000' )"
     # size of string in bytes, represented by eight hex digits, big-endian
-    local namesize="$(printf "%08x" $(( ${#name} / 2 )) )" 
+    local namesize="$(printf "%08x" $(( ${#name} / 2 )) )"
     # flip four big-endian bytes byte-order to little-endian
     local namesize="$(printf "${namesize}" | xxd -r -p | od -tx4 -N4 -An --endian=little)"
     # strip string-of-hex-bytes representation of data of spaces, "x", "h", etc
     local data="$(printf -- "${2}" | xxd -r -p | xxd -p)"
     # size of data in bytes, represented by eight hex digits, big-endian
-    local datasize="$(printf "%08x" $(( ${#data} / 2 )) )" 
+    local datasize="$(printf "%08x" $(( ${#data} / 2 )) )"
     # flip four big-endian bytes byte-order to little-endian
     local datasize="$(printf "${datasize}" | xxd -r -p | od -tx4 -N4 -An --endian=little)"
     # guid string-of-hex-bytes is five fields, 8+4+4+4+12 bytes long
@@ -1029,15 +1029,8 @@ if [[ ( "${vbox_version:0:1}" -lt 6 ) || ( "${vbox_version:0:1}" = 6 && "${vbox_
 fi
 printf '
 
-'"${highlight_color}"'Using iMessage and other connected Apple apps:'"${default_color}"'
-Set the EFI and NVRAM variables required for iMessage and other connected Apple
-apps by powering up the virtual machine and immediately pressing Esc when the
-VirtualBox logo appears. Either the boot menu or the EFI Internal Shell will
-boot. From the boot menu, select "Boot Manager" then "EFI Internal Shell" and
-allow the startup.nsh script to run. This occurs automatically on VirtualBox
-versions 6.0 and lower, but is sometimes skipped with versions 6.1 and higher.
-
-Setting EFI and NVRAM variables is not required to run macOS.
+For further information, see the documentation with the following command:
+'"${highlight_color}${0}"' documentation'"${default_color}"'
 
 '"${highlight_color}"'That'"'"'s it! Enjoy your virtual machine.'"${default_color}"'\n'
 
@@ -1096,51 +1089,149 @@ fi
 
 }
 
-function stages() {
-printf '\nUSAGE: '"${highlight_color}${0}"' [STAGE]...'"${default_color}"'
+function documentation() {
+printf "
+        ${highlight_color}NAME${default_color}
+Semi-automatic installer of macOS on VirtualBox
 
-The script is divided into stages that run as separate functions.
-Add one or more stage titles to the command line to run the corresponding
-function. If the first argument is "stages" all others are ignored.
+        ${highlight_color}DESCRIPTION${default_color}
+The script downloads, configures, and installs macOS High Sierra, Mojave,
+and Catalina on VirtualBox 5.2, 6.0, and 6.1. The script is semi-automatic
+and requires a little user interaction. A default fresh install only
+requires the user to sit patiently and, ten times, press enter when prompted.
 
-Dependency-checking and variable-setting is always performed first, whether
-or not these stages are specified.
+        ${highlight_color}USAGE${default_color}
+${low_contrast_color}${0} [STAGE]... ${default_color}
 
-Some examples:
+The script is divided into stages. Stage titles may be given as command-line
+arguments for the script. When the script is run with no command-line
+arguments, each of the available stages, except \"documentation\", is executed
+in succession in the order listed:
+${low_contrast_color}
+    check_bash_version
+    check_gnu_coreutils_prefix
+    set_variables
+    welcome
+    check_dependencies
+    prompt_delete_existing_vm
+    create_vm
+    prepare_macos_installation_files
+    create_nvram_files
+    create_macos_installation_files_viso
+    create_basesystem_vdi
+    create_target_vdi
+    create_install_vdi
+    configure_vm
+    populate_virtual_disks
+    populate_macos_target
+    delete_temporary_files
+${default_color}
+When \"documentation\" is the first command-line argument, only the
+\"documentation\" stage is executed and all other arguments are ignored.
 
-    "'"${0}"' configure_vm"
+The four stages \"check_bash_version\", \"check_gnu_coreutils_prefix\",
+\"set_variables\", and \"check_dependencies\" are always performed when any stage
+title other than \"documentation\" is specified first, and only after the checks
+pass the stages specified in the command-line arguments are performed.
 
-This stage might be useful after copying an existing VM VDI to a different
+        ${highlight_color}EXAMPLES${default_color}
+    ${low_contrast_color}${0} configure_vm${default_color}
+
+The above stage might be used after copying an existing VM VDI to a different
 VirtualBox installation and having the script automatically configure the VM.
 
-    "'"${0}"' configure_vm create_macos_installation_files_viso"
+    ${low_contrast_color}${0} delete_temporary_files${default_color}
 
-These stages might be useful after editing the EFI and NVRAM parameters at the
-top of the script. Using genuine or genuine-like parameters and applying them
-allows using iMessage, iCloud, and other connected Apple services.
-Apply the parameters by copying the "startup.nsh" file to the root of the
-EFI partition and booting into the EFI Internal Shell by pressing Esc
-immediately when the VirtualBox logo appears when powering up the VM.
+The above stage might be used when no more virtual machines need to be installed,
+and the temporary files can be deleted.
 
-Press enter to continue.'
-clear_input_buffer_then_read
-printf '
-Available stage titles:
+    ${low_contrast_color}${0} "'\\'"${default_color}
+${low_contrast_color}configure_vm create_nvram_files create_macos_installation_files_viso${default_color}
 
-    check_bash_version                      - configure_vm
-    check_gnu_coreutils_prefix             /  populate_virtual_disks
-    set_variables                         |   populate_macos_target
-    welcome                               |   delete_temporary_files    
-    check_dependencies                    |
-    prompt_delete_existing_vm             |
-    create_vm                             |
-    prepare_macos_installation_files      |
-    create_nvram_files                    |
-    create_macos_installation_files_viso  |
-    create_basesystem_vdi                 |
-    create_target_vdi                     |
-    create_install_vdi ------------------/
-'
+The above stages might be used to update the EFI and NVRAM variables required
+for iCloud and iMessage connectivity and other Apple-connected apps.
+
+        ${highlight_color}iCloud and iMessage connectivity${default_color}
+iCloud, iMessage, and other connected Apple services require a valid device
+name and serial number, board ID and serial number, and other genuine
+(or genuine-like) Apple parameters. These parameters may be edited at the top
+of the script, accompanied by an explanation. Editing them is not required when
+installing or running macOS, only when connecting to the iCould app, iMessage,
+and other apps that authenticate the device with Apple.
+
+The variables needed to be assigned in the script are the following:
+
+${low_contrast_color}DmiSystemFamily    # Model name
+DmiSystemProduct   # Model identifier
+DmiSystemSerial    # System serial number
+DmiSystemUuid      # Hardware UUID
+DmiOEMVBoxVer      # Apple ROM info (major version)
+DmiOEMVBoxRev      # Apple ROM info (revision)
+DmiBIOSVersion     # Boot ROM version
+DmiBoardProduct    # Main Logic Board identifier
+DmiBoardSerial     # Main Logic Board serial (EFI)
+MLB                # Main Logic Board serial (NVRAM)
+ROM                # ROM identifier (NVRAM)
+SYSTEM_UUID        # System identifier (NVRAM)
+${default_color}
+The comments at the top of the script specify how to view these variables
+on a genuine Mac.
+
+        ${highlight_color}Applying the EFI and NVRAM parameters${default_color}
+The EFI and NVRAM parameters may be set in the script before installation by
+editing them at the top of the script, and applied after the last step of the
+installation by resetting the virtual machine and booting into the
+EFI Internal Shell. When resetting or powering up the VM, immediately press
+Esc when the VirtualBox logo appears. This boots into the EFI Internal Shell or
+the boot menu. If the boot menu appears, select \"Boot Manager\" and then
+\"EFI Internal Shell\" and then allow the startup.nsh script to run
+automatically, applying the EFI and NVRAM variables before booting macOS.
+
+        ${highlight_color}Changing the EFI and NVRAM parameters after installation${default_color}
+The variables mentioned above may be edited and applied to an existing macOS
+virtual machine by executing the following command and copying the generated
+files to the macOS EFI partition:
+
+    ${low_contrast_color}${0} "'\\'"${default_color}
+${low_contrast_color}configure_vm create_nvram_files create_macos_installation_files_viso${default_color}
+
+After running the command, attach the resulting VISO file to the virtual
+machine's storage through VirtualBox Manager or VBoxManage. Power up the VM
+and boot macOS, then start Terminal and execute the following commands, making
+sure to replace \"/Volumes/path/to/VISO/startup.nsh\" with the correct path:
+
+${low_contrast_color}mkdir EFI
+sudo su # this will prompt for a password
+mount_ntfs /dev/disk0s1 EFI
+cp /Volumes/path/to/VISO/startup.nsh ./EFI/startup.nsh
+cp /Volumes/path/to/VISO/*.bin ./EFI/
+${default_color}
+After copying the files, boot into the EFI Internal Shell as desribed in the
+section \"Applying the EFI and NVRAM parameters\".
+
+        ${highlight_color}Storage size${default_color}
+The script by default assigns a target virtual disk storage size of 80GB, which
+is populated to about 15GB on the host on initial installation. After the
+installation is complete, the storage size may be increased. First increase the
+virtual disk image size through VirtualBox Manager or VBoxManage, then in
+Terminal in the virtual machine run ${low_contrast_color}sudo diskutil repairDisk disk0${default_color}, and then
+${low_contrast_color}sudo diskutil apfs resizeContainer disk1 0${default_color} or from Disk Utility, after
+repairing the disk from Terminal, delete the \"Free space\" partition so it allows
+the system APFS container to take up the available space.
+
+        ${highlight_color}Performance and unsupported features${default_color}
+Developing and maintaining VirtualBox or macOS features is beyond the scope of
+this script. Some features may behave unexpectedly, such as USB device support,
+audio support, and other features.
+
+After successfully creating a working macOS virtual machine, consider importing
+it into QEMU/KVM so it can run with hardware passthrough at near-native
+performance. QEMU/KVM requires additional configuration that is beyond the
+scope of the script.
+
+For more information visit the URL:
+        ${highlight_color}https://github.com/myspaghetti/macos-guest-virtualbox${default_color}
+"
 }
 
 if [ -z "${1}" ]; then
@@ -1162,13 +1253,13 @@ if [ -z "${1}" ]; then
     populate_macos_target
     delete_temporary_files
 else
-    if [ "${1}" != "stages" ]; then
+    if [ "${1}" != "documentation" ]; then
         check_bash_version
         check_gnu_coreutils_prefix
         set_variables
         check_dependencies
         for argument in "$@"; do ${argument}; done
     else
-        stages
+        documentation
     fi
 fi
