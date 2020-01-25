@@ -2,10 +2,10 @@
 # Semi-automatic installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-guest-virtualbox
-# version 0.81.1
+# version 0.82.0
 
 # Requirements: 40GB available storage on host
-# Dependencies: bash >= 4.3, unzip, wget, dmg2img,
+# Dependencies: bash >= 4.3, xxd, gzip, unzip, wget, dmg2img,
 #               VirtualBox with Extension Pack >= 6.0
 
 function set_variables() {
@@ -163,12 +163,14 @@ if [ -n "$(sw_vers 2>/dev/null)" ]; then
     fi
 fi
 
-# check for unzip, coreutils, wget
-if [ -z "$(unzip -hh 2>/dev/null)" \
+# check for xxd, gzip, unzip, coreutils, wget
+if [ -z "$(echo "xxd" | xxd -p 2>/dev/null)" \
+     -o -z "$(gzip --help 2>/dev/null)" \
+     -o -z "$(unzip -hh 2>/dev/null)" \
      -o -z "$(csplit --help 2>/dev/null)" \
      -o -z "$(wget --version 2>/dev/null)" ]; then
     echo "Please make sure the following packages are installed:"
-    echo "coreutils    unzip    wget"
+    echo "coreutils    gzip    unzip    xxd    wget"
     echo "Please make sure the coreutils package is the GNU variant."
     exit
 fi
@@ -436,10 +438,65 @@ if [[ ( ( "${vbox_version:0:1}" -lt 6 ) || ( "${vbox_version:0:1}" = 6 && "${vbo
 fi
 }
 
-function create_macos_installation_files_viso() {
-print_dimly "stage: create_macos_installation_files_viso"
-echo "Creating EFI startup script"
-# Convert the mixed-ASCII-and-base16 values
+function create_nvram_files() {
+print_dimly "stage: create_nvram_files"
+# Each NVRAM file may contain multiple entries.
+# Each entry contains a namesize, datasize, name, guid, attributes, and data.
+# Each entry is immediately followed by a crc32 of the entry.
+# The script creates each file with only one entry for easier editing.
+#
+# The hex strings are stripped by xxd, so they can
+# look like "0xAB 0xCD" or "hAB hCD" or "AB CD" or "ABCD" or a mix of formats
+# and have extraneous characters like spaces or minus signs.
+
+# Load the binary files into VirtualBox VM NVRAM with the builtin command dmpstore
+# in the VM EFI Internal Shell, for example:
+# dmpstore -all -l fs0:\system-id.bin
+#
+# DmpStore code is available at this URL:
+# https://github.com/mdaniel/virtualbox-org-svn-vbox-trunk/blob/master/src/VBox/Devices/EFI/Firmware/ShellPkg/Library/UefiShellDebug1CommandsLib/DmpStore.c
+
+function generate_nvram_bin_file() {
+# input: name data guid (three positional arguments, all required)
+# output: function outputs nothing to stdout
+#         but writes a binary file to working directory
+    local namestring="${1}" # string of chars
+    local filename="${namestring}"
+    # represent string as string-of-hex-bytes, add null byte after every byte,
+    # terminate string with two null bytes
+    local name="$(for (( i=0; i<"${#namestring}"; i++ )); do printf -- "${namestring:${i}:1}" | xxd -p | tr -d '\n'; printf '00'; done; printf '0000' )"
+    # size of string in bytes, represented by eight hex digits, big-endian
+    local namesize="$(printf "%08x" $(( ${#name} / 2 )) )" 
+    # flip four big-endian bytes byte-order to little-endian
+    local namesize="$(printf "${namesize}" | xxd -r -p | od -tx4 -N4 -An --endian=little)"
+    # strip string-of-hex-bytes representation of data of spaces, "x", "h", etc
+    local data="$(printf -- "${2}" | xxd -r -p | xxd -p)"
+    # size of data in bytes, represented by eight hex digits, big-endian
+    local datasize="$(printf "%08x" $(( ${#data} / 2 )) )" 
+    # flip four big-endian bytes byte-order to little-endian
+    local datasize="$(printf "${datasize}" | xxd -r -p | od -tx4 -N4 -An --endian=little)"
+    # guid string-of-hex-bytes is five fields, 8+4+4+4+12 bytes long
+    # first three are little-endian, last two big-endian
+    # for example, 00112233-4455-6677-8899-AABBCCDDEEFF
+    # is stored as 33221100-5544-7766-8899-AABBCCDDEEFF
+    local g="$( printf -- "${3}" | xxd -r -p | xxd -p )" # strip spaces etc
+    local guid="${g:6:2} ${g:4:2} ${g:2:2} ${g:0:2} ${g:10:2} ${g:8:2} ${g:14:2} ${g:12:2} ${g:16:16}"
+    # attributes in four bytes little-endian
+    local attributes="07 00 00 00"
+    # the data structure
+    local entry="${namesize} ${datasize} ${name} ${guid} ${attributes} ${data}"
+    # calculate crc32 using gzip, flip crc32 bytes into big-endian
+    local crc32="$(printf "${entry}" | xxd -r -p | gzip -c | tail -c8 | od -tx4 -N4 -An --endian=big)"
+    # save binary data
+    printf -- "${entry} ${crc32}" | xxd -r -p - "${vmname}_${filename}.bin"
+}
+
+# MLB
+MLB_b16="$(printf -- "${MLB}" | xxd -p)"
+generate_nvram_bin_file MLB "${MLB_b16}" "4D1EDE05-38C7-4A6A-9CC6-4BCCA8B38C14"
+
+# ROM
+# Convert the mixed-ASCII-and-base16 ROM value
 # into an ASCII string that represents a base16 number.
 ROM_b16="$(for (( i=0; i<${#ROM}; )); do let j=i+1;
                if [ "${ROM:${i}:1}" == "%" ]; then
@@ -449,19 +506,40 @@ ROM_b16="$(for (( i=0; i<${#ROM}; )); do let j=i+1;
                    echo -n "${x}"; let i=i+1;
                fi;
             done)"
-echo 'echo -off
-setvar MLB -guid 4D1EDE05-38C7-4A6A-9CC6-4BCCA8B38C14 -nv ="'"${MLB}"'"
-setvar ROM -guid 4D1EDE05-38C7-4A6A-9CC6-4BCCA8B38C14 -nv ='"${ROM_b16}"'
-setvar system-id -guid 7C436110-AB2A-4BBB-A880-FE41995C9F82 -nv ='"${SYSTEM_UUID^^}"'
-setvar csr-active-config -guid 7C436110-AB2A-4BBB-A880-FE41995C9F82 -nv ='"${SYSTEM_INTEGRITY_PROTECTION}"'
-'> "${vmname}_startup.nsh"
+generate_nvram_bin_file ROM "${ROM_b16}" "4D1EDE05-38C7-4A6A-9CC6-4BCCA8B38C14"
+
+# system-id
+generate_nvram_bin_file system-id "${SYSTEM_UUID}" "7C436110-AB2A-4BBB-A880-FE41995C9F82"
+
+# SIP / csr-active-config
+generate_nvram_bin_file csr-active-config "${SYSTEM_INTEGRITY_PROTECTION}" "7C436110-AB2A-4BBB-A880-FE41995C9F82"
+}
+
+function create_macos_installation_files_viso() {
+print_dimly "stage: create_macos_installation_files_viso"
+echo "Creating EFI startup script"
+echo 'echo -off' > "${vmname}_startup.nsh"
 if [[ ( "${vbox_version:0:1}" -lt 6 ) || ( "${vbox_version:0:1}" = 6 && "${vbox_version:2:1}" = 0 ) ]]; then
     echo 'load fs0:\EFI\driver\AppleImageLoader.efi
 load fs0:\EFI\driver\AppleUiSupport.efi
 load fs0:\EFI\driver\ApfsDriverLoader.efi
 map -r' >> "${vmname}_startup.nsh"
 fi
-echo 'for %a run (1 5)
+echo 'if exist "fs0:\EFI\NVRAM\MLB.bin" then
+  dmpstore -all -l fs0:\EFI\NVRAM\MLB.bin
+  dmpstore -all -l fs0:\EFI\NVRAM\ROM.bin
+  dmpstore -all -l fs0:\EFI\NVRAM\csr-active-config.bin
+  dmpstore -all -l fs0:\EFI\NVRAM\system-id.bin
+endif
+for %a run (1 5)
+  if exist "fs%a:\EFI\NVRAM\MLB.bin" then
+    dmpstore -all -l fs%a:\EFI\NVRAM\MLB.bin
+    dmpstore -all -l fs%a:\EFI\NVRAM\ROM.bin
+    dmpstore -all -l fs%a:\EFI\NVRAM\csr-active-config.bin
+    dmpstore -all -l fs%a:\EFI\NVRAM\system-id.bin
+  endif
+endfor
+for %a run (1 5)
   if exist "fs%a:\macOS Install Data\Locked Files\Boot Files\boot.efi" then
     "fs%a:\macOS Install Data\Locked Files\Boot Files\boot.efi"
   endif
@@ -852,7 +930,7 @@ kbstring='asr restore --source "/Volumes/'"${macOS_release_name:0:5}-files"'/Bas
 'install_path="${app_path}/Contents/SharedSupport/" && '\
 'mkdir -p "${install_path}" && cd "/Volumes/'"${macOS_release_name:0:5}-files/"'" && '\
 'cp *.chunklist *.plist *.dmg "${install_path}" && '\
-'echo "" && echo "Copying the several-GB InstallESD.dmg to the installer app directory" && '\
+'echo "" && echo "Copying the several-GB InstallESD.dmg to the installer app directory" && echo "Please wait" && '\
 'cat InstallESD.part* > "${install_path}/InstallESD.dmg" && '\
 'sed -i.bak -e "s/InstallESDDmg\.pkg/InstallESD.dmg/" -e "s/pkg\.InstallESDDmg/dmg.InstallESD/" "${install_path}InstallInfo.plist" && '\
 'sed -i.bak2 -e "/InstallESD\.dmg/{n;N;N;N;d;}" "${install_path}InstallInfo.plist" && '
@@ -903,8 +981,8 @@ prompt_lang_utils
 prompt_terminal_ready
 add_another_terminal
 echo ""
-echo "The second open Terminal in the virtual machine copies EFI Internal Shell"
-echo "files to the target EFI partition when the installer finishes preparing."
+echo "The second open Terminal in the virtual machine copies EFI and NVRAM files"
+echo "to the target EFI partition when the installer finishes preparing."
 
 # run script concurrently, catch SIGUSR1 when installer finishes preparing
 kbstring='disks="$(diskutil list | grep -o "[0-9][^ ]* GB *disk[0-9]$" | sort -gr | grep -o disk[0-9])"; '\
@@ -913,7 +991,9 @@ kbstring='disks="$(diskutil list | grep -o "[0-9][^ ]* GB *disk[0-9]$" | sort -g
 'mkdir -p "/Volumes/'"${vmname}"'/tmp/mount_efi" && '\
 'mount_msdos /dev/${disks[0]}s1 "/Volumes/'"${vmname}"'/tmp/mount_efi" && '\
 'mkdir -p "/Volumes/'"${vmname}"'/tmp/mount_efi/EFI/driver/" && '\
+'mkdir -p "/Volumes/'"${vmname}"'/tmp/mount_efi/EFI/NVRAM/" && '\
 'cp "/Volumes/'"${macOS_release_name:0:5}-files"'/startup.nsh" "/Volumes/'"${vmname}"'/tmp/mount_efi/startup.nsh" && '\
+'cp "/Volumes/'"${macOS_release_name:0:5}-files"'/"*.bin "/Volumes/'"${vmname}"'/tmp/mount_efi/EFI/NVRAM/" && '\
 '[ -a "/Volumes'"${macOS_release_name:0:5}-files"'/ApfsDriverLoader.efi" ] && cp "/Volumes/'"${macOS_release_name:0:5}-files"'/"*.efi "/Volumes/'"${vmname}"'/tmp/mount_efi/EFI/driver/" ; '\
 'installer_pid=$(ps | grep startosinstall | cut -d '"'"' '"'"' -f 3) && '\
 'kill -SIGUSR1 ${installer_pid}'
@@ -984,6 +1064,7 @@ printf 'The follwing files are safe to delete:
       "'"${macOS_release_name}_BaseSystem"*'"
       "'"${macOS_release_name}_Install"*'"
       "'"Install ${macOS_release_name}.vdi"'"
+      "'"${vmname}_"*".bin"'"
       "'"${vmname}_startup.nsh"'"\n'
 if [ -w "ApfsDriverLoader.efi" ]; then
     printf '      "'"ApfsDriverLoader.efi"'"
@@ -1003,6 +1084,7 @@ if [ "${delete,,}" == "y" ]; then
        "${macOS_release_name}_BaseSystem"* \
        "${macOS_release_name}_Install"* \
        "Install ${macOS_release_name}.vdi" \
+       "${vmname}_"*".bin" \
        "${vmname}_startup.nsh" 2>/dev/null
     rm "ApfsDriverLoader.efi" \
        "Apple"*".efi" \
@@ -1020,6 +1102,10 @@ printf '\nUSAGE: '"${highlight_color}${0}"' [STAGE]...'"${default_color}"'
 The script is divided into stages that run as separate functions.
 Add one or more stage titles to the command line to run the corresponding
 function. If the first argument is "stages" all others are ignored.
+
+Dependency-checking and variable-setting is always performed first, whether
+or not these stages are specified.
+
 Some examples:
 
     "'"${0}"' configure_vm"
@@ -1036,11 +1122,7 @@ Apply the parameters by copying the "startup.nsh" file to the root of the
 EFI partition and booting into the EFI Internal Shell by pressing Esc
 immediately when the VirtualBox logo appears when powering up the VM.
 
-Dependency-checking and variable-setting is always performed first, whether
-or not these stages are specified.
-
-'
-printf 'Press enter to continue.'
+Press enter to continue.'
 clear_input_buffer_then_read
 printf '
 Available stage titles:
@@ -1077,6 +1159,7 @@ if [ -z "${1}" ]; then
     create_install_vdi
     configure_vm
     populate_virtual_disks
+    configure_nvram_parameters
     populate_macos_target
     delete_temporary_files
 else
