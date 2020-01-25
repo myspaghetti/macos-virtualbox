@@ -10,7 +10,7 @@ The goal of the script is to allow for a very easy installation without any clos
 Tested on Cygwin. Works on macOS and WSL, should work on most Linux distros.
 
 ## iCloud and iMessage connectivity
-iCloud, iMessage, and other connected Apple services require a valid device name and serial number, board ID and serial number, and other genuine (or genuine-like) Apple parameters. These parameters may be set in the script before installation, or set after installation and applied with `./macos-guest-virtualbox.sh configure_nvram_parameters`
+iCloud, iMessage, and other connected Apple services require a valid device name and serial number, board ID and serial number, and other genuine (or genuine-like) Apple parameters. These parameters may be set in the script before installation, and applied by booting into the EFI Internal Shell, by powering up the VM and immediately pressing Esc when the VirtualBox logo appears. This boots into the boot menu or EFI Internal Shell. From the boot menu, select "Boot Manager" and then "EFI Internal Shell" and allow `startup.nsh` script to run, applying the EFI and NVRAM variables. Otherwise, set the EFI and NVRAM variables after installation by running `./macos-guest-virtualbox.sh configure_vm create_macos_installation_files_viso` and copying the generated `startup.nsh` file to the root of the boot EFI partition. From the VirtualBox manager, attach the VISO to the virtual machine and boot macOS, start Terminal, and execute the following, making sure to replace `/Volumes/path/to/VISO/startup.nsh` with the correct path: `mkdir EFI` `sudo su # this will prompt for a password` `mount_ntfs /dev/disk0s1 EFI` `cp /Volumes/path/to/VISO/startup.nsh ./EFI/startup.nsh` . After copying `startup.nsh`, boot into the EFI Internal Shell as desribed in the beginning of this section.
 
 ## Storage size
 
@@ -26,6 +26,7 @@ After successfully creating a working macOS virtual machine, consider importing 
 
 * [VirtualBox](https://www.virtualbox.org/wiki/Downloads)≥6.0 with Extension Pack
 * `Bash`≥4.3 (GNU variant; run on Windows through [Cygwin](https://cygwin.com/install.html) or WSL)
-* `coreutils` (GNU variant; install through package manager)
-* `xxd`, `unzip`, `gzip`, `wget` (install through package manager)
+* `coreutils` (GNU variant; install through package manager)* `unzip``` (install through package manager)
+* `unzip` (install through package manager)
+* `wget` (install through package manager)
 * `dmg2img` (install through package manager on Linux, macOS, or WSL; let the script download it automatically on Cygwin)
