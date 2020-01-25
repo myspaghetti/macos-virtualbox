@@ -10,7 +10,20 @@ The goal of the script is to allow for a very easy installation without any clos
 Tested on Cygwin. Works on macOS and WSL, should work on most Linux distros.
 
 ## iCloud and iMessage connectivity
-iCloud, iMessage, and other connected Apple services require a valid device name and serial number, board ID and serial number, and other genuine (or genuine-like) Apple parameters. These parameters may be set in the script before installation, and applied by booting into the EFI Internal Shell, by powering up the VM and immediately pressing Esc when the VirtualBox logo appears. This boots into the boot menu or EFI Internal Shell. From the boot menu, select "Boot Manager" and then "EFI Internal Shell" and allow `startup.nsh` script to run, applying the EFI and NVRAM variables. Otherwise, set the EFI and NVRAM variables after installation by running `./macos-guest-virtualbox.sh configure_vm create_macos_installation_files_viso` and copying the generated `startup.nsh` file to the root of the boot EFI partition. From the VirtualBox manager, attach the VISO to the virtual machine and boot macOS, start Terminal, and execute the following, making sure to replace `/Volumes/path/to/VISO/startup.nsh` with the correct path: `mkdir EFI` `sudo su # this will prompt for a password` `mount_ntfs /dev/disk0s1 EFI` `cp /Volumes/path/to/VISO/startup.nsh ./EFI/startup.nsh` . After copying `startup.nsh`, boot into the EFI Internal Shell as desribed in the beginning of this section.
+iCloud, iMessage, and other connected Apple services require a valid device name and serial number, board ID and serial number, and other genuine (or genuine-like) Apple parameters. These parameters may be edited at the top of the script, accompanied by an explanation. Editing them is not required when installing or running macOS, only when connecting to iCould, iMessage, and other Apple services.
+
+### Applying the EFI and NVRAM parameters
+The EFI and NVRAM parameters may be set in the script before installation by editing them at the top of the script, and applied after macOS is installed by booting into the EFI Internal Shell. When powering up the VM, immediately press Esc when the VirtualBox logo appears. This boots into the boot menu or EFI Internal Shell. From the boot menu, select "Boot Manager" and then "EFI Internal Shell" and then allow the `startup.nsh` script to run automatically, applying the EFI and NVRAM variables.
+
+### Changing the EFI and NVRAM parameters after installation
+After installation, the EFI and NVRAM variables may be changed by editing the script and then running `./macos-guest-virtualbox.sh configure_vm create_macos_installation_files_viso` and copying the generated `startup.nsh` file to the root of the boot EFI partition. From the VirtualBox manager, attach the VISO file to the virtual machine storage, then boot macOS. Start Terminal, and execute the following commands, making sure to replace `/Volumes/path/to/VISO/startup.nsh` with the correct path:
+```
+mkdir EFI
+sudo su # this will prompt for a password
+mount_ntfs /dev/disk0s1 EFI
+cp /Volumes/path/to/VISO/startup.nsh ./EFI/startup.nsh
+```
+After copying `startup.nsh`, boot into the EFI Internal Shell as desribed in the section "Applying the EFI and NVRAM parameters".
 
 ## Storage size
 
