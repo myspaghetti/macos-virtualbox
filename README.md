@@ -30,6 +30,10 @@ After copying `startup.nsh` and the binary NVRAM files, boot into the EFI Intern
 
 The script by default assigns a target virtual disk storage size of 80GB, which is populated to about 15GB on the host on initial installation. After the installation is complete, the storage size may be increased. First increase the virtual disk image size through VirtualBox Manager or `VBoxManage`, then in Terminal in the virtual machine run `sudo diskutil repairDisk disk0`, and then `sudo diskutil apfs resizeContainer disk1 0` or from Disk Utility, after repairing the disk from Terminal, delete the "Free space" partition so it allows the system APFS container to take up the available space.
 
+## Graphics controller
+
+Selecting the VBoxSVGA controller instead of VBoxVGA for the graphics controller may considerably increase graphics performance.
+
 ## Performance and unsupported features
 
 Developing and maintaining VirtualBox or macOS features is beyond the scope of this script. Some features may behave unexpectedly, such as USB device support, audio support, and other features.
