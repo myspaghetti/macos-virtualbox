@@ -24,6 +24,6 @@ After successfully creating a working macOS virtual machine, consider importing 
 ## Dependencies
 * [VirtualBox](https://www.virtualbox.org/wiki/Downloads)≥6.0 with Extension Pack
 * `Bash`≥4.3 (GNU variant; run on Windows through [Cygwin](https://cygwin.com/install.html) or WSL)
-* `coreutils` (GNU variant; install through package manager)* `unzip``` (install through package manager)
+* `coreutils` (GNU variant; install through package manager)
 * `gzip`, `unzip`, `wget`, `xxd` (install through package manager)
 * `dmg2img` (install through package manager on Linux, macOS, or WSL; let the script download it automatically on Cygwin)
