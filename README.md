@@ -16,14 +16,15 @@ iCloud, iMessage, and other connected Apple services require a valid device name
 The EFI and NVRAM parameters may be set in the script before installation by editing them at the top of the script, and applied after macOS is installed by booting into the EFI Internal Shell. When powering up the VM, immediately press Esc when the VirtualBox logo appears. This boots into the boot menu or EFI Internal Shell. From the boot menu, select "Boot Manager" and then "EFI Internal Shell" and then allow the `startup.nsh` script to run automatically, applying the EFI and NVRAM variables.
 
 ### Changing the EFI and NVRAM parameters after installation
-After installation, the EFI and NVRAM variables may be changed by editing the script and then running `./macos-guest-virtualbox.sh configure_vm create_macos_installation_files_viso` and copying the generated `startup.nsh` file to the root of the boot EFI partition. From the VirtualBox manager, attach the VISO file to the virtual machine storage, then boot macOS. Start Terminal, and execute the following commands, making sure to replace `/Volumes/path/to/VISO/startup.nsh` with the correct path:
+After installation, the EFI and NVRAM variables may be changed by editing the script and then running `./macos-guest-virtualbox.sh configure_vm create_nvram_files create_macos_installation_files_viso` and copying the generated `startup.nsh` file to the root of the boot EFI partition. From the VirtualBox manager, attach the VISO file to the virtual machine storage, then boot macOS. Start Terminal, and execute the following commands, making sure to replace `/Volumes/path/to/VISO/startup.nsh` with the correct path:
 ```
 mkdir EFI
 sudo su # this will prompt for a password
 mount_ntfs /dev/disk0s1 EFI
 cp /Volumes/path/to/VISO/startup.nsh ./EFI/startup.nsh
+cp /Volumes/path/to/VISO/*.bin ./EFI/
 ```
-After copying `startup.nsh`, boot into the EFI Internal Shell as desribed in the section "Applying the EFI and NVRAM parameters".
+After copying `startup.nsh` and the binary NVRAM files, boot into the EFI Internal Shell as desribed in the section "Applying the EFI and NVRAM parameters".
 
 ## Storage size
 
@@ -40,6 +41,5 @@ After successfully creating a working macOS virtual machine, consider importing 
 * [VirtualBox](https://www.virtualbox.org/wiki/Downloads)≥6.0 with Extension Pack
 * `Bash`≥4.3 (GNU variant; run on Windows through [Cygwin](https://cygwin.com/install.html) or WSL)
 * `coreutils` (GNU variant; install through package manager)* `unzip``` (install through package manager)
-* `unzip` (install through package manager)
-* `wget` (install through package manager)
+* `gzip`, `unzip`, `wget`, `xxd` (install through package manager)
 * `dmg2img` (install through package manager on Linux, macOS, or WSL; let the script download it automatically on Cygwin)
