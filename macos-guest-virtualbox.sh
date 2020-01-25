@@ -2,7 +2,7 @@
 # Semi-automatic installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-guest-virtualbox
-# version 0.80.5
+# version 0.80.6
 
 # Requirements: 40GB available storage on host
 # Dependencies: bash >= 4.3, xxd, gzip, unzip, wget, dmg2img,
@@ -35,10 +35,10 @@ DmiOEMVBoxRev="string:.23456"        # Apple ROM Info
 DmiBIOSVersion="string:MBP7.89"      # Boot ROM Version
 # ioreg -l | grep -m 1 board-id
 DmiBoardProduct="Mac-3CBD00234E554E41"
-# nvram 4D1EDE05-38C7-4A6A-9CC6-4BCCA8B38C14:MLB | awk '{ print $NF }'
+# nvram 4D1EDE05-38C7-4A6A-9CC6-4BCCA8B38C14:MLB
 DmiBoardSerial="NO_LOGIC_BOARD_SN"
 MLB="${DmiBoardSerial}"
-# nvram 4D1EDE05-38C7-4A6A-9CC6-4BCCA8B38C14:ROM | awk '{ print $NF }'
+# nvram 4D1EDE05-38C7-4A6A-9CC6-4BCCA8B38C14:ROM
 ROM='%aa*%bbg%cc%dd'
 # ioreg -l -p IODeviceTree | grep \"system-id
 SYSTEM_UUID="aabbccddeeff00112233445566778899"
@@ -440,43 +440,54 @@ fi
 
 function create_nvram_files() {
 print_dimly "stage: create_nvram_files"
-# The NVRAM files are read and written by the EFI utility DmpStore.
-# Each NVRAM file may contain multiple entries formatted as follows:
-# namesize datasize name guid attributes data
+# Each NVRAM file may contain multiple entries.
+# Each entry contains a namesize, datasize, name, guid, attributes, and data.
+# Each entry is immediately followed by a crc32 of the entry.
+# The script creates each file with only one entry for easier editing.
+#
+# The hex strings are stripped by xxd, so they can
+# look like "0xAB 0xCD" or "hAB hCD" or "AB CD" or "ABCD" or a mix of formats
+# and have extraneous characters like spaces or minus signs.
+
+# Load the binary files into VirtualBox VM NVRAM with the builtin command dmpstore
+# in the VM EFI Internal Shell, for example:
+# dmpstore -all -l fs0:\system-id.bin
 #
 # DmpStore code is available at this URL:
 # https://github.com/mdaniel/virtualbox-org-svn-vbox-trunk/blob/master/src/VBox/Devices/EFI/Firmware/ShellPkg/Library/UefiShellDebug1CommandsLib/DmpStore.c
-#
-# namesize, datasize, and attributes are four bytes each, little-endian byte-order.
-# name is a string of chars, each char is followed by a null byte.
-# The string is terminated with a null char followed by a null byte,
-# for example "a" = "61 00 00 00", "abc" = "61 00 62 00 63 00 00 00"
-# namesize counts all the bytes in name, including the null bytes and the terminators
-# guid and data do not have a terminator.
-# datasize counts the bytes of data
-# For guid, each field in the first half is little-endian,
-# each field in the second half is big-endian.
-#
-# crc32 of the entry is appended at the end of the entry
-# DmpStore will not accept an entry without a valid crc32
-#
-# The script creates each file with only one entry for easier editing.
-# The assignments below assume datasize and namesize are under 255 bytes for simplicity.
 
 function generate_nvram_bin_file() {
-# function takes exactly three ordered positional arguments: name, data (in hex bytes), guid
-    local name="${1}"
-    local namehex="$(printf -- "${name}" | xxd -p)00"
-    local namesize="$(printf "%02x" $(( ${#namehex} )) ) 00 00 00"
-    local filename="${name}"
-    local name="$(for (( i=0; i<"${#name}"; i++ )); do printf -- "${name:${i}:1}" | xxd -p | tr -d '\n'; printf '00'; done; printf '0000' )"
+# input: name data guid (three positional arguments, all required)
+# output: function outputs nothing to stdout
+#         but writes a binary file to working directory
+    local namestring="${1}" # string of chars
+    local filename="${namestring}"
+    # represent string as string-of-hex-bytes, add null byte after every byte,
+    # terminate string with two null bytes
+    local name="$(for (( i=0; i<"${#namestring}"; i++ )); do printf -- "${namestring:${i}:1}" | xxd -p | tr -d '\n'; printf '00'; done; printf '0000' )"
+    # size of string in bytes, represented by eight hex digits, big-endian
+    local namesize="$(printf "%08x" $(( ${#name} / 2 )) )" 
+    # flip four big-endian bytes byte-order to little-endian
+    local namesize="$(printf "${namesize}" | xxd -r -p | od -tx4 -N4 -An --endian=little)"
+    # strip string-of-hex-bytes representation of data of spaces, "x", "h", etc
     local data="$(printf -- "${2}" | xxd -r -p | xxd -p)"
-    local datasize="$(printf "%02x" $(( ${#data} / 2 )) ) 00 00 00"
-    local g="$( printf -- "${3}" | xxd -r -p | xxd -p )"
+    # size of data in bytes, represented by eight hex digits, big-endian
+    local datasize="$(printf "%08x" $(( ${#data} / 2 )) )" 
+    # flip four big-endian bytes byte-order to little-endian
+    local datasize="$(printf "${datasize}" | xxd -r -p | od -tx4 -N4 -An --endian=little)"
+    # guid string-of-hex-bytes is five fields, 8+4+4+4+12 bytes long
+    # first three are little-endian, last two big-endian
+    # for example, 00112233-4455-6677-8899-AABBCCDDEEFF
+    # is stored as 33221100-5544-7766-8899-AABBCCDDEEFF
+    local g="$( printf -- "${3}" | xxd -r -p | xxd -p )" # strip spaces etc
     local guid="${g:6:2} ${g:4:2} ${g:2:2} ${g:0:2} ${g:10:2} ${g:8:2} ${g:14:2} ${g:12:2} ${g:16:16}"
+    # attributes in four bytes little-endian
     local attributes="07 00 00 00"
+    # the data structure
     local entry="${namesize} ${datasize} ${name} ${guid} ${attributes} ${data}"
+    # calculate crc32 using gzip, flip crc32 bytes into big-endian
     local crc32="$(printf "${entry}" | xxd -r -p | gzip -c | tail -c8 | od -tx4 -N4 -An --endian=big)"
+    # save binary data
     printf -- "${entry} ${crc32}" | xxd -r -p - "${vmname}_${filename}.bin"
 }
 
