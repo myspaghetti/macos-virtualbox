@@ -1231,6 +1231,7 @@ scope of the script.
 
 For more information visit the URL:
         ${highlight_color}https://github.com/myspaghetti/macos-guest-virtualbox${default_color}
+
 "
 }
 
