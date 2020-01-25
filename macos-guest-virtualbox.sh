@@ -2,7 +2,7 @@
 # Semi-automatic installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-guest-virtualbox
-# version 0.80.3
+# version 0.80.4
 
 # Requirements: 40GB available storage on host
 # Dependencies: bash >= 4.3, xxd, gzip, unzip, wget, dmg2img,
@@ -1079,18 +1079,20 @@ kbstring='background_pid="$(ps | grep '"'"' sh$'"'"' | cut -d '"'"' '"'"' -f 3)"
 './startosinstall --agreetolicense --pidtosignal ${background_pid} --rebootdelay 500 --volume "/Volumes/'"${vmname}"'"'
 send_keys
 send_enter
-printf "${highlight_color}"'When the VM reboots, press enter'"${default_color}"' or alternatively
-manually detach the virtual storage device "'"Install ${macOS_release_name}.vdi"'"
-to avoid booting into the installer environment again.'
-clear_input_buffer_then_read
-VBoxManage controlvm "${vmname}" poweroff >/dev/null 2>&1
-for (( i=10; i>5; i-- )); do printf '   \r'"${i}"; sleep 0.5; done
-VBoxManage storagectl macOS --remove --name SATA >/dev/null 2>&1
-VBoxManage storagectl "${vmname}" --add sata --name SATA --hostiocache on >/dev/null 2>&1
-VBoxManage storageattach "${vmname}" --storagectl SATA --port 0 \
-           --type hdd --nonrotational on --medium "${vmname}.vdi"
-echo ""
-for (( i=5; i>0; i-- )); do printf '   \r'"${i}"; sleep 0.5; done
+if [[ ( "${vbox_version:0:1}" -lt 6 ) || ( "${vbox_version:0:1}" = 6 && "${vbox_version:2:1}" = 0 ) ]]; then
+    printf "${highlight_color}"'When the VM reboots, press enter'"${default_color}"' or alternatively
+    manually detach the virtual storage device "'"Install ${macOS_release_name}.vdi"'"
+    to avoid booting into the installer environment again.'
+    clear_input_buffer_then_read
+    VBoxManage controlvm "${vmname}" poweroff >/dev/null 2>&1
+    for (( i=10; i>5; i-- )); do printf '   \r'"${i}"; sleep 0.5; done
+    VBoxManage storagectl macOS --remove --name SATA >/dev/null 2>&1
+    VBoxManage storagectl "${vmname}" --add sata --name SATA --hostiocache on >/dev/null 2>&1
+    VBoxManage storageattach "${vmname}" --storagectl SATA --port 0 \
+               --type hdd --nonrotational on --medium "${vmname}.vdi"
+    echo ""
+    for (( i=5; i>0; i-- )); do printf '   \r'"${i}"; sleep 0.5; done
+fi
 printf '
 
 '"${highlight_color}"'That'"'"'s it! Enjoy your virtual machine.'"${default_color}"'\n'
