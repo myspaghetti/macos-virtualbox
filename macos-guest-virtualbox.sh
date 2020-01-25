@@ -2,7 +2,7 @@
 # Semi-automatic installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-guest-virtualbox
-# version 0.82.0
+# version 0.82.1
 
 # Requirements: 40GB available storage on host
 # Dependencies: bash >= 4.3, xxd, gzip, unzip, wget, dmg2img,
@@ -1159,7 +1159,6 @@ if [ -z "${1}" ]; then
     create_install_vdi
     configure_vm
     populate_virtual_disks
-    configure_nvram_parameters
     populate_macos_target
     delete_temporary_files
 else
