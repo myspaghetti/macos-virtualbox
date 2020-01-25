@@ -2,7 +2,7 @@
 # Semi-automatic installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-guest-virtualbox
-# version 0.80.0
+# version 0.80.1
 
 # Requirements: 40GB available storage on host
 # Dependencies: bash >= 4.3, xxd, gzip, unzip, wget, dmg2img,
@@ -85,7 +85,7 @@ The script can be resumed by stages, as described in the following command:
 "'"${highlight_color}${0}"' stages'"${default_color}"'"
 
 '"${highlight_color}"'Press enter to review the script settings.'"${default_color}"
-read
+clear_input_buffer_then_read
 
 # custom settings prompt
 printf '
@@ -100,7 +100,7 @@ resolution="'"${resolution}"'"            # VM display resolution
 These values may be customized by editing them at the top of the script file.
 
 '"${highlight_color}"'Press enter to continue, CTRL-C to exit.'"${default_color}"
-read
+clear_input_buffer_then_read
 }
 
 # check dependencies
@@ -215,14 +215,14 @@ elif [[ "$(cat /proc/sys/kernel/osrelease 2>/dev/null)" =~ [Mm]icrosoft ]]; then
         echo "VirtualBox Hyper-V support is experimental."
         echo ""
         printf "${highlight_color}"'Press enter to continue, CTRL-C to exit.'"${default_color}"
-        read
+        clear_input_buffer_then_read
     elif [[ ! ( "${osrelease}" =~ 18362-Microsoft ) ]]; then
         echo ""
         echo "The script requires Windows 10 version 1903 or higher to run properly on WSL."
         echo "For lower versions, please run the script on a path on the Windows filesystem,"
         printf 'for example  '"${highlight_color}"'/mnt/c/Users/Public/Documents'"${default_color}"'\n\n'
         printf "${highlight_color}"'Press enter to continue, CTRL-C to exit.'"${default_color}"
-        read
+        clear_input_buffer_then_read
     fi
     if [ -n "$(VBoxManage.exe -v 2>/dev/null)" ]; then
         function VBoxManage() {
@@ -270,7 +270,7 @@ elif [[ "${vbox_version:0:1}" = 5 ]]; then
     echo "  https://github.com/myspaghetti/macos-guest-virtualbox/issues/86"
     echo ""
     printf "${white_on_black}"'Press enter to continue, CTRL-C to exit.'"${default_color}"
-    read
+    clear_input_buffer_then_read
 fi
 
 # Oracle VM VirtualBox Extension Pack
@@ -313,7 +313,7 @@ if [[ "${macOS_release_name:0:1}" =~ [Cc] ]]; then
     sucatalog="${Catalina_sucatalog}"
     printf 'As of 2019-12-11, macOS Catalina 10.15.2 '"${warning_color}"'does not boot'"${default_color}"' on VirtualBox.\n'
     printf "${highlight_color}"'Press enter to continue, CTRL-C to exit.'"${default_color}"
-    read
+    clear_input_buffer_then_read
 elif [[ "${macOS_release_name:0:1}" =~ [Hh] ]]; then
     macOS_release_name="HighSierra"
     CFBundleShortVersionString="10.13"
@@ -817,6 +817,11 @@ declare -A ksc=(
     ["?"]="2A 35 B5 AA"
 )
 
+function clear_input_buffer_then_read() {
+    while read -d '' -r -t 0; do read -d '' -t 0.1 -n 10000; break; done
+    read
+}
+
 # read variable kbstring and convert string to scancodes and send to guest vm
 function send_keys() {
     scancode=$(for (( i=0; i < ${#kbstring}; i++ ));
@@ -842,10 +847,10 @@ function send_enter() {
 function prompt_lang_utils() {
     # called after the virtual machine boots up
     printf '\n'"${highlight_color}"'Press enter when the Language window is ready.'"${default_color}"
-    read
+    clear_input_buffer_then_read
     send_enter
     printf '\n'"${highlight_color}"'Press enter when the macOS Utilities window is ready.'"${default_color}"
-    read
+    clear_input_buffer_then_read
     kbspecial='CTRLprs F2 CTRLrls u ENTER t ENTER'
     send_special
 }
@@ -853,7 +858,7 @@ function prompt_lang_utils() {
 function prompt_terminal_ready() {
     # called after the Utilities window is ready
     printf '\n'"${highlight_color}"'Press enter when the Terminal command prompt is ready.'"${default_color}"
-    read
+    clear_input_buffer_then_read
 }
 
 function add_another_terminal() {
@@ -1005,7 +1010,7 @@ parameters. It is not necessary to allow macOS to continue booting after the
 script has run.
 
 Power off the virtual machine then press enter to continue.'
-read
+clear_input_buffer_then_read
 
 else
 printf '
@@ -1026,7 +1031,7 @@ function populate_macos_target() {
 print_dimly "stage: populate_macos_target"
 if [[ "$( VBoxManage list runningvms )" =~ ^\""${vmname}" ]]; then
     printf "${highlight_color}"'Please '"${warning_color}"'manually'"${highlight_color}"' shut down the virtual machine and press enter to continue.'"${default_color}"
-    read
+    clear_input_buffer_then_read
 fi
 VBoxManage storagectl macOS --remove --name SATA >/dev/null 2>&1
 VBoxManage storagectl "${vmname}" --add sata --name SATA --hostiocache on >/dev/null 2>&1
@@ -1077,7 +1082,7 @@ send_enter
 printf "${highlight_color}"'When the VM reboots, press enter'"${default_color}"' or alternatively
 manually detach the virtual storage device "'"Install ${macOS_release_name}.vdi"'"
 to avoid booting into the installer environment again.'
-read
+clear_input_buffer_then_read
 VBoxManage controlvm "${vmname}" poweroff >/dev/null 2>&1
 for (( i=10; i>5; i-- )); do printf '   \r'"${i}"; sleep 0.5; done
 VBoxManage storagectl macOS --remove --name SATA >/dev/null 2>&1
@@ -1166,7 +1171,7 @@ or not these stages are specified.
 
 '
 printf 'Press enter to continue.'
-read
+clear_input_buffer_then_read
 printf '
 Available stage titles:
 
