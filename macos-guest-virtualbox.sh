@@ -2,7 +2,7 @@
 # Semi-automatic installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-guest-virtualbox
-# version 0.81.0
+# version 0.81.1
 
 # Requirements: 40GB available storage on host
 # Dependencies: bash >= 4.3, unzip, wget, dmg2img,
@@ -453,7 +453,7 @@ echo 'echo -off
 setvar MLB -guid 4D1EDE05-38C7-4A6A-9CC6-4BCCA8B38C14 -nv ="'"${MLB}"'"
 setvar ROM -guid 4D1EDE05-38C7-4A6A-9CC6-4BCCA8B38C14 -nv ='"${ROM_b16}"'
 setvar system-id -guid 7C436110-AB2A-4BBB-A880-FE41995C9F82 -nv ='"${SYSTEM_UUID^^}"'
-setvar csr-active-config-guid 4D1EDE05-38C7-4A6A-9CC6-4BCCA8B38C14 -nv ='"${SYSTEM_INTEGRITY_PROTECTION}"'
+setvar csr-active-config -guid 7C436110-AB2A-4BBB-A880-FE41995C9F82 -nv ='"${SYSTEM_INTEGRITY_PROTECTION}"'
 '> "${vmname}_startup.nsh"
 if [[ ( "${vbox_version:0:1}" -lt 6 ) || ( "${vbox_version:0:1}" = 6 && "${vbox_version:2:1}" = 0 ) ]]; then
     echo 'load fs0:\EFI\driver\AppleImageLoader.efi
