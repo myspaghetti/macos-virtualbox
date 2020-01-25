@@ -1219,6 +1219,9 @@ ${low_contrast_color}sudo diskutil apfs resizeContainer disk1 0${default_color} 
 repairing the disk from Terminal, delete the \"Free space\" partition so it allows
 the system APFS container to take up the available space.
 
+        ${highlight_color}Graphics controller${default_color}
+Selecting the VBoxSVGA controller instead of VBoxVGA for the graphics controller may considerably increase graphics performance.
+
         ${highlight_color}Performance and unsupported features${default_color}
 Developing and maintaining VirtualBox or macOS features is beyond the scope of
 this script. Some features may behave unexpectedly, such as USB device support,
