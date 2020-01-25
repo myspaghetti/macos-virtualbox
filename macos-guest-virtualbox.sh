@@ -2,7 +2,7 @@
 # Semi-automatic installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-guest-virtualbox
-# version 0.80.1
+# version 0.80.2
 
 # Requirements: 40GB available storage on host
 # Dependencies: bash >= 4.3, xxd, gzip, unzip, wget, dmg2img,
@@ -915,7 +915,7 @@ send_keys
 # Create secondary base system on the Install disk
 # and copy macOS install app files to the app directory
 kbstring='asr restore --source "/Volumes/'"${macOS_release_name:0:5}-files"'/BaseSystem.dmg" --target /Volumes/Install --erase --noprompt && '\
-'app_path="$(ls -d "/Volumes/OS X Base System 1/Install"*.app)" && '\
+'app_path="$(ls -d "/Volumes/"*"Base System 1/Install"*.app)" && '\
 'install_path="${app_path}/Contents/SharedSupport/" && '\
 'mkdir -p "${install_path}" && cd "/Volumes/'"${macOS_release_name:0:5}-files/"'" && '\
 'cp *.chunklist *.plist *.dmg "${install_path}" && '\
