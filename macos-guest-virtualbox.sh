@@ -2,7 +2,7 @@
 # Semi-automatic installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-guest-virtualbox
-# version 0.80.4
+# version 0.80.5
 
 # Requirements: 40GB available storage on host
 # Dependencies: bash >= 4.3, xxd, gzip, unzip, wget, dmg2img,
@@ -554,32 +554,32 @@ for filename in "BaseSystem.chunklist" \
                 "AppleDiagnostics.chunklist" \
                 "BaseSystem.dmg" ; do
     if [ -s "${macOS_release_name}_${filename}" ]; then
-        echo "/${filename}=${macOS_release_name}_${filename}" >> "${macOS_release_name}_Installation_files.viso"
+        echo "/${filename}=\"${macOS_release_name}_${filename}\"" >> "${macOS_release_name}_Installation_files.viso"
     fi
 done
 
 if [ -s "${macOS_release_name}_InstallESD.part00" ]; then
     for part in "${macOS_release_name}_InstallESD.part"*; do
-        echo "/InstallESD${part##*InstallESD}=${part}" >> "${macOS_release_name}_Installation_files.viso"
+        echo "/InstallESD${part##*InstallESD}=\"${part}\"" >> "${macOS_release_name}_Installation_files.viso"
     done
 fi
 
 # NVRAM binary files
 for filename in "MLB.bin" "ROM.bin" "csr-active-config.bin" "system-id.bin"; do
     if [ -s "${vmname}_${filename}" ]; then
-        echo "/${filename}=${vmname}_${filename}" >> "${macOS_release_name}_Installation_files.viso"
+        echo "/${filename}=\"${vmname}_${filename}\"" >> "${macOS_release_name}_Installation_files.viso"
     fi
 done
 
 # EFI drivers for VirtualBox 6.0 and 5.2
 for filename in "ApfsDriverLoader.efi" "AppleImageLoader.efi" "AppleUiSupport.efi"; do
     if [ -s "${filename}" ]; then
-        echo "/${filename}=${filename}" >> "${macOS_release_name}_Installation_files.viso"
+        echo "/${filename}=\"${filename}\"" >> "${macOS_release_name}_Installation_files.viso"
     fi
 done
 
 # EFI startup script
-echo "/startup.nsh=startup.nsh" >> "${macOS_release_name}_Installation_files.viso"
+echo "/startup.nsh=\"startup.nsh\"" >> "${macOS_release_name}_Installation_files.viso"
 
 }
 
