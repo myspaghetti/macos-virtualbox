@@ -7,14 +7,17 @@ The script is semi-automatic and requires a little user interaction. A default f
 ## Documentation
 Documentation can be viewed by executing the command `./macos-guest-virtualbox.sh documentation`
 
-## iCloud and iMessage connectivity
-iCloud, iMessage, and other connected Apple services require a valid device name and serial number, board ID and serial number, and other genuine (or genuine-like) Apple parameters. These can be set by editing the script. See `documentation` for further information.
+## iCloud and iMessage connectivity and NVRAM
+iCloud, iMessage, and other connected Apple services require a valid device name and serial number, board ID and serial number, and other genuine (or genuine-like) Apple parameters. These can be set in NVRAM by editing the script. See `documentation` for further information.
 
 ## Storage size
 The script by default assigns a target virtual disk storage size of 80GB, which is populated to about 15GB on the host on initial installation. After the installation is complete, the storage size may be increased. See `documentation` for further information.
 
 ## Graphics controller
-Selecting the VBoxSVGA controller instead of VBoxVGA for the graphics controller may considerably increase graphics performance.
+Selecting VBoxSVGA instead of VBoxVGA for the graphics controller may considerably increase graphics performance. VBoxVGA is assigned by default for compatibility reasons.
+
+## Audio
+macOS does not currently support any built-in VirtualBox audio controllers. The open-source VoodooHDA drivers may work in VirtualBox, but they tend to hang the virtual machine.
 
 ## Performance and unsupported features
 Developing and maintaining VirtualBox or macOS features is beyond the scope of this script. Some features may behave unexpectedly, such as USB device support, audio support, and other features.
