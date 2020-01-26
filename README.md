@@ -17,7 +17,7 @@ The script by default assigns a target virtual disk storage size of 80GB, which 
 Selecting VBoxSVGA instead of VBoxVGA for the graphics controller may considerably increase graphics performance. VBoxVGA is assigned by default for compatibility reasons.
 
 ## Audio
-macOS does not currently support any built-in VirtualBox audio controllers. The open-source VoodooHDA drivers may work in VirtualBox, but they tend to hang the virtual machine.
+macOS may not support any built-in VirtualBox audio controllers. The open-source VoodooHDA drivers may work in VirtualBox, but they tend to hang the virtual machine.
 
 ## Performance and unsupported features
 Developing and maintaining VirtualBox or macOS features is beyond the scope of this script. Some features may behave unexpectedly, such as USB device support, audio support, and other features.
