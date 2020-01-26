@@ -1,5 +1,5 @@
 ## Semi-automatic installer of macOS on VirtualBox
-The script is semi-automatic and requires a little user interaction. A default fresh install only requires the user to sit patiently and, ten times, press enter when prompted. The script doesn't install any closed-source additions or extra bootloaders. Tested on Cygwin. Works on macOS and WSL, should work on most Linux distros.
+The script is semi-automatic and requires a little user interaction. A default install only requires the user to sit patiently and, less than ten times, press enter when prompted. The script doesn't install any closed-source additions or extra bootloaders. Tested on Cygwin. Works on macOS and WSL, should work on most Linux distros.
 
 ### The script supports macOS Mojave (10.14) and High Sierra (10.13)
 ### macOS Catalina 10.15.2 fails to boot on VirtualBox as of the date of its release. Earlier versions of Catalina work, but they are not currently being distributed by Apple's software update servers, from which the script fetches the installer.
