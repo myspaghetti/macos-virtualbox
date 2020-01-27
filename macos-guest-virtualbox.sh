@@ -678,7 +678,7 @@ function populate_virtual_disks() {
 print_dimly "stage: populate_virtual_disks"
 # Attach virtual disk images of the base system, installation, and target
 # to the virtual machine
-VBoxManage storagectl "${vmname} --remove --name SATA >/dev/null 2>&1
+VBoxManage storagectl "${vmname}" --remove --name SATA >/dev/null 2>&1
 if [[ -n $(
     2>&1 VBoxManage storagectl "${vmname}" --add sata --name SATA --hostiocache on >/dev/null
     2>&1 VBoxManage storageattach "${vmname}" --storagectl SATA --port 0 \
@@ -799,12 +799,12 @@ send_keys
 send_enter
 if [[ ( "${vbox_version:0:1}" -lt 6 ) || ( "${vbox_version:0:1}" = 6 && "${vbox_version:2:1}" = 0 ) ]]; then
     printf "${highlight_color}"'When the VM reboots, press enter'"${default_color}"' or alternatively
-    manually detach the virtual storage device "'"Install ${macOS_release_name}.vdi"'"
-    to avoid booting into the installer environment again.'
+manually detach the virtual storage device "'"Install ${macOS_release_name}.vdi"'"
+to avoid booting into the installer environment again.'
     clear_input_buffer_then_read
     VBoxManage controlvm "${vmname}" poweroff >/dev/null 2>&1
     for (( i=10; i>5; i-- )); do printf '   \r'"${i}"; sleep 0.5; done
-    VBoxManage storagectl macOS --remove --name SATA >/dev/null 2>&1
+    VBoxManage storagectl "${vmname}" --remove --name SATA >/dev/null 2>&1
     VBoxManage storagectl "${vmname}" --add sata --name SATA --hostiocache on >/dev/null 2>&1
     VBoxManage storageattach "${vmname}" --storagectl SATA --port 0 \
                --type hdd --nonrotational on --medium "${vmname}.vdi"
@@ -831,7 +831,7 @@ by running the following command at the script'"'"'s working directory:
       '"${0} delete_temporary_files"'\n'
     else
 # detach temporary VDIs and attach the macOS target disk
-VBoxManage storagectl macOS --remove --name SATA >/dev/null 2>&1
+VBoxManage storagectl "${vmname}" --remove --name SATA >/dev/null 2>&1
 VBoxManage storagectl "${vmname}" --add sata --name SATA --hostiocache on >/dev/null 2>&1
 VBoxManage storageattach "${vmname}" --storagectl SATA --port 0 \
            --type hdd --nonrotational on --medium "${vmname}.vdi"
