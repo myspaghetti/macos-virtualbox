@@ -538,8 +538,9 @@ echo ""
 echo "Creating VirtualBox 6 virtual ISO containing the"
 echo "installation files from swcdn.apple.com"
 echo ""
-
-echo "--iprt-iso-maker-file-marker-bourne-sh 57c0ec7d-2112-4c24-a93f-32e6f08702b9
+pseudouuid="$(od -tx -N16 /dev/urandom | xxd -r | xxd -p)"
+pseudouuid="${pseudouuid:0:8}-${pseudouuid:8:4}-${pseudouuid:12:4}-${pseudouuid:16:4}-${pseudouuid:20:12}"
+echo "--iprt-iso-maker-file-marker-bourne-sh "${pseudouuid}"
 --volume-id=${macOS_release_name:0:5}-files" > "${macOS_release_name}_Installation_files.viso"
 
 # Apple macOS installation files
@@ -677,17 +678,17 @@ function populate_virtual_disks() {
 print_dimly "stage: populate_virtual_disks"
 # Attach virtual disk images of the base system, installation, and target
 # to the virtual machine
+VBoxManage storagectl macOS --remove --name SATA >/dev/null 2>&1
 if [[ -n $(
-2>&1 VBoxManage storagectl macOS --remove --name SATA >/dev/null
-2>&1 VBoxManage storagectl "${vmname}" --add sata --name SATA --hostiocache on >/dev/null
-2>&1 VBoxManage storageattach "${vmname}" --storagectl SATA --port 0 \
-            --type hdd --nonrotational on --medium "${vmname}.vdi" >/dev/null
-2>&1 VBoxManage storageattach "${vmname}" --storagectl SATA --port 1 --hotpluggable on \
-            --type hdd --nonrotational on --medium "Install ${macOS_release_name}.vdi" >/dev/null
-2>&1 VBoxManage storageattach "${vmname}" --storagectl SATA --port 2 --hotpluggable on \
-            --type hdd --nonrotational on --medium "${macOS_release_name}_BaseSystem.vdi" >/dev/null
-2>&1 VBoxManage storageattach "${vmname}" --storagectl SATA --port 3 \
-            --type dvddrive --medium "${macOS_release_name}_Installation_files.viso" >/dev/null
+    2>&1 VBoxManage storagectl "${vmname}" --add sata --name SATA --hostiocache on >/dev/null
+    2>&1 VBoxManage storageattach "${vmname}" --storagectl SATA --port 0 \
+                --type hdd --nonrotational on --medium "${vmname}.vdi" >/dev/null
+    2>&1 VBoxManage storageattach "${vmname}" --storagectl SATA --port 1 --hotpluggable on \
+                --type hdd --nonrotational on --medium "Install ${macOS_release_name}.vdi" >/dev/null
+    2>&1 VBoxManage storageattach "${vmname}" --storagectl SATA --port 2 --hotpluggable on \
+                --type hdd --nonrotational on --medium "${macOS_release_name}_BaseSystem.vdi" >/dev/null
+    2>&1 VBoxManage storageattach "${vmname}" --storagectl SATA --port 3 \
+                --type dvddrive --medium "${macOS_release_name}_Installation_files.viso" >/dev/null
 ) ]]; then
     echo "One or more virtual storage files could not be loaded. Exiting."; exit
 fi
@@ -747,15 +748,15 @@ if [[ "$( VBoxManage list runningvms )" =~ ^\""${vmname}" ]]; then
     printf "${highlight_color}"'Please '"${warning_color}"'manually'"${highlight_color}"' shut down the virtual machine and press enter to continue.'"${default_color}"
     clear_input_buffer_then_read
 fi
+VBoxManage storagectl macOS --remove --name SATA >/dev/null 2>&1
 if [[ -n $(
-2>&1 VBoxManage storagectl macOS --remove --name SATA >/dev/null
-2>&1 VBoxManage storagectl "${vmname}" --add sata --name SATA --hostiocache on >/dev/null
-2>&1 VBoxManage storageattach "${vmname}" --storagectl SATA --port 0 \
-            --type hdd --nonrotational on --medium "${vmname}.vdi" >/dev/null
-2>&1 VBoxManage storageattach "${vmname}" --storagectl SATA --port 1 --hotpluggable on \
-            --type hdd --nonrotational on --medium "Install ${macOS_release_name}.vdi" >/dev/null
-2>&1 VBoxManage storageattach "${vmname}" --storagectl SATA --port 2 \
-            --type dvddrive --medium "${macOS_release_name}_Installation_files.viso" >/dev/null
+    2>&1 VBoxManage storagectl "${vmname}" --add sata --name SATA --hostiocache on >/dev/null
+    2>&1 VBoxManage storageattach "${vmname}" --storagectl SATA --port 0 \
+                --type hdd --nonrotational on --medium "${vmname}.vdi" >/dev/null
+    2>&1 VBoxManage storageattach "${vmname}" --storagectl SATA --port 1 --hotpluggable on \
+                --type hdd --nonrotational on --medium "Install ${macOS_release_name}.vdi" >/dev/null
+    2>&1 VBoxManage storageattach "${vmname}" --storagectl SATA --port 2 \
+                --type dvddrive --medium "${macOS_release_name}_Installation_files.viso" >/dev/null
 ) ]]; then
     echo "One or more virtual storage files could not be loaded. Exiting."; exit
 fi
