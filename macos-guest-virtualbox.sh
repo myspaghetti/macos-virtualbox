@@ -46,22 +46,6 @@ SYSTEM_UUID="aabbccddeeff00112233445566778899"
 SYSTEM_INTEGRITY_PROTECTION='10'  # '10' - enabled, '77' - disabled
 }
 
-# terminal text colors
-warning_color="\e[48;2;255;0;0m\e[38;2;255;255;255m" # white on red
-highlight_color="\e[48;2;0;0;9m\e[38;2;255;255;255m" # white on black
-low_contrast_color="\e[48;2;0;0;9m\e[38;2;128;128;128m" # grey on black
-default_color="\033[0m"
-
-# prints positional parameters in low contrast preceded and followed by newline
-function print_dimly() {
-printf "\n${low_contrast_color}$@${default_color}\n"
-}
-
-# don't need sleep when we can read!
-function sleep() {
-    read -t "${1}" >/dev/null 2>&1
-}
-
 # welcome message
 function welcome() {
 printf '
@@ -303,9 +287,9 @@ if [ -z "$(dmg2img -d 2>/dev/null)" ]; then
 fi
 
 # set Apple software update catalog URL according to macOS version
-HighSierra_sucatalog='https://swscan.apple.com/content/catalogs/others/index-10.13-10.12-10.11-10.10-10.9-mountainlion-lion-snowleopard-leopard.merged-1.sucatalog'
-Mojave_sucatalog='https://swscan.apple.com/content/catalogs/others/index-10.14-10.13-10.12-10.11-10.10-10.9-mountainlion-lion-snowleopard-leopard.merged-1.sucatalog'
-Catalina_sucatalog='https://swscan.apple.com/content/catalogs/others/index-10.15-10.14-10.13-10.12-10.11-10.10-10.9-mountainlion-lion-snowleopard-leopard.merged-1.sucatalog'
+HighSierra_sucatalog='https://swscan.apple.com/content/catalogs/others/index-10.13customerseed-10.12-10.11-10.10-10.9-mountainlion-lion-snowleopard-leopard.merged-1.sucatalog'
+Mojave_sucatalog='https://swscan.apple.com/content/catalogs/others/index-10.14customerseed-10.13-10.12-10.11-10.10-10.9-mountainlion-lion-snowleopard-leopard.merged-1.sucatalog'
+Catalina_sucatalog='https://swscan.apple.com/content/catalogs/others/index-10.15customerseed-10.15-10.14-10.13-10.12-10.11-10.10-10.9-mountainlion-lion-snowleopard-leopard.merged-1.sucatalog'
 if [[ "${macOS_release_name:0:1}" =~ [Cc] ]]; then
     macOS_release_name="Catalina"
     CFBundleShortVersionString="10.15"
@@ -689,11 +673,356 @@ VBoxManage setextradata "${vmname}" \
  "VBoxInternal/Devices/smc/0/Config/GetKeyFromRealSMC" 0
 }
 
+function populate_virtual_disks() {
+print_dimly "stage: populate_virtual_disks"
+# Attach virtual disk images of the base system, installation, and target
+# to the virtual machine
+VBoxManage storagectl macOS --remove --name SATA >/dev/null 2>&1
+VBoxManage storagectl "${vmname}" --add sata --name SATA --hostiocache on >/dev/null 2>&1
+VBoxManage storageattach "${vmname}" --storagectl SATA --port 0 \
+           --type hdd --nonrotational on --medium "${vmname}.vdi" >/dev/null 2>&1
+VBoxManage storageattach "${vmname}" --storagectl SATA --port 1 --hotpluggable on \
+           --type hdd --nonrotational on --medium "Install ${macOS_release_name}.vdi" >/dev/null 2>&1
+VBoxManage storageattach "${vmname}" --storagectl SATA --port 2 --hotpluggable on \
+           --type hdd --nonrotational on --medium "${macOS_release_name}_BaseSystem.vdi" >/dev/null 2>&1
+VBoxManage storageattach "${vmname}" --storagectl SATA --port 3 \
+           --type dvddrive --medium "${macOS_release_name}_Installation_files.viso" >/dev/null 2>&1
+
+echo "Starting virtual machine ${vmname}. This should take a couple of minutes."
+( VBoxManage startvm "${vmname}" >/dev/null 2>&1 )
+prompt_lang_utils
+prompt_terminal_ready
+print_dimly "Please wait"
+declare_kscd_key_scancode_dictionary
+# Assigning "physical" disks from largest to smallest to "${disks[]}" array
+# Partitining largest disk as APFS
+# Partition second-largest disk as JHFS+
+kbstring='disks="$(diskutil list | grep -o "\*[0-9][^ ]* GB *disk[0-9]$" | grep -o "[0-9].*" | sort -gr | grep -o disk[0-9] )" && disks=(${disks[@]}) && '\
+'diskutil partitionDisk "/dev/${disks[0]}" 1 GPT APFS "'"${vmname}"'" R && '\
+'diskutil partitionDisk "/dev/${disks[1]}" 1 GPT JHFS+ "Install" R && '
+send_keys
+# Create secondary base system on the Install disk
+# and copy macOS install app files to the app directory
+kbstring='asr restore --source "/Volumes/'"${macOS_release_name:0:5}-files"'/BaseSystem.dmg" --target /Volumes/Install --erase --noprompt && '\
+'app_path="$(ls -d "/Volumes/"*"Base System 1/Install"*.app)" && '\
+'install_path="${app_path}/Contents/SharedSupport/" && '\
+'mkdir -p "${install_path}" && cd "/Volumes/'"${macOS_release_name:0:5}-files/"'" && '\
+'cp *.chunklist *.plist *.dmg "${install_path}" && '\
+'echo "" && echo "Copying the several-GB InstallESD.dmg to the installer app directory" && echo "Please wait" && '\
+'cat InstallESD.part* > "${install_path}/InstallESD.dmg" && '\
+'sed -i.bak -e "s/InstallESDDmg\.pkg/InstallESD.dmg/" -e "s/pkg\.InstallESDDmg/dmg.InstallESD/" "${install_path}InstallInfo.plist" && '\
+'sed -i.bak2 -e "/InstallESD\.dmg/{n;N;N;N;d;}" "${install_path}InstallInfo.plist" && '
+send_keys
+# shut down the virtual machine
+kbstring='shutdown -h now'
+send_keys
+send_enter
+printf 'Partitioning the target virtual disk and the installer virtual disk.
+Loading base system onto the installer virtual disk. Moving installation
+files to installer virtual disk, updating InstallInfo.plist, and rebooting the
+virtual machine.
+
+The virtual machine may report that disk space is critically low; this is fine.
+
+When the installer virtual disk is finished being populated, the script will
+shut down the virtual machine. After shutdown, the initial base system will be
+detached from the VM and released from VirtualBox.
+
+'"${highlight_color}"'If the partitioning fails, exit the script by pressing CTRL-C.'"${default_color}"
+print_dimly "Otherwise, please wait."
+# Detach the original 2GB BaseSystem.vdi
+while [[ "$( VBoxManage list runningvms )" =~ ^\""${vmname}" ]]; do sleep 2 >/dev/null 2>&1; done;
+# Release basesystem vdi from VirtualBox configuration
+VBoxManage storageattach "${vmname}" --storagectl SATA --port 2 --medium none >/dev/null 2>&1
+VBoxManage closemedium "${macOS_release_name}_BaseSystem.vdi" >/dev/null 2>&1
+echo "${macOS_release_name}_BaseSystem.vdi detached from the virtual machine"
+echo "and released from VirtualBox Manager."
+}
+
+function populate_macos_target() {
+print_dimly "stage: populate_macos_target"
+if [[ "$( VBoxManage list runningvms )" =~ ^\""${vmname}" ]]; then
+    printf "${highlight_color}"'Please '"${warning_color}"'manually'"${highlight_color}"' shut down the virtual machine and press enter to continue.'"${default_color}"
+    clear_input_buffer_then_read
+fi
+VBoxManage storagectl macOS --remove --name SATA >/dev/null 2>&1
+VBoxManage storagectl "${vmname}" --add sata --name SATA --hostiocache on >/dev/null 2>&1
+VBoxManage storageattach "${vmname}" --storagectl SATA --port 0 \
+           --type hdd --nonrotational on --medium "${vmname}.vdi" >/dev/null 2>&1
+VBoxManage storageattach "${vmname}" --storagectl SATA --port 1 --hotpluggable on \
+           --type hdd --nonrotational on --medium "Install ${macOS_release_name}.vdi" >/dev/null 2>&1
+VBoxManage storageattach "${vmname}" --storagectl SATA --port 2 \
+           --type dvddrive --medium "${macOS_release_name}_Installation_files.viso" >/dev/null 2>&1
+echo "The VM will boot from the populated installer base system virtual disk."
+( VBoxManage startvm "${vmname}" >/dev/null 2>&1 )
+prompt_lang_utils
+prompt_terminal_ready
+add_another_terminal
+echo ""
+echo "The second open Terminal in the virtual machine copies EFI and NVRAM files"
+echo "to the target EFI partition when the installer finishes preparing."
+
+# run script concurrently, catch SIGUSR1 when installer finishes preparing
+declare_kscd_key_scancode_dictionary
+kbstring='disks="$(diskutil list | grep -o "[0-9][^ ]* GB *disk[0-9]$" | sort -gr | grep -o disk[0-9])"; '\
+'disks=(${disks[@]}); '\
+'printf '"'"'trap "exit 0" SIGUSR1; while true; do sleep 10; done;'"'"' | sh && '\
+'mkdir -p "/Volumes/'"${vmname}"'/tmp/mount_efi" && '\
+'mount_msdos /dev/${disks[0]}s1 "/Volumes/'"${vmname}"'/tmp/mount_efi" && '\
+'mkdir -p "/Volumes/'"${vmname}"'/tmp/mount_efi/EFI/driver/" && '\
+'mkdir -p "/Volumes/'"${vmname}"'/tmp/mount_efi/EFI/NVRAM/" && '\
+'cp "/Volumes/'"${macOS_release_name:0:5}-files"'/startup.nsh" "/Volumes/'"${vmname}"'/tmp/mount_efi/startup.nsh" && '\
+'cp "/Volumes/'"${macOS_release_name:0:5}-files"'/"*.bin "/Volumes/'"${vmname}"'/tmp/mount_efi/EFI/NVRAM/" && '\
+'[ -a "/Volumes'"${macOS_release_name:0:5}-files"'/ApfsDriverLoader.efi" ] && cp "/Volumes/'"${macOS_release_name:0:5}-files"'/"*.efi "/Volumes/'"${vmname}"'/tmp/mount_efi/EFI/driver/" ; '\
+'installer_pid=$(ps | grep startosinstall | cut -d '"'"' '"'"' -f 3) && '\
+'kill -SIGUSR1 ${installer_pid}'
+send_keys
+send_enter
+sleep 1
+cycle_through_terminal_windows
+
+# Find background process PID, then
+# start the installer, send SIGUSR1 to concurrent bash script,
+# the other script copies files to EFI partition,
+# then sends SIGUSR1 to the installer which restarts the virtual machine
+echo ""
+kbstring='background_pid="$(ps | grep '"'"' sh$'"'"' | cut -d '"'"' '"'"' -f 3)" && '\
+'app_path="$(ls -d /Install*.app)" && '\
+'cd "/${app_path}/Contents/Resources/" && '\
+'./startosinstall --agreetolicense --pidtosignal ${background_pid} --rebootdelay 500 --volume "/Volumes/'"${vmname}"'"'
+send_keys
+send_enter
+if [[ ( "${vbox_version:0:1}" -lt 6 ) || ( "${vbox_version:0:1}" = 6 && "${vbox_version:2:1}" = 0 ) ]]; then
+    printf "${highlight_color}"'When the VM reboots, press enter'"${default_color}"' or alternatively
+    manually detach the virtual storage device "'"Install ${macOS_release_name}.vdi"'"
+    to avoid booting into the installer environment again.'
+    clear_input_buffer_then_read
+    VBoxManage controlvm "${vmname}" poweroff >/dev/null 2>&1
+    for (( i=10; i>5; i-- )); do printf '   \r'"${i}"; sleep 0.5; done
+    VBoxManage storagectl macOS --remove --name SATA >/dev/null 2>&1
+    VBoxManage storagectl "${vmname}" --add sata --name SATA --hostiocache on >/dev/null 2>&1
+    VBoxManage storageattach "${vmname}" --storagectl SATA --port 0 \
+               --type hdd --nonrotational on --medium "${vmname}.vdi"
+    echo ""
+    for (( i=5; i>0; i-- )); do printf '   \r'"${i}"; sleep 0.5; done
+fi
+printf '
+
+For further information, see the documentation with the following command:
+'"${highlight_color}${0}"' documentation'"${default_color}"'
+
+'"${highlight_color}"'That'"'"'s it! Enjoy your virtual machine.'"${default_color}"'\n'
+
+}
+
+function delete_temporary_files() {
+print_dimly "stage: delete_temporary_files"
+if [[ "$( VBoxManage list runningvms )" =~ ^\""${vmname}" ]];
+    then
+printf 'Temporary files may be deleted when the virtual machine is shut down
+by running the following command at the script'"'"'s working directory:
+
+      '"${0} delete_temporary_files"'\n'
+    else
+# detach temporary VDIs and attach the macOS target disk
+VBoxManage storagectl macOS --remove --name SATA >/dev/null 2>&1
+VBoxManage storagectl "${vmname}" --add sata --name SATA --hostiocache on >/dev/null 2>&1
+VBoxManage storageattach "${vmname}" --storagectl SATA --port 0 \
+           --type hdd --nonrotational on --medium "${vmname}.vdi"
+VBoxManage closemedium "Install ${macOS_release_name}.vdi" >/dev/null 2>&1
+VBoxManage closemedium "${macOS_release_name}_BaseSystem.vdi" >/dev/null 2>&1
+printf 'The follwing files are safe to delete:
+      "'"${macOS_release_name}_Apple"*'"
+      "'"${macOS_release_name}_BaseSystem"*'"
+      "'"${macOS_release_name}_Install"*'"
+      "'"Install ${macOS_release_name}.vdi"'"
+      "'"${vmname}_"*".bin"'"
+      "'"${vmname}_startup.nsh"'"\n'
+if [ -w "ApfsDriverLoader.efi" ]; then
+    printf '      "'"ApfsDriverLoader.efi"'"
+      "'"Apple"*".efi"'"
+      "'"AppleSupport-v2.0.4-RELEASE.zip"'"\n'
+fi
+if [ -w "dmg2img.exe" ]; then
+    printf '      "'"dmg2img.exe"'"\n'
+fi
+echo ""
+printf "${warning_color}"'Delete temporary files?'"${default_color}"
+delete=""
+read -n 1 -p " [y/N] " delete
+echo ""
+if [ "${delete,,}" == "y" ]; then
+    rm "${macOS_release_name}_Apple"* \
+       "${macOS_release_name}_BaseSystem"* \
+       "${macOS_release_name}_Install"* \
+       "Install ${macOS_release_name}.vdi" \
+       "${vmname}_"*".bin" \
+       "${vmname}_startup.nsh" 2>/dev/null
+    rm "ApfsDriverLoader.efi" \
+       "Apple"*".efi" \
+       "AppleSupport-v2.0.4-RELEASE.zip" 2>/dev/null
+    rm "dmg2img.exe" 2>/dev/null
+fi
+
+fi
+
+}
+
+function documentation() {
+printf "
+        ${highlight_color}NAME${default_color}
+Semi-automatic installer of macOS on VirtualBox
+
+        ${highlight_color}DESCRIPTION${default_color}
+The script downloads, configures, and installs macOS High Sierra, Mojave,
+and Catalina on VirtualBox 5.2, 6.0, and 6.1. The script is semi-automatic
+and requires a little user interaction. A default fresh install only
+requires the user to sit patiently and, ten times, press enter when prompted.
+
+        ${highlight_color}USAGE${default_color}
+${low_contrast_color}${0} [STAGE]... ${default_color}
+
+The script is divided into stages. Stage titles may be given as command-line
+arguments for the script. When the script is run with no command-line
+arguments, each of the available stages, except \"documentation\", is executed
+in succession in the order listed:
+${low_contrast_color}${stages}${default_color}
+When \"documentation\" is the first command-line argument, only the
+\"documentation\" stage is executed and all other arguments are ignored.
+
+The four stages \"check_bash_version\", \"check_gnu_coreutils_prefix\",
+\"set_variables\", and \"check_dependencies\" are always performed when any stage
+title other than \"documentation\" is specified first, and if the checks pass
+then the stages specified in the command-line arguments are performed.
+
+        ${highlight_color}EXAMPLES${default_color}
+    ${low_contrast_color}${0} configure_vm${default_color}
+
+The above stage might be used after copying an existing VM VDI to a different
+VirtualBox installation and having the script automatically configure the VM.
+
+    ${low_contrast_color}${0} delete_temporary_files${default_color}
+
+The above stage might be used when no more virtual machines need to be installed,
+and the temporary files can be deleted.
+
+    ${low_contrast_color}${0} "'\\'"${default_color}
+${low_contrast_color}configure_vm create_nvram_files create_macos_installation_files_viso${default_color}
+
+The above stages might be used to update the EFI and NVRAM variables required
+for iCloud and iMessage connectivity and other Apple-connected apps.
+
+        ${highlight_color}iCloud and iMessage connectivity${default_color}
+iCloud, iMessage, and other connected Apple services require a valid device
+name and serial number, board ID and serial number, and other genuine
+(or genuine-like) Apple parameters. These parameters may be edited at the top
+of the script, accompanied by an explanation. Editing them is not required when
+installing or running macOS, only when connecting to the iCould app, iMessage,
+and other apps that authenticate the device with Apple.
+
+The variables needed to be assigned in the script are the following:
+
+${low_contrast_color}DmiSystemFamily    # Model name
+DmiSystemProduct   # Model identifier
+DmiSystemSerial    # System serial number
+DmiSystemUuid      # Hardware UUID
+DmiOEMVBoxVer      # Apple ROM info (major version)
+DmiOEMVBoxRev      # Apple ROM info (revision)
+DmiBIOSVersion     # Boot ROM version
+DmiBoardProduct    # Main Logic Board identifier
+DmiBoardSerial     # Main Logic Board serial (EFI)
+MLB                # Main Logic Board serial (NVRAM)
+ROM                # ROM identifier (NVRAM)
+SYSTEM_UUID        # System identifier (NVRAM)
+${default_color}
+The comments at the top of the script specify how to view these variables
+on a genuine Mac.
+
+        ${highlight_color}Applying the EFI and NVRAM parameters${default_color}
+The EFI and NVRAM parameters may be set in the script before installation by
+editing them at the top of the script, and applied after the last step of the
+installation by resetting the virtual machine and booting into the
+EFI Internal Shell. When resetting or powering up the VM, immediately press
+Esc when the VirtualBox logo appears. This boots into the EFI Internal Shell or
+the boot menu. If the boot menu appears, select \"Boot Manager\" and then
+\"EFI Internal Shell\" and then allow the startup.nsh script to run
+automatically, applying the EFI and NVRAM variables before booting macOS.
+
+        ${highlight_color}Changing the EFI and NVRAM parameters after installation${default_color}
+The variables mentioned above may be edited and applied to an existing macOS
+virtual machine by executing the following command and copying the generated
+files to the macOS EFI partition:
+
+    ${low_contrast_color}${0} "'\\'"${default_color}
+${low_contrast_color}configure_vm create_nvram_files create_macos_installation_files_viso${default_color}
+
+After running the command, attach the resulting VISO file to the virtual
+machine's storage through VirtualBox Manager or VBoxManage. Power up the VM
+and boot macOS, then start Terminal and execute the following commands, making
+sure to replace \"/Volumes/path/to/VISO/startup.nsh\" with the correct path:
+
+${low_contrast_color}mkdir EFI
+sudo su # this will prompt for a password
+mount_ntfs /dev/disk0s1 EFI
+cp /Volumes/path/to/VISO/startup.nsh ./EFI/startup.nsh
+cp /Volumes/path/to/VISO/*.bin ./EFI/
+${default_color}
+After copying the files, boot into the EFI Internal Shell as desribed in the
+section \"Applying the EFI and NVRAM parameters\".
+
+        ${highlight_color}Storage size${default_color}
+The script by default assigns a target virtual disk storage size of 80GB, which
+is populated to about 15GB on the host on initial installation. After the
+installation is complete, the storage size may be increased. First increase the
+virtual disk image size through VirtualBox Manager or VBoxManage, then in
+Terminal in the virtual machine run ${low_contrast_color}sudo diskutil repairDisk disk0${default_color}, and then
+${low_contrast_color}sudo diskutil apfs resizeContainer disk1 0${default_color} or from Disk Utility, after
+repairing the disk from Terminal, delete the \"Free space\" partition so it allows
+the system APFS container to take up the available space.
+
+        ${highlight_color}Graphics controller${default_color}
+Selecting the VBoxSVGA controller instead of VBoxVGA for the graphics controller may considerably increase graphics performance.
+
+        ${highlight_color}Performance and unsupported features${default_color}
+Developing and maintaining VirtualBox or macOS features is beyond the scope of
+this script. Some features may behave unexpectedly, such as USB device support,
+audio support, and other features.
+
+After successfully creating a working macOS virtual machine, consider importing
+it into QEMU/KVM so it can run with hardware passthrough at near-native
+performance. QEMU/KVM requires additional configuration that is beyond the
+scope of the script.
+
+For more information visit the URL:
+        ${highlight_color}https://github.com/myspaghetti/macos-guest-virtualbox${default_color}
+
+"
+}
+
+# GLOBAL VARIABLES AND FUNCTIONS THAT MIGHT BE CALLED MORE THAN ONCE
+
+# terminal text colors
+warning_color="\e[48;2;255;0;0m\e[38;2;255;255;255m" # white on red
+highlight_color="\e[48;2;0;0;9m\e[38;2;255;255;255m" # white on black
+low_contrast_color="\e[48;2;0;0;9m\e[38;2;128;128;128m" # grey on black
+default_color="\033[0m"
+
+# prints positional parameters in low contrast preceded and followed by newline
+function print_dimly() {
+printf "\n${low_contrast_color}$@${default_color}\n"
+}
+
+# don't need sleep when we can read!
+function sleep() {
+    read -t "${1}" >/dev/null 2>&1
+}
+
+function declare_kscd_key_scancode_dictionary() {
 # QWERTY-to-scancode dictionary. Hex scancodes, keydown and keyup event.
 # Virtualbox Mac scancodes found here:
 # https://wiki.osdev.org/PS/2_Keyboard#Scan_Code_Set_1
 # First half of hex code - press, second half - release, unless otherwise specified
-declare -A ksc=(
+declare -A kscd=(
     ["ESC"]="01 81"
     ["1"]="02 82"
     ["2"]="03 83"
@@ -827,6 +1156,7 @@ declare -A ksc=(
     [">"]="2A 34 B4 AA"
     ["?"]="2A 35 B5 AA"
 )
+}
 
 function clear_input_buffer_then_read() {
     while read -d '' -r -t 0; do read -d '' -t 0.1 -n 10000; break; done
@@ -836,7 +1166,7 @@ function clear_input_buffer_then_read() {
 # read variable kbstring and convert string to scancodes and send to guest vm
 function send_keys() {
     scancode=$(for (( i=0; i < ${#kbstring}; i++ ));
-               do c[i]=${kbstring:i:1}; echo -n ${ksc[${c[i]}]}" "; done)
+               do c[i]=${kbstring:i:1}; echo -n ${kscd[${c[i]}]}" "; done)
     VBoxManage controlvm "${vmname}" keyboardputscancode ${scancode} 1>/dev/null 2>&1
 }
 
@@ -845,7 +1175,7 @@ function send_keys() {
 function send_special() {
     scancode=""
     for keypress in ${kbspecial}; do
-        scancode="${scancode}${ksc[${keypress}]}"" "
+        scancode="${scancode}${kscd[${keypress}]}"" "
     done
     VBoxManage controlvm "${vmname}" keyboardputscancode ${scancode} 1>/dev/null 2>&1
 }
@@ -896,374 +1226,39 @@ function cycle_through_terminal_windows() {
     sleep 1
 }
 
-function populate_virtual_disks() {
-print_dimly "stage: populate_virtual_disks"
-# Attach virtual disk images of the base system, installation, and target
-# to the virtual machine
-VBoxManage storagectl macOS --remove --name SATA >/dev/null 2>&1
-VBoxManage storagectl "${vmname}" --add sata --name SATA --hostiocache on >/dev/null 2>&1
-VBoxManage storageattach "${vmname}" --storagectl SATA --port 0 \
-           --type hdd --nonrotational on --medium "${vmname}.vdi" >/dev/null 2>&1
-VBoxManage storageattach "${vmname}" --storagectl SATA --port 1 --hotpluggable on \
-           --type hdd --nonrotational on --medium "Install ${macOS_release_name}.vdi" >/dev/null 2>&1
-VBoxManage storageattach "${vmname}" --storagectl SATA --port 2 --hotpluggable on \
-           --type hdd --nonrotational on --medium "${macOS_release_name}_BaseSystem.vdi" >/dev/null 2>&1
-VBoxManage storageattach "${vmname}" --storagectl SATA --port 3 \
-           --type dvddrive --medium "${macOS_release_name}_Installation_files.viso" >/dev/null 2>&1
-
-echo "Starting virtual machine ${vmname}. This should take a couple of minutes."
-( VBoxManage startvm "${vmname}" >/dev/null 2>&1 )
-prompt_lang_utils
-prompt_terminal_ready
-print_dimly "Please wait"
-# Assigning "physical" disks from largest to smallest to "${disks[]}" array
-# Partitining largest disk as APFS
-# Partition second-largest disk as JHFS+
-kbstring='disks="$(diskutil list | grep -o "\*[0-9][^ ]* GB *disk[0-9]$" | grep -o "[0-9].*" | sort -gr | grep -o disk[0-9] )" && disks=(${disks[@]}) && '\
-'diskutil partitionDisk "/dev/${disks[0]}" 1 GPT APFS "'"${vmname}"'" R && '\
-'diskutil partitionDisk "/dev/${disks[1]}" 1 GPT JHFS+ "Install" R && '
-send_keys
-# Create secondary base system on the Install disk
-# and copy macOS install app files to the app directory
-kbstring='asr restore --source "/Volumes/'"${macOS_release_name:0:5}-files"'/BaseSystem.dmg" --target /Volumes/Install --erase --noprompt && '\
-'app_path="$(ls -d "/Volumes/"*"Base System 1/Install"*.app)" && '\
-'install_path="${app_path}/Contents/SharedSupport/" && '\
-'mkdir -p "${install_path}" && cd "/Volumes/'"${macOS_release_name:0:5}-files/"'" && '\
-'cp *.chunklist *.plist *.dmg "${install_path}" && '\
-'echo "" && echo "Copying the several-GB InstallESD.dmg to the installer app directory" && echo "Please wait" && '\
-'cat InstallESD.part* > "${install_path}/InstallESD.dmg" && '\
-'sed -i.bak -e "s/InstallESDDmg\.pkg/InstallESD.dmg/" -e "s/pkg\.InstallESDDmg/dmg.InstallESD/" "${install_path}InstallInfo.plist" && '\
-'sed -i.bak2 -e "/InstallESD\.dmg/{n;N;N;N;d;}" "${install_path}InstallInfo.plist" && '
-send_keys
-# shut down the virtual machine
-kbstring='shutdown -h now'
-send_keys
-send_enter
-printf 'Partitioning the target virtual disk and the installer virtual disk.
-Loading base system onto the installer virtual disk. Moving installation
-files to installer virtual disk, updating InstallInfo.plist, and rebooting the
-virtual machine.
-
-The virtual machine may report that disk space is critically low; this is fine.
-
-When the installer virtual disk is finished being populated, the script will
-shut down the virtual machine. After shutdown, the initial base system will be
-detached from the VM and released from VirtualBox.
-
-'"${highlight_color}"'If the partitioning fails, exit the script by pressing CTRL-C.'"${default_color}"
-print_dimly "Otherwise, please wait."
-# Detach the original 2GB BaseSystem.vdi
-while [[ "$( VBoxManage list runningvms )" =~ ^\""${vmname}" ]]; do sleep 2 >/dev/null 2>&1; done;
-# Release basesystem vdi from VirtualBox configuration
-VBoxManage storageattach "${vmname}" --storagectl SATA --port 2 --medium none >/dev/null 2>&1
-VBoxManage closemedium "${macOS_release_name}_BaseSystem.vdi" >/dev/null 2>&1
-echo "${macOS_release_name}_BaseSystem.vdi detached from the virtual machine"
-echo "and released from VirtualBox Manager."
-}
-
-function populate_macos_target() {
-print_dimly "stage: populate_macos_target"
-if [[ "$( VBoxManage list runningvms )" =~ ^\""${vmname}" ]]; then
-    printf "${highlight_color}"'Please '"${warning_color}"'manually'"${highlight_color}"' shut down the virtual machine and press enter to continue.'"${default_color}"
-    clear_input_buffer_then_read
-fi
-VBoxManage storagectl macOS --remove --name SATA >/dev/null 2>&1
-VBoxManage storagectl "${vmname}" --add sata --name SATA --hostiocache on >/dev/null 2>&1
-VBoxManage storageattach "${vmname}" --storagectl SATA --port 0 \
-           --type hdd --nonrotational on --medium "${vmname}.vdi" >/dev/null 2>&1
-VBoxManage storageattach "${vmname}" --storagectl SATA --port 1 --hotpluggable on \
-           --type hdd --nonrotational on --medium "Install ${macOS_release_name}.vdi" >/dev/null 2>&1
-VBoxManage storageattach "${vmname}" --storagectl SATA --port 2 \
-           --type dvddrive --medium "${macOS_release_name}_Installation_files.viso" >/dev/null 2>&1
-echo "The VM will boot from the populated installer base system virtual disk."
-( VBoxManage startvm "${vmname}" >/dev/null 2>&1 )
-prompt_lang_utils
-prompt_terminal_ready
-add_another_terminal
-echo ""
-echo "The second open Terminal in the virtual machine copies EFI and NVRAM files"
-echo "to the target EFI partition when the installer finishes preparing."
-
-# run script concurrently, catch SIGUSR1 when installer finishes preparing
-kbstring='disks="$(diskutil list | grep -o "[0-9][^ ]* GB *disk[0-9]$" | sort -gr | grep -o disk[0-9])"; '\
-'disks=(${disks[@]}); '\
-'printf '"'"'trap "exit 0" SIGUSR1; while true; do sleep 10; done;'"'"' | sh && '\
-'mkdir -p "/Volumes/'"${vmname}"'/tmp/mount_efi" && '\
-'mount_msdos /dev/${disks[0]}s1 "/Volumes/'"${vmname}"'/tmp/mount_efi" && '\
-'mkdir -p "/Volumes/'"${vmname}"'/tmp/mount_efi/EFI/driver/" && '\
-'mkdir -p "/Volumes/'"${vmname}"'/tmp/mount_efi/EFI/NVRAM/" && '\
-'cp "/Volumes/'"${macOS_release_name:0:5}-files"'/startup.nsh" "/Volumes/'"${vmname}"'/tmp/mount_efi/startup.nsh" && '\
-'cp "/Volumes/'"${macOS_release_name:0:5}-files"'/"*.bin "/Volumes/'"${vmname}"'/tmp/mount_efi/EFI/NVRAM/" && '\
-'[ -a "/Volumes'"${macOS_release_name:0:5}-files"'/ApfsDriverLoader.efi" ] && cp "/Volumes/'"${macOS_release_name:0:5}-files"'/"*.efi "/Volumes/'"${vmname}"'/tmp/mount_efi/EFI/driver/" ; '\
-'installer_pid=$(ps | grep startosinstall | cut -d '"'"' '"'"' -f 3) && '\
-'kill -SIGUSR1 ${installer_pid}'
-send_keys
-send_enter
-sleep 1
-cycle_through_terminal_windows
-
-# Find background process PID, then
-# start the installer, send SIGUSR1 to concurrent bash script,
-# the other script copies files to EFI partition,
-# then sends SIGUSR1 to the installer which restarts the virtual machine
-echo ""
-kbstring='background_pid="$(ps | grep '"'"' sh$'"'"' | cut -d '"'"' '"'"' -f 3)" && '\
-'app_path="$(ls -d /Install*.app)" && '\
-'cd "/${app_path}/Contents/Resources/" && '\
-'./startosinstall --agreetolicense --pidtosignal ${background_pid} --rebootdelay 500 --volume "/Volumes/'"${vmname}"'"'
-send_keys
-send_enter
-if [[ ( "${vbox_version:0:1}" -lt 6 ) || ( "${vbox_version:0:1}" = 6 && "${vbox_version:2:1}" = 0 ) ]]; then
-    printf "${highlight_color}"'When the VM reboots, press enter'"${default_color}"' or alternatively
-    manually detach the virtual storage device "'"Install ${macOS_release_name}.vdi"'"
-    to avoid booting into the installer environment again.'
-    clear_input_buffer_then_read
-    VBoxManage controlvm "${vmname}" poweroff >/dev/null 2>&1
-    for (( i=10; i>5; i-- )); do printf '   \r'"${i}"; sleep 0.5; done
-    VBoxManage storagectl macOS --remove --name SATA >/dev/null 2>&1
-    VBoxManage storagectl "${vmname}" --add sata --name SATA --hostiocache on >/dev/null 2>&1
-    VBoxManage storageattach "${vmname}" --storagectl SATA --port 0 \
-               --type hdd --nonrotational on --medium "${vmname}.vdi"
-    echo ""
-    for (( i=5; i>0; i-- )); do printf '   \r'"${i}"; sleep 0.5; done
-fi
-printf '
-
-For further information, see the documentation with the following command:
-'"${highlight_color}${0}"' documentation'"${default_color}"'
-
-'"${highlight_color}"'That'"'"'s it! Enjoy your virtual machine.'"${default_color}"'\n'
-
-}
-
-function delete_temporary_files() {
-print_dimly "stage: delete_temporary_files"
-if [[ "$( VBoxManage list runningvms )" =~ ^\""${vmname}" ]];
-    then
-printf 'Temporary files may be deleted when the virtual machine is shut down
-by running the following command at the script'"'"'s working directory:
-
-      '"${0} delete_temporary_files"'\n'
-    else
-# detach temporary VDIs and attach the macOS target disk
-VBoxManage storagectl macOS --remove --name SATA >/dev/null 2>&1
-VBoxManage storagectl "${vmname}" --add sata --name SATA --hostiocache on >/dev/null 2>&1
-VBoxManage storageattach "${vmname}" --storagectl SATA --port 0 \
-           --type hdd --nonrotational on --medium "${vmname}.vdi"
-VBoxManage closemedium "Install ${macOS_release_name}.vdi" >/dev/null 2>&1
-VBoxManage closemedium "${macOS_release_name}_BaseSystem.vdi" >/dev/null 2>&1
-printf 'The follwing files are safe to delete:
-      "'"${macOS_release_name}_Apple"*'"
-      "'"${macOS_release_name}_BaseSystem"*'"
-      "'"${macOS_release_name}_Install"*'"
-      "'"Install ${macOS_release_name}.vdi"'"
-      "'"${vmname}_"*".bin"'"
-      "'"${vmname}_startup.nsh"'"\n'
-if [ -w "ApfsDriverLoader.efi" ]; then
-    printf '      "'"ApfsDriverLoader.efi"'"
-      "'"Apple"*".efi"'"
-      "'"AppleSupport-v2.0.4-RELEASE.zip"'"\n'
-fi
-if [ -w "dmg2img.exe" ]; then
-    printf '      "'"dmg2img.exe"'"\n'
-fi
-echo ""
-printf "${warning_color}"'Delete temporary files?'"${default_color}"
-delete=""
-read -n 1 -p " [y/N] " delete
-echo ""
-if [ "${delete,,}" == "y" ]; then
-    rm "${macOS_release_name}_Apple"* \
-       "${macOS_release_name}_BaseSystem"* \
-       "${macOS_release_name}_Install"* \
-       "Install ${macOS_release_name}.vdi" \
-       "${vmname}_"*".bin" \
-       "${vmname}_startup.nsh" 2>/dev/null
-    rm "ApfsDriverLoader.efi" \
-       "Apple"*".efi" \
-       "AppleSupport-v2.0.4-RELEASE.zip" 2>/dev/null
-    rm "dmg2img.exe" 2>/dev/null
-fi
-
-fi
-
-}
-
-function documentation() {
-printf "
-        ${highlight_color}NAME${default_color}
-Semi-automatic installer of macOS on VirtualBox
-
-        ${highlight_color}DESCRIPTION${default_color}
-The script downloads, configures, and installs macOS High Sierra, Mojave,
-and Catalina on VirtualBox 5.2, 6.0, and 6.1. The script is semi-automatic
-and requires a little user interaction. A default fresh install only
-requires the user to sit patiently and, ten times, press enter when prompted.
-
-        ${highlight_color}USAGE${default_color}
-${low_contrast_color}${0} [STAGE]... ${default_color}
-
-The script is divided into stages. Stage titles may be given as command-line
-arguments for the script. When the script is run with no command-line
-arguments, each of the available stages, except \"documentation\", is executed
-in succession in the order listed:
-${low_contrast_color}
-    check_bash_version
-    check_gnu_coreutils_prefix
-    set_variables
-    welcome
-    check_dependencies
-    prompt_delete_existing_vm
-    create_vm
-    prepare_macos_installation_files
-    create_nvram_files
-    create_macos_installation_files_viso
-    create_basesystem_vdi
-    create_target_vdi
-    create_install_vdi
-    configure_vm
-    populate_virtual_disks
-    populate_macos_target
-    delete_temporary_files
-${default_color}
-When \"documentation\" is the first command-line argument, only the
-\"documentation\" stage is executed and all other arguments are ignored.
-
-The four stages \"check_bash_version\", \"check_gnu_coreutils_prefix\",
-\"set_variables\", and \"check_dependencies\" are always performed when any stage
-title other than \"documentation\" is specified first, and only after the checks
-pass the stages specified in the command-line arguments are performed.
-
-        ${highlight_color}EXAMPLES${default_color}
-    ${low_contrast_color}${0} configure_vm${default_color}
-
-The above stage might be used after copying an existing VM VDI to a different
-VirtualBox installation and having the script automatically configure the VM.
-
-    ${low_contrast_color}${0} delete_temporary_files${default_color}
-
-The above stage might be used when no more virtual machines need to be installed,
-and the temporary files can be deleted.
-
-    ${low_contrast_color}${0} "'\\'"${default_color}
-${low_contrast_color}configure_vm create_nvram_files create_macos_installation_files_viso${default_color}
-
-The above stages might be used to update the EFI and NVRAM variables required
-for iCloud and iMessage connectivity and other Apple-connected apps.
-
-        ${highlight_color}iCloud and iMessage connectivity${default_color}
-iCloud, iMessage, and other connected Apple services require a valid device
-name and serial number, board ID and serial number, and other genuine
-(or genuine-like) Apple parameters. These parameters may be edited at the top
-of the script, accompanied by an explanation. Editing them is not required when
-installing or running macOS, only when connecting to the iCould app, iMessage,
-and other apps that authenticate the device with Apple.
-
-The variables needed to be assigned in the script are the following:
-
-${low_contrast_color}DmiSystemFamily    # Model name
-DmiSystemProduct   # Model identifier
-DmiSystemSerial    # System serial number
-DmiSystemUuid      # Hardware UUID
-DmiOEMVBoxVer      # Apple ROM info (major version)
-DmiOEMVBoxRev      # Apple ROM info (revision)
-DmiBIOSVersion     # Boot ROM version
-DmiBoardProduct    # Main Logic Board identifier
-DmiBoardSerial     # Main Logic Board serial (EFI)
-MLB                # Main Logic Board serial (NVRAM)
-ROM                # ROM identifier (NVRAM)
-SYSTEM_UUID        # System identifier (NVRAM)
-${default_color}
-The comments at the top of the script specify how to view these variables
-on a genuine Mac.
-
-        ${highlight_color}Applying the EFI and NVRAM parameters${default_color}
-The EFI and NVRAM parameters may be set in the script before installation by
-editing them at the top of the script, and applied after the last step of the
-installation by resetting the virtual machine and booting into the
-EFI Internal Shell. When resetting or powering up the VM, immediately press
-Esc when the VirtualBox logo appears. This boots into the EFI Internal Shell or
-the boot menu. If the boot menu appears, select \"Boot Manager\" and then
-\"EFI Internal Shell\" and then allow the startup.nsh script to run
-automatically, applying the EFI and NVRAM variables before booting macOS.
-
-        ${highlight_color}Changing the EFI and NVRAM parameters after installation${default_color}
-The variables mentioned above may be edited and applied to an existing macOS
-virtual machine by executing the following command and copying the generated
-files to the macOS EFI partition:
-
-    ${low_contrast_color}${0} "'\\'"${default_color}
-${low_contrast_color}configure_vm create_nvram_files create_macos_installation_files_viso${default_color}
-
-After running the command, attach the resulting VISO file to the virtual
-machine's storage through VirtualBox Manager or VBoxManage. Power up the VM
-and boot macOS, then start Terminal and execute the following commands, making
-sure to replace \"/Volumes/path/to/VISO/startup.nsh\" with the correct path:
-
-${low_contrast_color}mkdir EFI
-sudo su # this will prompt for a password
-mount_ntfs /dev/disk0s1 EFI
-cp /Volumes/path/to/VISO/startup.nsh ./EFI/startup.nsh
-cp /Volumes/path/to/VISO/*.bin ./EFI/
-${default_color}
-After copying the files, boot into the EFI Internal Shell as desribed in the
-section \"Applying the EFI and NVRAM parameters\".
-
-        ${highlight_color}Storage size${default_color}
-The script by default assigns a target virtual disk storage size of 80GB, which
-is populated to about 15GB on the host on initial installation. After the
-installation is complete, the storage size may be increased. First increase the
-virtual disk image size through VirtualBox Manager or VBoxManage, then in
-Terminal in the virtual machine run ${low_contrast_color}sudo diskutil repairDisk disk0${default_color}, and then
-${low_contrast_color}sudo diskutil apfs resizeContainer disk1 0${default_color} or from Disk Utility, after
-repairing the disk from Terminal, delete the \"Free space\" partition so it allows
-the system APFS container to take up the available space.
-
-        ${highlight_color}Graphics controller${default_color}
-Selecting the VBoxSVGA controller instead of VBoxVGA for the graphics controller may considerably increase graphics performance.
-
-        ${highlight_color}Performance and unsupported features${default_color}
-Developing and maintaining VirtualBox or macOS features is beyond the scope of
-this script. Some features may behave unexpectedly, such as USB device support,
-audio support, and other features.
-
-After successfully creating a working macOS virtual machine, consider importing
-it into QEMU/KVM so it can run with hardware passthrough at near-native
-performance. QEMU/KVM requires additional configuration that is beyond the
-scope of the script.
-
-For more information visit the URL:
-        ${highlight_color}https://github.com/myspaghetti/macos-guest-virtualbox${default_color}
-
-"
-}
-
-if [ -z "${1}" ]; then
-    check_bash_version
-    check_gnu_coreutils_prefix
-    set_variables
-    welcome
-    check_dependencies
-    prompt_delete_existing_vm
-    create_vm
-    prepare_macos_installation_files
-    create_nvram_files
-    create_macos_installation_files_viso
-    create_basesystem_vdi
-    create_target_vdi
-    create_install_vdi
-    configure_vm
-    populate_virtual_disks
-    populate_macos_target
-    delete_temporary_files
-else
-    if [ "${1}" != "documentation" ]; then
-        check_bash_version
-        check_gnu_coreutils_prefix
-        set_variables
-        check_dependencies
-        for argument in "$@"; do ${argument}; done
-    else
-        documentation
-    fi
-fi
+# command-line argument processing
+stages='
+    check_bash_version 
+    check_gnu_coreutils_prefix 
+    set_variables 
+    welcome 
+    check_dependencies 
+    prompt_delete_existing_vm 
+    create_vm 
+    prepare_macos_installation_files 
+    create_nvram_files 
+    create_macos_installation_files_viso 
+    create_basesystem_vdi 
+    create_target_vdi 
+    create_install_vdi 
+    configure_vm 
+    populate_virtual_disks 
+    populate_macos_target 
+    delete_temporary_files 
+'
+# every stage name must be preceded and followed by a space character
+# for the command-line argument checking below to work
+[ -z "${1}" ] && for stage in ${stages}; do ${stage}; done && exit
+[ "${1}" = "documentation" ] && documentation && exit
+for argument in $@; do
+    [[ "${stages}" != *" ${argument} "* ]] &&
+    echo "Can't parse one or more specified arguments. See documentation" &&
+    echo "by entering the following command:" &&
+    echo "  ${0} documentation" &&
+    exit
+done
+check_bash_version
+check_gnu_coreutils_prefix
+set_variables
+check_dependencies
+for argument in "$@"; do ${argument}; done
