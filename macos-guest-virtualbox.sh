@@ -768,7 +768,7 @@ add_another_terminal
 echo ""
 echo "The second open Terminal in the virtual machine copies EFI and NVRAM files"
 echo "to the target EFI partition when the installer finishes preparing."
-
+echo ""
 # run script concurrently, catch SIGUSR1 when installer finishes preparing
 kbstring='disks="$(diskutil list | grep -o "[0-9][^ ]* GB *disk[0-9]$" | sort -gr | grep -o disk[0-9])"; '\
 'disks=(${disks[@]}); '\
@@ -791,7 +791,6 @@ cycle_through_terminal_windows
 # start the installer, send SIGUSR1 to concurrent bash script,
 # the other script copies files to EFI partition,
 # then sends SIGUSR1 to the installer which restarts the virtual machine
-echo ""
 kbstring='background_pid="$(ps | grep '"'"' sh$'"'"' | cut -d '"'"' '"'"' -f 3)" && '\
 'app_path="$(ls -d /Install*.app)" && '\
 'cd "/${app_path}/Contents/Resources/" && '\
@@ -813,9 +812,10 @@ if [[ ( "${vbox_version:0:1}" -lt 6 ) || ( "${vbox_version:0:1}" = 6 && "${vbox_
     for (( i=5; i>0; i-- )); do printf '   \r'"${i}"; sleep 0.5; done
 fi
 printf '
+For further information, such as applying EFI and NVRAM variables to enable
+iMessage connectivity, see the documentation with the following command:
+  '"${highlight_color}${0}"' documentation'"${default_color}"'
 
-For further information, see the documentation with the following command:
-'"${highlight_color}${0}"' documentation'"${default_color}"'
 
 '"${highlight_color}"'That'"'"'s it! Enjoy your virtual machine.'"${default_color}"'\n'
 
