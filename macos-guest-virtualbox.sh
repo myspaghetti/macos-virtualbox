@@ -678,7 +678,7 @@ function populate_virtual_disks() {
 print_dimly "stage: populate_virtual_disks"
 # Attach virtual disk images of the base system, installation, and target
 # to the virtual machine
-VBoxManage storagectl macOS --remove --name SATA >/dev/null 2>&1
+VBoxManage storagectl "${vmname} --remove --name SATA >/dev/null 2>&1
 if [[ -n $(
     2>&1 VBoxManage storagectl "${vmname}" --add sata --name SATA --hostiocache on >/dev/null
     2>&1 VBoxManage storageattach "${vmname}" --storagectl SATA --port 0 \
@@ -748,7 +748,7 @@ if [[ "$( VBoxManage list runningvms )" =~ ^\""${vmname}" ]]; then
     printf "${highlight_color}"'Please '"${warning_color}"'manually'"${highlight_color}"' shut down the virtual machine and press enter to continue.'"${default_color}"
     clear_input_buffer_then_read
 fi
-VBoxManage storagectl macOS --remove --name SATA >/dev/null 2>&1
+VBoxManage storagectl "${vmname}" --remove --name SATA >/dev/null 2>&1
 if [[ -n $(
     2>&1 VBoxManage storagectl "${vmname}" --add sata --name SATA --hostiocache on >/dev/null
     2>&1 VBoxManage storageattach "${vmname}" --storagectl SATA --port 0 \
