@@ -677,23 +677,25 @@ function populate_virtual_disks() {
 print_dimly "stage: populate_virtual_disks"
 # Attach virtual disk images of the base system, installation, and target
 # to the virtual machine
-VBoxManage storagectl macOS --remove --name SATA >/dev/null 2>&1
-VBoxManage storagectl "${vmname}" --add sata --name SATA --hostiocache on >/dev/null 2>&1
-VBoxManage storageattach "${vmname}" --storagectl SATA --port 0 \
-           --type hdd --nonrotational on --medium "${vmname}.vdi" >/dev/null 2>&1
-VBoxManage storageattach "${vmname}" --storagectl SATA --port 1 --hotpluggable on \
-           --type hdd --nonrotational on --medium "Install ${macOS_release_name}.vdi" >/dev/null 2>&1
-VBoxManage storageattach "${vmname}" --storagectl SATA --port 2 --hotpluggable on \
-           --type hdd --nonrotational on --medium "${macOS_release_name}_BaseSystem.vdi" >/dev/null 2>&1
-VBoxManage storageattach "${vmname}" --storagectl SATA --port 3 \
-           --type dvddrive --medium "${macOS_release_name}_Installation_files.viso" >/dev/null 2>&1
-
+if [[ -n $(
+2>&1 VBoxManage storagectl macOS --remove --name SATA >/dev/null
+2>&1 VBoxManage storagectl "${vmname}" --add sata --name SATA --hostiocache on >/dev/null
+2>&1 VBoxManage storageattach "${vmname}" --storagectl SATA --port 0 \
+            --type hdd --nonrotational on --medium "${vmname}.vdi" >/dev/null
+2>&1 VBoxManage storageattach "${vmname}" --storagectl SATA --port 1 --hotpluggable on \
+            --type hdd --nonrotational on --medium "Install ${macOS_release_name}.vdi" >/dev/null
+2>&1 VBoxManage storageattach "${vmname}" --storagectl SATA --port 2 --hotpluggable on \
+            --type hdd --nonrotational on --medium "${macOS_release_name}_BaseSystem.vdi" >/dev/null
+2>&1 VBoxManage storageattach "${vmname}" --storagectl SATA --port 3 \
+            --type dvddrive --medium "${macOS_release_name}_Installation_files.viso" >/dev/null
+) ]]; then
+    echo "One or more virtual storage files could not be loaded. Exiting."; exit
+fi
 echo "Starting virtual machine ${vmname}. This should take a couple of minutes."
 ( VBoxManage startvm "${vmname}" >/dev/null 2>&1 )
 prompt_lang_utils
 prompt_terminal_ready
 print_dimly "Please wait"
-declare_kscd_key_scancode_dictionary
 # Assigning "physical" disks from largest to smallest to "${disks[]}" array
 # Partitining largest disk as APFS
 # Partition second-largest disk as JHFS+
@@ -727,9 +729,9 @@ The virtual machine may report that disk space is critically low; this is fine.
 When the installer virtual disk is finished being populated, the script will
 shut down the virtual machine. After shutdown, the initial base system will be
 detached from the VM and released from VirtualBox.
-
-'"${highlight_color}"'If the partitioning fails, exit the script by pressing CTRL-C.'"${default_color}"
-print_dimly "Otherwise, please wait."
+'
+print_dimly "If the partitioning fails, exit the script by pressing CTRL-C.
+Otherwise, please wait."
 # Detach the original 2GB BaseSystem.vdi
 while [[ "$( VBoxManage list runningvms )" =~ ^\""${vmname}" ]]; do sleep 2 >/dev/null 2>&1; done;
 # Release basesystem vdi from VirtualBox configuration
@@ -745,14 +747,18 @@ if [[ "$( VBoxManage list runningvms )" =~ ^\""${vmname}" ]]; then
     printf "${highlight_color}"'Please '"${warning_color}"'manually'"${highlight_color}"' shut down the virtual machine and press enter to continue.'"${default_color}"
     clear_input_buffer_then_read
 fi
-VBoxManage storagectl macOS --remove --name SATA >/dev/null 2>&1
-VBoxManage storagectl "${vmname}" --add sata --name SATA --hostiocache on >/dev/null 2>&1
-VBoxManage storageattach "${vmname}" --storagectl SATA --port 0 \
-           --type hdd --nonrotational on --medium "${vmname}.vdi" >/dev/null 2>&1
-VBoxManage storageattach "${vmname}" --storagectl SATA --port 1 --hotpluggable on \
-           --type hdd --nonrotational on --medium "Install ${macOS_release_name}.vdi" >/dev/null 2>&1
-VBoxManage storageattach "${vmname}" --storagectl SATA --port 2 \
-           --type dvddrive --medium "${macOS_release_name}_Installation_files.viso" >/dev/null 2>&1
+if [[ -n $(
+2>&1 VBoxManage storagectl macOS --remove --name SATA >/dev/null
+2>&1 VBoxManage storagectl "${vmname}" --add sata --name SATA --hostiocache on >/dev/null
+2>&1 VBoxManage storageattach "${vmname}" --storagectl SATA --port 0 \
+            --type hdd --nonrotational on --medium "${vmname}.vdi" >/dev/null
+2>&1 VBoxManage storageattach "${vmname}" --storagectl SATA --port 1 --hotpluggable on \
+            --type hdd --nonrotational on --medium "Install ${macOS_release_name}.vdi" >/dev/null
+2>&1 VBoxManage storageattach "${vmname}" --storagectl SATA --port 2 \
+            --type dvddrive --medium "${macOS_release_name}_Installation_files.viso" >/dev/null
+) ]]; then
+    echo "One or more virtual storage files could not be loaded. Exiting."; exit
+fi
 echo "The VM will boot from the populated installer base system virtual disk."
 ( VBoxManage startvm "${vmname}" >/dev/null 2>&1 )
 prompt_lang_utils
@@ -763,7 +769,6 @@ echo "The second open Terminal in the virtual machine copies EFI and NVRAM files
 echo "to the target EFI partition when the installer finishes preparing."
 
 # run script concurrently, catch SIGUSR1 when installer finishes preparing
-declare_kscd_key_scancode_dictionary
 kbstring='disks="$(diskutil list | grep -o "[0-9][^ ]* GB *disk[0-9]$" | sort -gr | grep -o disk[0-9])"; '\
 'disks=(${disks[@]}); '\
 'printf '"'"'trap "exit 0" SIGUSR1; while true; do sleep 10; done;'"'"' | sh && '\
@@ -1017,7 +1022,6 @@ function sleep() {
     read -t "${1}" >/dev/null 2>&1
 }
 
-function declare_kscd_key_scancode_dictionary() {
 # QWERTY-to-scancode dictionary. Hex scancodes, keydown and keyup event.
 # Virtualbox Mac scancodes found here:
 # https://wiki.osdev.org/PS/2_Keyboard#Scan_Code_Set_1
@@ -1156,7 +1160,6 @@ declare -A kscd=(
     [">"]="2A 34 B4 AA"
     ["?"]="2A 35 B5 AA"
 )
-}
 
 function clear_input_buffer_then_read() {
     while read -d '' -r -t 0; do read -d '' -t 0.1 -n 10000; break; done
