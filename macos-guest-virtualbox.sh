@@ -839,7 +839,7 @@ VBoxManage storageattach "${vmname}" --storagectl SATA --port 0 \
            --type hdd --nonrotational on --medium "${vmname}.vdi"
 VBoxManage closemedium "Install ${macOS_release_name}.vdi" >/dev/null 2>&1
 VBoxManage closemedium "${macOS_release_name}_BaseSystem.vdi" >/dev/null 2>&1
-printf 'The follwing files are safe to delete:
+printf 'The following temporary files are safe to delete:
       "'"${macOS_release_name}_Apple"*'"
       "'"${macOS_release_name}_BaseSystem"*'"
       "'"${macOS_release_name}_Install"*'"
