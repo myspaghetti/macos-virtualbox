@@ -845,9 +845,8 @@ printf 'The follwing files are safe to delete:
       "'"${macOS_release_name}_Install"*'"
       "'"Install ${macOS_release_name}.vdi"'"
       "'"${vmname}_"*".bin"'"
-      "'"${vmname}_startup.nsh"'"\n'
-if [ -w "ApfsDriverLoader.efi" ]; then
-    printf '      "'"ApfsDriverLoader.efi"'"
+      "'"${vmname}_startup.nsh"'"
+      "'"ApfsDriverLoader.efi"'"
       "'"Apple"*".efi"'"
       "'"AppleSupport-v2.0.4-RELEASE.zip"'"\n'
 fi
@@ -865,8 +864,8 @@ if [ "${delete,,}" == "y" ]; then
        "${macOS_release_name}_Install"* \
        "Install ${macOS_release_name}.vdi" \
        "${vmname}_"*".bin" \
-       "${vmname}_startup.nsh" 2>/dev/null
-    rm "ApfsDriverLoader.efi" \
+       "${vmname}_startup.nsh" \
+       "ApfsDriverLoader.efi" \
        "Apple"*".efi" \
        "AppleSupport-v2.0.4-RELEASE.zip" 2>/dev/null
     rm "dmg2img.exe" 2>/dev/null
