@@ -2,7 +2,7 @@
 # Semi-automatic installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-guest-virtualbox
-# version 0.84.2
+# version 0.84.3
 
 # Requirements: 40GB available storage on host
 # Dependencies: bash >= 4.3, xxd, gzip, unzip, wget, dmg2img,
@@ -412,9 +412,11 @@ if [ ! -s "${macOS_release_name}_InstallESD.part00" ]; then
     split -a 2 -d -b 1000000000 "${macOS_release_name}_InstallESDDmg.pkg" "${macOS_release_name}_InstallESD.part"
 fi
 
-if [[ ( ( "${vbox_version:0:1}" -lt 6 ) || ( "${vbox_version:0:1}" = 6 && "${vbox_version:2:1}" = 0 ) ) && ! ( -s "ApfsDriverLoader.efi" ) ]]; then
+
+if [[ ! -s "ApfsDriverLoader.efi" ]]; then
     echo ""
     echo "Downloading open-source APFS EFI drivers used for VirtualBox 6.0 and 5.2"
+    [[ "${vbox_version:0:1}" -gt 6 || ( "${vbox_version:0:1}" = 6 && "${vbox_version:2:1}" -ge 1 ) ]] && echo "...even though that's not the version of VirtualBox that's been detected."
     wget 'https://github.com/acidanthera/AppleSupportPkg/releases/download/2.0.4/AppleSupport-v2.0.4-RELEASE.zip' \
         ${wgetargs} \
         --output-document 'AppleSupport-v2.0.4-RELEASE.zip'
@@ -779,7 +781,7 @@ kbstring='disks="$(diskutil list | grep -o "[0-9][^ ]* GB *disk[0-9]$" | sort -g
 'mkdir -p "/Volumes/'"${vmname}"'/tmp/mount_efi/EFI/NVRAM/" && '\
 'cp "/Volumes/'"${macOS_release_name:0:5}-files"'/startup.nsh" "/Volumes/'"${vmname}"'/tmp/mount_efi/startup.nsh" && '\
 'cp "/Volumes/'"${macOS_release_name:0:5}-files"'/"*.bin "/Volumes/'"${vmname}"'/tmp/mount_efi/EFI/NVRAM/" && '\
-'[ -s "/Volumes'"${macOS_release_name:0:5}-files"'/ApfsDriverLoader.efi" ] && cp "/Volumes/'"${macOS_release_name:0:5}-files"'/"*.efi "/Volumes/'"${vmname}"'/tmp/mount_efi/EFI/driver/" ; '\
+'cp "/Volumes/'"${macOS_release_name:0:5}-files"'/"*.efi "/Volumes/'"${vmname}"'/tmp/mount_efi/EFI/driver/" ; '\
 'installer_pid=$(ps | grep startosinstall | cut -d '"'"' '"'"' -f 3) && '\
 'kill -SIGUSR1 ${installer_pid}'
 send_keys
