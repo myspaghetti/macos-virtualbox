@@ -2,7 +2,7 @@
 # Semi-automatic installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-guest-virtualbox
-# version 0.84.1
+# version 0.84.2
 
 # Requirements: 40GB available storage on host
 # Dependencies: bash >= 4.3, xxd, gzip, unzip, wget, dmg2img,
@@ -798,9 +798,9 @@ kbstring='background_pid="$(ps | grep '"'"' sh$'"'"' | cut -d '"'"' '"'"' -f 3)"
 send_keys
 send_enter
 if [[ ( "${vbox_version:0:1}" -lt 6 ) || ( "${vbox_version:0:1}" = 6 && "${vbox_version:2:1}" = 0 ) ]]; then
-    printf "${highlight_color}"'When the VM reboots, press enter'"${default_color}"' or alternatively
-manually detach the virtual storage device "'"Install ${macOS_release_name}.vdi"'"
-to avoid booting into the installer environment again.'
+    printf "${highlight_color}"'When the installer finishes preparing and reboots the VM, press enter'"${default_color}"' so the script
+powers off the virtual machine and detaches the device "'"Install ${macOS_release_name}.vdi"'" to avoid
+booting into the installer environment again.'
     clear_input_buffer_then_read
     VBoxManage controlvm "${vmname}" poweroff >/dev/null 2>&1
     for (( i=10; i>5; i-- )); do printf '   \r'"${i}"; sleep 0.5; done
