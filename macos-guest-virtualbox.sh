@@ -2,7 +2,7 @@
 # Semi-automatic installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-guest-virtualbox
-# version 0.85.0
+# version 0.85.1
 
 # Requirements: 40GB available storage on host
 # Dependencies: bash >= 4.3, xxd, gzip, unzip, wget, dmg2img,
@@ -237,6 +237,7 @@ fi
 
 # VirtualBox version
 vbox_version="$(VBoxManage -v 2>/dev/null)"
+vbox_version="$( printf ${vbox_version} | tr -d '\r')"
 if [ -z "${vbox_version}" -o -z "${vbox_version:2:1}" ]; then
     echo "Can't determine VirtualBox version. Exiting."
     exit
@@ -247,12 +248,12 @@ elif [[ ( "${vbox_version:0:1}" -lt 5 ) || ( "${vbox_version:0:1}" = 5 && "${vbo
     exit
 elif [[ "${vbox_version:0:1}" = 5 ]]; then
     echo ""
-    printf 'VirtualBox version '"${white_on_black}${vbox_version}${default_color}"' detected. Please see the following\n'
-    echo "URL for issues with the VISO filesystem on VirtualBox 5.2 to 5.2.32:"
-    echo ""
-    echo "  https://github.com/myspaghetti/macos-guest-virtualbox/issues/86"
-    echo ""
-    printf "${white_on_black}"'Press enter to continue, CTRL-C to exit.'"${default_color}"
+    printf "${highlight_color}"'VirtualBox version '"${vbox_version}"' detected.'"${default_color}"' Please see the following
+URL for issues with the VISO filesystem on VirtualBox 5.2 to 5.2.36:
+
+  https://github.com/myspaghetti/macos-guest-virtualbox/issues/86
+
+'"${highlight_color}"'Press enter to continue, CTRL-C to exit.'"${default_color}"
     clear_input_buffer_then_read
 fi
 
