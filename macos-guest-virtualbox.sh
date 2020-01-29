@@ -849,7 +849,6 @@ printf 'The following temporary files are safe to delete:
       "'"ApfsDriverLoader.efi"'"
       "'"Apple"*".efi"'"
       "'"AppleSupport-v2.0.4-RELEASE.zip"'"\n'
-fi
 if [ -w "dmg2img.exe" ]; then
     printf '      "'"dmg2img.exe"'"\n'
 fi
@@ -869,6 +868,8 @@ if [ "${delete,,}" == "y" ]; then
        "Apple"*".efi" \
        "AppleSupport-v2.0.4-RELEASE.zip" 2>/dev/null
     rm "dmg2img.exe" 2>/dev/null
+fi
+
 fi
 
 }
