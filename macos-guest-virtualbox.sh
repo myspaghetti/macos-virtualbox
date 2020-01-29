@@ -406,13 +406,12 @@ if [[ ! ( -s "${macOS_release_name}_BaseSystem.chunklist" && -s "${macOS_release
 fi
 
 if [ ! -s "${macOS_release_name}_InstallESD.part00" ]; then
+    echo ""
     echo "Splitting the several-GB InstallESDDmg.pkg into 1GB parts because"
     echo "VirtualBox hasn't implemented UDF/HFS VISO support yet and macOS"
     echo "doesn't support ISO 9660 Level 3 with files larger than 2GB."
-    echo ""
-    split -a 2 -d -b 1000000000 "${macOS_release_name}_InstallESDDmg.pkg" "${macOS_release_name}_InstallESD.part"
+    split --verbose -a 2 -d -b 1000000000 "${macOS_release_name}_InstallESDDmg.pkg" "${macOS_release_name}_InstallESD.part"
 fi
-
 
 if [[ ! -s "ApfsDriverLoader.efi" ]]; then
     echo ""
@@ -715,7 +714,8 @@ kbstring='asr restore --source "/Volumes/'"${macOS_release_name:0:5}-files"'/Bas
 'mkdir -p "${install_path}" && cd "/Volumes/'"${macOS_release_name:0:5}-files/"'" && '\
 'cp *.chunklist *.plist *.dmg "${install_path}" && '\
 'echo "" && echo "Copying the several-GB InstallESD.dmg to the installer app directory" && echo "Please wait" && '\
-'cat InstallESD.part* > "${install_path}/InstallESD.dmg" && '\
+'rm -f "${install_path}/InstallESD.dmg" ; '\
+'for part in InstallESD.part*; do echo "Concatenating ${part}"; cat "${part}" >> "${install_path}/InstallESD.dmg"; done && '\
 'sed -i.bak -e "s/InstallESDDmg\.pkg/InstallESD.dmg/" -e "s/pkg\.InstallESDDmg/dmg.InstallESD/" "${install_path}InstallInfo.plist" && '\
 'sed -i.bak2 -e "/InstallESD\.dmg/{n;N;N;N;d;}" "${install_path}InstallInfo.plist" && '
 send_keys
