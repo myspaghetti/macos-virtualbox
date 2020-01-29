@@ -871,8 +871,6 @@ if [ "${delete,,}" == "y" ]; then
     rm "dmg2img.exe" 2>/dev/null
 fi
 
-fi
-
 }
 
 function documentation() {
