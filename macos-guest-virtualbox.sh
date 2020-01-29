@@ -826,20 +826,20 @@ iMessage connectivity, see the documentation with the following command:
 function delete_temporary_files() {
 print_dimly "stage: delete_temporary_files"
 if [[ "$( VBoxManage list runningvms )" =~ ^\""${vmname}" ]];
-    then
-printf 'Temporary files may be deleted when the virtual machine is shut down
+then
+    printf 'Temporary files may be deleted when the virtual machine is shut down
 by running the following command at the script'"'"'s working directory:
 
       '"${0} delete_temporary_files"'\n'
-    else
-# detach temporary VDIs and attach the macOS target disk
-VBoxManage storagectl "${vmname}" --remove --name SATA >/dev/null 2>&1
-VBoxManage storagectl "${vmname}" --add sata --name SATA --hostiocache on >/dev/null 2>&1
-VBoxManage storageattach "${vmname}" --storagectl SATA --port 0 \
-           --type hdd --nonrotational on --medium "${vmname}.vdi"
-VBoxManage closemedium "Install ${macOS_release_name}.vdi" >/dev/null 2>&1
-VBoxManage closemedium "${macOS_release_name}_BaseSystem.vdi" >/dev/null 2>&1
-printf 'The following temporary files are safe to delete:
+else
+    # detach temporary VDIs and attach the macOS target disk
+    VBoxManage storagectl "${vmname}" --remove --name SATA >/dev/null 2>&1
+    VBoxManage storagectl "${vmname}" --add sata --name SATA --hostiocache on >/dev/null 2>&1
+    VBoxManage storageattach "${vmname}" --storagectl SATA --port 0 \
+               --type hdd --nonrotational on --medium "${vmname}.vdi"
+    VBoxManage closemedium "Install ${macOS_release_name}.vdi" >/dev/null 2>&1
+    VBoxManage closemedium "${macOS_release_name}_BaseSystem.vdi" >/dev/null 2>&1
+    printf 'The following temporary files are safe to delete:
       "'"${macOS_release_name}_Apple"*'"
       "'"${macOS_release_name}_BaseSystem"*'"
       "'"${macOS_release_name}_Install"*'"
@@ -849,27 +849,26 @@ printf 'The following temporary files are safe to delete:
       "'"ApfsDriverLoader.efi"'"
       "'"Apple"*".efi"'"
       "'"AppleSupport-v2.0.4-RELEASE.zip"'"\n'
-if [ -w "dmg2img.exe" ]; then
-    printf '      "'"dmg2img.exe"'"\n'
-fi
-echo ""
-printf "${warning_color}"'Delete temporary files?'"${default_color}"
-delete=""
-read -n 1 -p " [y/N] " delete
-echo ""
-if [ "${delete,,}" == "y" ]; then
-    rm "${macOS_release_name}_Apple"* \
-       "${macOS_release_name}_BaseSystem"* \
-       "${macOS_release_name}_Install"* \
-       "Install ${macOS_release_name}.vdi" \
-       "${vmname}_"*".bin" \
-       "${vmname}_startup.nsh" \
-       "ApfsDriverLoader.efi" \
-       "Apple"*".efi" \
-       "AppleSupport-v2.0.4-RELEASE.zip" 2>/dev/null
-    rm "dmg2img.exe" 2>/dev/null
-fi
-
+    if [ -w "dmg2img.exe" ]; then
+        printf '      "'"dmg2img.exe"'"\n'
+    fi
+    echo ""
+    printf "${warning_color}"'Delete temporary files?'"${default_color}"
+    delete=""
+    read -n 1 -p " [y/N] " delete
+    echo ""
+    if [ "${delete,,}" == "y" ]; then
+        rm "${macOS_release_name}_Apple"* \
+           "${macOS_release_name}_BaseSystem"* \
+           "${macOS_release_name}_Install"* \
+           "Install ${macOS_release_name}.vdi" \
+           "${vmname}_"*".bin" \
+           "${vmname}_startup.nsh" \
+           "ApfsDriverLoader.efi" \
+           "Apple"*".efi" \
+           "AppleSupport-v2.0.4-RELEASE.zip" 2>/dev/null
+        rm "dmg2img.exe" 2>/dev/null
+    fi
 fi
 
 }
