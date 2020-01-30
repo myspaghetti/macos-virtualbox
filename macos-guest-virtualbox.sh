@@ -2,7 +2,7 @@
 # Semi-automatic installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-guest-virtualbox
-# version 0.85.1
+# version 0.85.2
 
 # Requirements: 40GB available storage on host
 # Dependencies: bash >= 4.3, xxd, gzip, unzip, wget, dmg2img,
@@ -199,11 +199,13 @@ elif [[ "$(cat /proc/sys/kernel/osrelease 2>/dev/null)" =~ [Mm]icrosoft ]]; then
         echo ""
         printf "${highlight_color}"'Press enter to continue, CTRL-C to exit.'"${default_color}"
         clear_input_buffer_then_read
-    elif [[ ! ( "${osrelease}" =~ 18362-Microsoft ) ]]; then
+    elif [[ ! ( "${osrelease}" =~ Microsoft ) ]]; then # WSL (1)
         echo ""
-        echo "The script requires Windows 10 version 1903 or higher to run properly on WSL."
-        echo "For lower versions, please run the script on a path on the Windows filesystem,"
-        printf 'for example  '"${highlight_color}"'/mnt/c/Users/Public/Documents'"${default_color}"'\n\n'
+        echo "Some versions of WSL require the script to run on a Windows filesystem path,"
+        printf 'for example   '"${highlight_color}"'/mnt/c/Users/Public/Documents'"${default_color}"'\n'
+        echo "Switch to a path on the Windows filesystem if VBoxManage.exe fails to"
+        echo "create or open a file."
+        echo ""
         printf "${highlight_color}"'Press enter to continue, CTRL-C to exit.'"${default_color}"
         clear_input_buffer_then_read
     fi
