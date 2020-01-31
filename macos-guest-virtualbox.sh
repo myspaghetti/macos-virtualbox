@@ -64,9 +64,10 @@ The installation requires about '"${highlight_color}"'40GB'"${default_color}"' o
 temporary installation files and 15GB for the virtual machine'"'"'s dynamically
 allocated storage disk image.
 
-The script can be resumed by stages, as described in the following command:
-    '"${highlight_color}${0}"' documentation'"${default_color}"'
-
+The script can be resumed, as described when running the following command:
+'
+would_you_like_to_know_less
+printf '
 '"${highlight_color}"'Press enter to review the script settings.'"${default_color}"
 clear_input_buffer_then_read
 
@@ -326,9 +327,8 @@ if [ -n "$(VBoxManage showvminfo "${vmname}" 2>/dev/null)" ]; then
     else
         printf '
 '"${highlight_color}"'Please assign a different VM name to variable "vmname" by editing the script,'"${default_color}"'
-or skip this check manually as described when running the following command:
-'"${0}"' documentation
-'
+or skip this check manually as described when running the following command:'
+        would_you_like_to_know_less
         exit
     fi
 fi
@@ -821,11 +821,10 @@ booting into the initial installer environment again.'
 fi
 printf '
 For further information, such as applying EFI and NVRAM variables to enable
-iMessage connectivity, see the documentation with the following command:
-  '"${highlight_color}${0}"' documentation'"${default_color}"'
+iMessage connectivity, see the documentation with the following command:'
+would_you_like_to_know_less
 
-
-'"${highlight_color}"'That'"'"'s it! Enjoy your virtual machine.'"${default_color}"'\n'
+printf "${highlight_color}"'That'"'"'s it! Enjoy your virtual machine.'"${default_color}"'\n'
 
 }
 
@@ -880,6 +879,10 @@ fi
 }
 
 function documentation() {
+low_contrast_stages=""
+for stage in ${stages}; do
+    low_contrast_stages="${low_contrast_stages}"'    '"${low_contrast_color}${stage}${default_color}"'\n'
+done
 printf "
         ${highlight_color}NAME${default_color}
 Semi-automatic installer of macOS on VirtualBox
@@ -897,7 +900,8 @@ The script is divided into stages. Stage titles may be given as command-line
 arguments for the script. When the script is run with no command-line
 arguments, each of the available stages, except \"documentation\", is executed
 in succession in the order listed:
-${low_contrast_color}${stages}${default_color}
+
+${low_contrast_stages}
 When \"documentation\" is the first command-line argument, only the
 \"documentation\" stage is executed and all other arguments are ignored.
 
@@ -933,19 +937,19 @@ and other apps that authenticate the device with Apple.
 
 The variables needed to be assigned in the script are the following:
 
-${low_contrast_color}DmiSystemFamily    # Model name
-DmiSystemProduct   # Model identifier
-DmiSystemSerial    # System serial number
-DmiSystemUuid      # Hardware UUID
-DmiOEMVBoxVer      # Apple ROM info (major version)
-DmiOEMVBoxRev      # Apple ROM info (revision)
-DmiBIOSVersion     # Boot ROM version
-DmiBoardProduct    # Main Logic Board identifier
-DmiBoardSerial     # Main Logic Board serial (EFI)
-MLB                # Main Logic Board serial (NVRAM)
-ROM                # ROM identifier (NVRAM)
-SYSTEM_UUID        # System identifier (NVRAM)
-${default_color}
+${low_contrast_color}DmiSystemFamily    # Model name${default_color}
+${low_contrast_color}DmiSystemProduct   # Model identifier${default_color}
+${low_contrast_color}DmiSystemSerial    # System serial number${default_color}
+${low_contrast_color}DmiSystemUuid      # Hardware UUID${default_color}
+${low_contrast_color}DmiOEMVBoxVer      # Apple ROM info (major version)${default_color}
+${low_contrast_color}DmiOEMVBoxRev      # Apple ROM info (revision)${default_color}
+${low_contrast_color}DmiBIOSVersion     # Boot ROM version${default_color}
+${low_contrast_color}DmiBoardProduct    # Main Logic Board identifier${default_color}
+${low_contrast_color}DmiBoardSerial     # Main Logic Board serial (EFI)${default_color}
+${low_contrast_color}MLB                # Main Logic Board serial (NVRAM)${default_color}
+${low_contrast_color}ROM                # ROM identifier (NVRAM)${default_color}
+${low_contrast_color}SYSTEM_UUID        # System identifier (NVRAM)${default_color}
+
 The comments at the top of the script specify how to view these variables
 on a genuine Mac.
 
@@ -972,12 +976,12 @@ machine's storage through VirtualBox Manager or VBoxManage. Power up the VM
 and boot macOS, then start Terminal and execute the following commands, making
 sure to replace \"/Volumes/path/to/VISO/startup.nsh\" with the correct path:
 
-${low_contrast_color}mkdir EFI
-sudo su # this will prompt for a password
-mount_ntfs /dev/disk0s1 EFI
-cp /Volumes/path/to/VISO/startup.nsh ./EFI/startup.nsh
-cp /Volumes/path/to/VISO/*.bin ./EFI/
-${default_color}
+${low_contrast_color}mkdir EFI${default_color}
+${low_contrast_color}sudo su # this will prompt for a password${default_color}
+${low_contrast_color}mount_ntfs /dev/disk0s1 EFI${default_color}
+${low_contrast_color}cp /Volumes/path/to/VISO/startup.nsh ./EFI/startup.nsh${default_color}
+${low_contrast_color}cp /Volumes/path/to/VISO/*.bin ./EFI/${default_color}
+
 After copying the files, boot into the EFI Internal Shell as desribed in the
 section \"Applying the EFI and NVRAM parameters\".
 
@@ -1235,6 +1239,14 @@ function cycle_through_terminal_windows() {
     sleep 1
 }
 
+function would_you_like_to_know_less() {
+    if [ -z "$(less --version 2>/dev/null)" ]; then
+        printf '  '"${highlight_color}${0} documentation${default_color}"'\n'
+    else
+        printf '  '"${highlight_color}${0} documentation | less -R${default_color}"'\n'
+    fi
+}
+
 # command-line argument processing
 stages='
     check_bash_version 
@@ -1261,11 +1273,11 @@ stages_without_newlines="$(printf "${stages}" | tr -d '\n')"
 [ -z "${1}" ] && for stage in ${stages}; do ${stage}; done && exit
 [ "${1}" = "documentation" ] && documentation && exit
 for argument in $@; do
-    [[ ${stages} != *" ${argument} "* ]] &&
+    [[ "${stages_without_newlines}" != *" ${argument} "* ]] &&
+    echo "" &&
     echo "Can't parse one or more specified arguments. See documentation" &&
     echo "by entering the following command:" &&
-    echo "  ${0} documentation" &&
-    exit
+    would_you_like_to_know_less && echo "" && exit
 done
 check_bash_version
 check_gnu_coreutils_prefix
