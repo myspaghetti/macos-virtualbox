@@ -2,7 +2,7 @@
 # Semi-automatic installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-guest-virtualbox
-# version 0.85.2
+# version 0.85.3
 
 # Requirements: 40GB available storage on host
 # Dependencies: bash >= 4.3, xxd, gzip, unzip, wget, dmg2img,
@@ -1252,12 +1252,13 @@ stages='
     populate_macos_target 
     delete_temporary_files 
 '
+stages_without_newlines="$(printf "${stages}" | tr -d '\n')"
 # every stage name must be preceded and followed by a space character
 # for the command-line argument checking below to work
 [ -z "${1}" ] && for stage in ${stages}; do ${stage}; done && exit
 [ "${1}" = "documentation" ] && documentation && exit
 for argument in $@; do
-    [[ "${stages}" != *" ${argument} "* ]] &&
+    [[ "${stages_without_newlines}" != *" ${argument} "* ]] &&
     echo "Can't parse one or more specified arguments. See documentation" &&
     echo "by entering the following command:" &&
     echo "  ${0} documentation" &&
