@@ -774,6 +774,9 @@ echo ""
 echo "The second open Terminal in the virtual machine copies EFI and NVRAM files"
 echo "to the target EFI partition when the installer finishes preparing."
 echo ""
+echo "After the installer finishes preparing and the EFI and NVRAM files are copied,"
+echo "macOS will install and run when booting the target disk."
+echo ""
 # run script concurrently, catch SIGUSR1 when installer finishes preparing
 kbstring='disks="$(diskutil list | grep -o "[0-9][^ ]* GB *disk[0-9]$" | sort -gr | grep -o disk[0-9])" && '\
 'disks=(${disks[@]}) && '\
@@ -805,7 +808,7 @@ send_enter
 if [[ ( "${vbox_version:0:1}" -lt 6 ) || ( "${vbox_version:0:1}" = 6 && "${vbox_version:2:1}" = 0 ) ]]; then
     printf "${highlight_color}"'When the installer finishes preparing and reboots the VM, press enter'"${default_color}"' so the script
 powers off the virtual machine and detaches the device "'"Install ${macOS_release_name}.vdi"'" to avoid
-booting into the installer environment again.'
+booting into the initial installer environment again.'
     clear_input_buffer_then_read
     VBoxManage controlvm "${vmname}" poweroff >/dev/null 2>&1
     for (( i=10; i>5; i-- )); do printf '   \r'"${i}"; sleep 0.5; done
@@ -1258,7 +1261,7 @@ stages_without_newlines="$(printf "${stages}" | tr -d '\n')"
 [ -z "${1}" ] && for stage in ${stages}; do ${stage}; done && exit
 [ "${1}" = "documentation" ] && documentation && exit
 for argument in $@; do
-    [[ "${stages_without_newlines}" != *" ${argument} "* ]] &&
+    [[ ${stages} != *" ${argument} "* ]] &&
     echo "Can't parse one or more specified arguments. See documentation" &&
     echo "by entering the following command:" &&
     echo "  ${0} documentation" &&
