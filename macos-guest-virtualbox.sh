@@ -298,8 +298,11 @@ if [[ "${macOS_release_name:0:1}" =~ [Cc] ]]; then
     macOS_release_name="Catalina"
     CFBundleShortVersionString="10.15"
     sucatalog="${Catalina_sucatalog}"
-    printf 'As of 2019-12-11, macOS Catalina 10.15.2 '"${warning_color}"'does not boot'"${default_color}"' on VirtualBox.\n'
-    printf "${highlight_color}"'Press enter to continue, CTRL-C to exit.'"${default_color}"
+    printf 'As of January 2020, macOS Catalina 10.15.2 and 10.15.3 '"${warning_color}"'do not boot'"${default_color}"' on VirtualBox.
+For a workaround, please visit the following URL:
+  '"${highlight_color}"'https://github.com/myspaghetti/macos-guest-virtualbox/issues/134#issuecomment-578764413'"${default_color}"'
+
+'"${highlight_color}"'Press enter to continue, CTRL-C to exit.'"${default_color}"
     clear_input_buffer_then_read
 elif [[ "${macOS_release_name:0:1}" =~ [Hh] ]]; then
     macOS_release_name="HighSierra"
@@ -821,10 +824,11 @@ booting into the initial installer environment again.'
 fi
 printf '
 For further information, such as applying EFI and NVRAM variables to enable
-iMessage connectivity, see the documentation with the following command:'
-would_you_like_to_know_less
+iMessage connectivity, see the documentation with the following command:
 
-printf "${highlight_color}"'That'"'"'s it! Enjoy your virtual machine.'"${default_color}"'\n'
+'
+would_you_like_to_know_less
+printf '\n'"${highlight_color}"'That'"'"'s it! Enjoy your virtual machine.'"${default_color}"'\n'
 
 }
 
