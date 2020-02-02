@@ -2,7 +2,7 @@
 # Semi-automatic installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-guest-virtualbox
-# version 0.85.5
+# version 0.86.0
 
 # Requirements: 40GB available storage on host
 # Dependencies: bash >= 4.3, xxd, gzip, unzip, wget, dmg2img,
@@ -320,8 +320,9 @@ print_dimly "${macOS_release_name} selected to be downloaded and installed"
 function prompt_delete_existing_vm() {
 print_dimly "stage: prompt_delete_existing_vm"
 if [ -n "$(VBoxManage showvminfo "${vmname}" 2>/dev/null)" ]; then
-    printf '\nA virtual machine named "'"${vmname}"'" already exists.
-'"${warning_color}"'Delete existing virtual machine "'"${vmname}"'"?'"${default_color}"
+    echo ''
+    echo 'A virtual machine named "'"${vmname}"'" already exists.'
+    printf "${warning_color}"'Delete existing virtual machine "'"${vmname}"'"?'"${default_color}"
     delete=""
     read -n 1 -p ' [y/N] ' delete
     echo ""
@@ -586,7 +587,7 @@ echo "/startup.nsh=\"${vmname}_startup.nsh\"" >> "${macOS_release_name}_Installa
 function create_basesystem_vdi() {
 print_dimly "stage: create_basesystem_vdi"
 if [ -s "${macOS_release_name}_BaseSystem.vdi" ]; then
-    echo "${macOS_release_name}_BaseSystem.vdi bootstrap virtual disk image ready."
+    echo "${macOS_release_name}_BaseSystem.vdi bootstrap virtual disk image exists."
 elif [ ! -s "${macOS_release_name}_BaseSystem.dmg" ]; then
     echo ""
     echo "Could not find ${macOS_release_name}_BaseSystem.dmg; exiting."
@@ -609,7 +610,7 @@ fi
 function create_target_vdi() {
 print_dimly "stage: create_target_vdi"
 if [ -w "${vmname}.vdi" ]; then
-    echo "${vmname}.vdi target system virtual disk image ready."
+    echo "${vmname}.vdi target system virtual disk image exists."
 elif [ "${macOS_release_name}" = "Catalina" -a "${storagesize}" -lt 25000 ]; then
     echo "Attempting to install macOS Catalina on a disk smaller than 25000MB will fail."
     echo "Please assign a larger virtual disk image size. Exiting."
@@ -630,8 +631,26 @@ fi
 function create_install_vdi() {
 print_dimly "stage: create_install_vdi"
 if [ -w "Install ${macOS_release_name}.vdi" ]; then
-    echo "Installation media virtual disk image ready."
-else
+    echo '"'"Install ${macOS_release_name}.vdi"'" virtual disk image exists.'
+    printf "${warning_color}"'Delete "'"Install ${macOS_release_name}.vdi"'"?'"${default_color}"
+    delete=""
+    read -n 1 -p " [y/N] " delete
+    echo ""
+    if [ "${delete,,}" == "y" ]; then
+        if [[ "$( VBoxManage list runningvms )" =~ ^\""${vmname}" ]];
+        then
+            echo '"'"Install ${macOS_release_name}.vdi"'" may be deleted'
+            echo "only when the virtual machine is powered off."
+            echo "Exiting."
+            exit
+        else
+            VBoxManage storagectl "${vmname}" --remove --name SATA >/dev/null 2>&1
+            VBoxManage closemedium "Install ${macOS_release_name}.vdi" >/dev/null 2>&1
+            rm "Install ${macOS_release_name}.vdi"
+        fi
+    fi
+fi
+if [ ! -e "Install ${macOS_release_name}.vdi" ]; then
     echo "Creating ${macOS_release_name} installation media virtual disk image."
     VBoxManage createmedium --size=12000 \
                             --filename "Install ${macOS_release_name}.vdi" \
@@ -703,7 +722,10 @@ print_dimly "Please wait"
 # Assigning "physical" disks from largest to smallest to "${disks[]}" array
 # Partitining largest disk as APFS
 # Partition second-largest disk as JHFS+
-kbstring='disks="$(diskutil list | grep -o "\*[0-9][^ ]* GB *disk[0-9]$" | grep -o "[0-9].*" | sort -gr | grep -o disk[0-9] )" && disks=(${disks[@]}) && '\
+kbstring='disks="$(diskutil list | grep -o "\*[0-9][^ ]* GB *disk[0-9]$" | grep -o "[0-9].*" | sort -gr | grep -o disk[0-9] )" && '\
+'disks=(${disks[@]}) && '\
+'if [ -z "${disks}" ]; then echo "Could not find disks"; fi && '\
+'[ -n "${disks[0]}" ] && '\
 'diskutil partitionDisk "/dev/${disks[0]}" 1 GPT APFS "'"${vmname}"'" R && '\
 'diskutil partitionDisk "/dev/${disks[1]}" 1 GPT JHFS+ "Install" R && '
 send_keys
@@ -715,7 +737,8 @@ kbstring='asr restore --source "/Volumes/'"${macOS_release_name:0:5}-files"'/Bas
 'mkdir -p "${install_path}" && cd "/Volumes/'"${macOS_release_name:0:5}-files/"'" && '\
 'cp *.chunklist *.plist *.dmg "${install_path}" && '\
 'echo "" && echo "Copying the several-GB InstallESD.dmg to the installer app directory" && echo "Please wait" && '\
-'rm -f "${install_path}/InstallESD.dmg" ; '\
+'if [ -s "${install_path}/InstallESD.dmg" ]; then '\
+'rm -f "${install_path}/InstallESD.dmg" ; fi && '\
 'for part in InstallESD.part*; do echo "Concatenating ${part}"; cat "${part}" >> "${install_path}/InstallESD.dmg"; done && '\
 'sed -i.bak -e "s/InstallESDDmg\.pkg/InstallESD.dmg/" -e "s/pkg\.InstallESDDmg/dmg.InstallESD/" "${install_path}InstallInfo.plist" && '\
 'sed -i.bak2 -e "/InstallESD\.dmg/{n;N;N;N;d;}" "${install_path}InstallInfo.plist" && '
@@ -1277,7 +1300,7 @@ for argument in $@; do
     echo "" &&
     echo "Can't parse one or more specified arguments. See documentation" &&
     echo "by entering the following command:" &&
-    would_you_like_to_know_less && echo "" && exit
+    would_you_like_to_know_less && echo "" && echo "Available stages: ${stages}" && exit
 done
 check_bash_version
 check_gnu_coreutils_prefix
