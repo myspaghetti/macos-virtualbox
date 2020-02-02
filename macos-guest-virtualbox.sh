@@ -2,7 +2,7 @@
 # Semi-automatic installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-guest-virtualbox
-# version 0.85.4
+# version 0.85.5
 
 # Requirements: 40GB available storage on host
 # Dependencies: bash >= 4.3, xxd, gzip, unzip, wget, dmg2img,
@@ -354,69 +354,65 @@ fi
 function prepare_macos_installation_files() {
 print_dimly "stage: prepare_macos_installation_files"
 # Find the correct download URL in the Apple catalog
-if [[ ! ( -s "${macOS_release_name}_BaseSystem.chunklist" && -s "${macOS_release_name}_InstallInfo.plist" && -s "${macOS_release_name}_AppleDiagnostics.dmg" && -s "${macOS_release_name}_AppleDiagnostics.chunklist" && -s "${macOS_release_name}_BaseSystem.dmg" && -s "${macOS_release_name}_InstallESDDmg.pkg" ) ]]; then
-    echo ""
-    echo "Downloading Apple macOS ${macOS_release_name} software update catalog"
-    wget "${sucatalog}" \
-         ${wgetargs} \
-         --output-document="${macOS_release_name}_sucatalog"
+echo ""
+echo "Downloading Apple macOS ${macOS_release_name} software update catalog"
+wget "${sucatalog}" \
+     ${wgetargs} \
+     --output-document="${macOS_release_name}_sucatalog"
 
-    # if file was not downloaded correctly
-    if [ ! -s "${macOS_release_name}_sucatalog" ]; then
-        wget --debug -O /dev/null -o "${macOS_release_name}_wget.log" "${sucatalog}"
-        echo ""
-        echo "Couldn't download the Apple software update catalog."
-        if [ "$(expr match "$(cat "${macOS_release_name}_wget.log")" '.*ERROR[[:print:]]*is not trusted')" -gt "0" ]; then
-            printf '
-    Make sure certificates from a certificate authority are installed.
-    Certificates are often installed through the package manager with
-    a package named '"${highlight_color}"'ca-certificates'"${default_color}"
-        fi
-        echo "Exiting."
-        exit
+# if file was not downloaded correctly
+if [ ! -s "${macOS_release_name}_sucatalog" ]; then
+    wget --debug -O /dev/null -o "${macOS_release_name}_wget.log" "${sucatalog}"
+    echo ""
+    echo "Couldn't download the Apple software update catalog."
+    if [ "$(expr match "$(cat "${macOS_release_name}_wget.log")" '.*ERROR[[:print:]]*is not trusted')" -gt "0" ]; then
+        printf '
+Make sure certificates from a certificate authority are installed.
+Certificates are often installed through the package manager with
+a package named '"${highlight_color}"'ca-certificates'"${default_color}"
     fi
-
-    echo "Trying to find macOS ${macOS_release_name} InstallAssistant download URL"
-    tac "${macOS_release_name}_sucatalog" | csplit - '/InstallAssistantAuto.smd/+1' '{*}' -f "${macOS_release_name}_sucatalog_" -s
-    for catalog in "${macOS_release_name}_sucatalog_"* "error"; do
-        if [[ "${catalog}" == error ]]; then
-            rm "${macOS_release_name}_sucatalog"*
-            printf "Couldn't find the requested download URL in the Apple catalog. Exiting."
-           exit
-        fi
-        urlbase="$(tail -n 1 "${catalog}" 2>/dev/null)"
-        urlbase="$(expr match "${urlbase}" '.*\(http://[^<]*/\)')"
-        wget "${urlbase}InstallAssistantAuto.smd" \
-        ${wgetargs} \
-        --output-document="${catalog}_InstallAssistantAuto.smd"
-        found_version="$(head -n 6 "${catalog}_InstallAssistantAuto.smd" | tail -n 1)"
-        if [[ "${found_version}" == *${CFBundleShortVersionString}* ]]; then
-            echo "Found download URL: ${urlbase}"
-            echo ""
-            rm "${macOS_release_name}_sucatalog"*
-            break
-        fi
-    done
-    echo "Downloading macOS installation files from swcdn.apple.com"
-    for filename in "BaseSystem.chunklist" \
-                    "InstallInfo.plist" \
-                    "AppleDiagnostics.dmg" \
-                    "AppleDiagnostics.chunklist" \
-                    "BaseSystem.dmg" \
-                    "InstallESDDmg.pkg"; \
-        do wget "${urlbase}${filename}" \
-                ${wgetargs} \
-                --output-document "${macOS_release_name}_${filename}"
-    done
+    echo "Exiting."
+    exit
 fi
 
-if [ ! -s "${macOS_release_name}_InstallESD.part00" ]; then
-    echo ""
-    echo "Splitting the several-GB InstallESDDmg.pkg into 1GB parts because"
-    echo "VirtualBox hasn't implemented UDF/HFS VISO support yet and macOS"
-    echo "doesn't support ISO 9660 Level 3 with files larger than 2GB."
-    split --verbose -a 2 -d -b 1000000000 "${macOS_release_name}_InstallESDDmg.pkg" "${macOS_release_name}_InstallESD.part"
-fi
+echo "Trying to find macOS ${macOS_release_name} InstallAssistant download URL"
+tac "${macOS_release_name}_sucatalog" | csplit - '/InstallAssistantAuto.smd/+1' '{*}' -f "${macOS_release_name}_sucatalog_" -s
+for catalog in "${macOS_release_name}_sucatalog_"* "error"; do
+    if [[ "${catalog}" == error ]]; then
+        rm "${macOS_release_name}_sucatalog"*
+        printf "Couldn't find the requested download URL in the Apple catalog. Exiting."
+       exit
+    fi
+    urlbase="$(tail -n 1 "${catalog}" 2>/dev/null)"
+    urlbase="$(expr match "${urlbase}" '.*\(http://[^<]*/\)')"
+    wget "${urlbase}InstallAssistantAuto.smd" \
+    ${wgetargs} \
+    --output-document="${catalog}_InstallAssistantAuto.smd"
+    found_version="$(head -n 6 "${catalog}_InstallAssistantAuto.smd" | tail -n 1)"
+    if [[ "${found_version}" == *${CFBundleShortVersionString}* ]]; then
+        echo "Found download URL: ${urlbase}"
+        echo ""
+        rm "${macOS_release_name}_sucatalog"*
+        break
+    fi
+done
+echo "Downloading macOS installation files from swcdn.apple.com"
+for filename in "BaseSystem.chunklist" \
+                "InstallInfo.plist" \
+                "AppleDiagnostics.dmg" \
+                "AppleDiagnostics.chunklist" \
+                "BaseSystem.dmg" \
+                "InstallESDDmg.pkg"; \
+    do wget "${urlbase}${filename}" \
+            ${wgetargs} \
+            --output-document "${macOS_release_name}_${filename}"
+done
+
+echo ""
+echo "Splitting the several-GB InstallESDDmg.pkg into 1GB parts because"
+echo "VirtualBox hasn't implemented UDF/HFS VISO support yet and macOS"
+echo "doesn't support ISO 9660 Level 3 with files larger than 2GB."
+split --verbose -a 2 -d -b 1000000000 "${macOS_release_name}_InstallESDDmg.pkg" "${macOS_release_name}_InstallESD.part"
 
 if [[ ! -s "ApfsDriverLoader.efi" ]]; then
     echo ""
