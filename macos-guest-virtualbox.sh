@@ -2,7 +2,7 @@
 # Semi-automatic installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-guest-virtualbox
-# version 0.86.2
+# version 0.86.3
 
 # Requirements: 40GB available storage on host
 # Dependencies: bash >= 4.3, xxd, gzip, unzip, wget, dmg2img,
@@ -637,7 +637,7 @@ if [ -w "Install ${macOS_release_name}.vdi" ]; then
     read -n 1 -p " [y/N] " delete
     echo ""
     if [ "${delete,,}" == "y" ]; then
-        if [[ "$( VBoxManage list runningvms )" =~ ^\""${vmname}" ]];
+        if [[ "$( VBoxManage list runningvms )" =~ \""${vmname}"\" ]];
         then
             echo '"'"Install ${macOS_release_name}.vdi"'" may be deleted'
             echo "only when the virtual machine is powered off."
@@ -771,7 +771,7 @@ echo "and released from VirtualBox Manager."
 
 function populate_macos_target() {
 print_dimly "stage: populate_macos_target"
-if [[ "$( VBoxManage list runningvms )" =~ ^\""${vmname}" ]]; then
+if [[ "$( VBoxManage list runningvms )" =~ \""${vmname}"\" ]]; then
     printf "${highlight_color}"'Please '"${warning_color}"'manually'"${highlight_color}"' shut down the virtual machine and press enter to continue.'"${default_color}"
     clear_input_buffer_then_read
 fi
@@ -853,7 +853,7 @@ printf '\n'"${highlight_color}"'That'"'"'s it! Enjoy your virtual machine.'"${de
 
 function delete_temporary_files() {
 print_dimly "stage: delete_temporary_files"
-if [[ "$( VBoxManage list runningvms )" =~ ^\""${vmname}" ]];
+if [[ "$( VBoxManage list runningvms )" =~ \""${vmname}"\" ]];
 then
     printf 'Temporary files may be deleted when the virtual machine is shut down
 by running the following command at the script'"'"'s working directory:
