@@ -858,7 +858,7 @@ then
     printf 'Temporary files may be deleted when the virtual machine is shut down
 by running the following command at the script'"'"'s working directory:
 
-  '"${0} delete_temporary_files"'\n'
+  '"${highlight_color}${0} delete_temporary_files${default_color}"'\n'
 else
     # detach temporary VDIs and attach the macOS target disk
     VBoxManage storagectl "${vmname}" --remove --name SATA >/dev/null 2>&1
