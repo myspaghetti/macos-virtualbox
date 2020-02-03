@@ -858,7 +858,7 @@ then
     printf 'Temporary files may be deleted when the virtual machine is shut down
 by running the following command at the script'"'"'s working directory:
 
-      '"${0} delete_temporary_files"'\n'
+  '"${0} delete_temporary_files"'\n'
 else
     # detach temporary VDIs and attach the macOS target disk
     VBoxManage storagectl "${vmname}" --remove --name SATA >/dev/null 2>&1
@@ -917,7 +917,7 @@ and requires a little user interaction. A default fresh install only
 requires the user to sit patiently and, ten times, press enter when prompted.
 
         ${highlight_color}USAGE${default_color}
-${low_contrast_color}${0} [STAGE]... ${default_color}
+    ${low_contrast_color}${0} [STAGE]... ${default_color}
 
 The script is divided into stages. Stage titles may be given as command-line
 arguments for the script. When the script is run with no command-line
