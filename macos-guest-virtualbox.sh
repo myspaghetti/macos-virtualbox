@@ -2,7 +2,7 @@
 # Semi-automatic installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-guest-virtualbox
-# version 0.86.0
+# version 0.86.1
 
 # Requirements: 40GB available storage on host
 # Dependencies: bash >= 4.3, xxd, gzip, unzip, wget, dmg2img,
@@ -195,12 +195,12 @@ elif [[ "$(cat /proc/sys/kernel/osrelease 2>/dev/null)" =~ [Mm]icrosoft ]]; then
     osrelease="$(cat /proc/sys/kernel/osrelease 2>/dev/null)"
     if [[ "${osrelease}" =~ microsoft ]]; then # WSL2
         echo ""
-        echo "The script is not tested with WSL2, which uses Hyper-V."
-        echo "VirtualBox Hyper-V support is experimental."
+        echo "Using WSL2 and VirtualBox requires using Hyper-V with VirtualBox."
+        printf "${warning_color}"'VirtualBox usually doen'"'"'t work with WSL2 installed.'"${default_color}"'\n'
         echo ""
         printf "${highlight_color}"'Press enter to continue, CTRL-C to exit.'"${default_color}"
         clear_input_buffer_then_read
-    elif [[ ! ( "${osrelease}" =~ Microsoft ) ]]; then # WSL (1)
+    elif [[ ( "${osrelease}" =~ Microsoft ) ]]; then # WSL (1)
         echo ""
         echo "Some versions of WSL require the script to run on a Windows filesystem path,"
         printf 'for example   '"${highlight_color}"'/mnt/c/Users/Public/Documents'"${default_color}"'\n'
@@ -329,9 +329,9 @@ if [ -n "$(VBoxManage showvminfo "${vmname}" 2>/dev/null)" ]; then
     if [ "${delete,,}" == "y" ]; then
         VBoxManage unregistervm "${vmname}" --delete
     else
-        printf '
-'"${highlight_color}"'Please assign a different VM name to variable "vmname" by editing the script,'"${default_color}"'
-or skip this check manually as described when running the following command:'
+        echo ""
+        printf "${highlight_color}"'Please assign a different VM name to variable "vmname" by editing the script,'"${default_color}"
+        echo "or skip this check manually as described when running the following command:"
         would_you_like_to_know_less
         exit
     fi
