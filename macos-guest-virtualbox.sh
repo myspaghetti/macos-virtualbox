@@ -2,7 +2,7 @@
 # Semi-automatic installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-guest-virtualbox
-# version 0.86.1
+# version 0.86.2
 
 # Requirements: 40GB available storage on host
 # Dependencies: bash >= 4.3, xxd, gzip, unzip, wget, dmg2img,
@@ -761,7 +761,7 @@ detached from the VM and released from VirtualBox.
 print_dimly "If the partitioning fails, exit the script by pressing CTRL-C.
 Otherwise, please wait."
 # Detach the original 2GB BaseSystem.vdi
-while [[ "$( VBoxManage list runningvms )" =~ ^\""${vmname}" ]]; do sleep 2 >/dev/null 2>&1; done;
+while [[ "$( VBoxManage list runningvms )" =~ \""${vmname}"\" ]]; do sleep 2 >/dev/null 2>&1; done;
 # Release basesystem vdi from VirtualBox configuration
 VBoxManage storageattach "${vmname}" --storagectl SATA --port 2 --medium none >/dev/null 2>&1
 VBoxManage closemedium "${macOS_release_name}_BaseSystem.vdi" >/dev/null 2>&1
