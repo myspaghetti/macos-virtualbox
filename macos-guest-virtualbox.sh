@@ -997,11 +997,11 @@ ${low_contrast_color}configure_vm create_nvram_files create_macos_installation_f
 After running the command, attach the resulting VISO file to the virtual
 machine's storage through VirtualBox Manager or VBoxManage. Power up the VM
 and boot macOS, then start Terminal and execute the following commands, making
-sure to replace \"/Volumes/path/to/VISO/startup.nsh\" with the correct path:
+sure to replace \"/Volumes/path/to/VISO/\" with the correct path:
 
 ${low_contrast_color}mkdir EFI${default_color}
 ${low_contrast_color}sudo su # this will prompt for a password${default_color}
-${low_contrast_color}mount_ntfs /dev/disk0s1 EFI${default_color}
+${low_contrast_color}mount_msdos /dev/disk0s1 EFI${default_color}
 ${low_contrast_color}cp /Volumes/path/to/VISO/startup.nsh ./EFI/startup.nsh${default_color}
 ${low_contrast_color}cp /Volumes/path/to/VISO/*.bin ./EFI/${default_color}
 
