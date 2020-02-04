@@ -2,7 +2,7 @@
 # Semi-automatic installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-guest-virtualbox
-# version 0.86.3
+# version 0.86.4
 
 # Requirements: 40GB available storage on host
 # Dependencies: bash >= 4.3, xxd, gzip, unzip, wget, dmg2img,
@@ -855,11 +855,14 @@ function delete_temporary_files() {
 print_dimly "stage: delete_temporary_files"
 if [[ "$( VBoxManage list runningvms )" =~ \""${vmname}"\" ]];
 then
-    printf 'Temporary files may be deleted when the virtual machine is shut down
-by running the following command at the script'"'"'s working directory:
+    printf 'Temporary files may be deleted when the virtual machine is powered off
+and without a suspended state by running the following command at the script'"'"'s
+working directory:
 
   '"${highlight_color}${0} delete_temporary_files${default_color}"'\n'
 else
+    # discard saved state
+    VBoxManage discardstate "${vmname}" 2>&1
     # detach temporary VDIs and attach the macOS target disk
     VBoxManage storagectl "${vmname}" --remove --name SATA >/dev/null 2>&1
     VBoxManage storagectl "${vmname}" --add sata --name SATA --hostiocache on >/dev/null 2>&1
