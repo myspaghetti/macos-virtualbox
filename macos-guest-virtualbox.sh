@@ -2,7 +2,7 @@
 # Semi-automatic installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-guest-virtualbox
-# version 0.87.0
+# version 0.87.1
 
 # Requirements: 40GB available storage on host
 # Dependencies: bash >= 4.3, xxd, gzip, unzip, wget, dmg2img,
@@ -805,7 +805,6 @@ kbstring='disks="$(diskutil list | grep -o "[0-9][^ ]* GB *disk[0-9]$" | sort -g
 'printf '"'"'trap "exit 0" SIGUSR1; while true; do sleep 10; done;'"'"' | sh && '\
 'mkdir -p "/Volumes/'"${vmname}"'/tmp/mount_efi" && '\
 'mount_msdos /dev/${disks[0]}s1 "/Volumes/'"${vmname}"'/tmp/mount_efi" && '\
-'mkdir -p "/Volumes/'"${vmname}"'/tmp/mount_efi/EFI" && '\
 'cp -r "/Volumes/'"${macOS_release_name:0:5}-files"'/ESP/"* "/Volumes/'"${vmname}"'/tmp/mount_efi/" && '\
 'installer_pid=$(ps | grep startosinstall | cut -d '"'"' '"'"' -f 3) && '\
 'kill -SIGUSR1 ${installer_pid}'
