@@ -2,7 +2,7 @@
 # Semi-automatic installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-guest-virtualbox
-# version 0.86.5
+# version 0.87.0
 
 # Requirements: 40GB available storage on host
 # Dependencies: bash >= 4.3, xxd, gzip, unzip, wget, dmg2img,
@@ -508,9 +508,9 @@ print_dimly "stage: create_macos_installation_files_viso"
 echo "Creating EFI startup script"
 echo 'echo -off' > "${vmname}_startup.nsh"
 if [[ ( "${vbox_version:0:1}" -lt 6 ) || ( "${vbox_version:0:1}" = 6 && "${vbox_version:2:1}" = 0 ) ]]; then
-    echo 'load fs0:\EFI\driver\AppleImageLoader.efi
-load fs0:\EFI\driver\AppleUiSupport.efi
-load fs0:\EFI\driver\ApfsDriverLoader.efi
+    echo 'load fs0:\EFI\OC\Drivers\AppleImageLoader.efi
+load fs0:\EFI\OC\Drivers\AppleUiSupport.efi
+load fs0:\EFI\OC\Drivers\ApfsDriverLoader.efi
 map -r' >> "${vmname}_startup.nsh"
 fi
 echo 'if exist "fs0:\EFI\NVRAM\MLB.bin" then
@@ -567,19 +567,19 @@ fi
 # NVRAM binary files
 for filename in "MLB.bin" "ROM.bin" "csr-active-config.bin" "system-id.bin"; do
     if [ -s "${vmname}_${filename}" ]; then
-        echo "/${filename}=\"${vmname}_${filename}\"" >> "${macOS_release_name}_Installation_files.viso"
+        echo "/ESP/EFI/NVRAM/${filename}=\"${vmname}_${filename}\"" >> "${macOS_release_name}_Installation_files.viso"
     fi
 done
 
 # EFI drivers for VirtualBox 6.0 and 5.2
 for filename in "ApfsDriverLoader.efi" "AppleImageLoader.efi" "AppleUiSupport.efi"; do
     if [ -s "${filename}" ]; then
-        echo "/${filename}=\"${filename}\"" >> "${macOS_release_name}_Installation_files.viso"
+        echo "/ESP/EFI/OC/Drivers/${filename}=\"${filename}\"" >> "${macOS_release_name}_Installation_files.viso"
     fi
 done
 
 # EFI startup script
-echo "/startup.nsh=\"${vmname}_startup.nsh\"" >> "${macOS_release_name}_Installation_files.viso"
+echo "/ESP/startup.nsh=\"${vmname}_startup.nsh\"" >> "${macOS_release_name}_Installation_files.viso"
 
 }
 
@@ -794,7 +794,7 @@ prompt_terminal_ready
 add_another_terminal
 echo ""
 echo "The second open Terminal in the virtual machine copies EFI and NVRAM files"
-echo "to the target EFI partition when the installer finishes preparing."
+echo "to the target EFI system partition when the installer finishes preparing."
 echo ""
 echo "After the installer finishes preparing and the EFI and NVRAM files are copied,"
 echo "macOS will install and run when booting the target disk."
@@ -805,11 +805,8 @@ kbstring='disks="$(diskutil list | grep -o "[0-9][^ ]* GB *disk[0-9]$" | sort -g
 'printf '"'"'trap "exit 0" SIGUSR1; while true; do sleep 10; done;'"'"' | sh && '\
 'mkdir -p "/Volumes/'"${vmname}"'/tmp/mount_efi" && '\
 'mount_msdos /dev/${disks[0]}s1 "/Volumes/'"${vmname}"'/tmp/mount_efi" && '\
-'mkdir -p "/Volumes/'"${vmname}"'/tmp/mount_efi/EFI/driver/" && '\
-'mkdir -p "/Volumes/'"${vmname}"'/tmp/mount_efi/EFI/NVRAM/" && '\
-'cp "/Volumes/'"${macOS_release_name:0:5}-files"'/startup.nsh" "/Volumes/'"${vmname}"'/tmp/mount_efi/startup.nsh" && '\
-'cp "/Volumes/'"${macOS_release_name:0:5}-files"'/"*.bin "/Volumes/'"${vmname}"'/tmp/mount_efi/EFI/NVRAM/" && '\
-'cp "/Volumes/'"${macOS_release_name:0:5}-files"'/"*.efi "/Volumes/'"${vmname}"'/tmp/mount_efi/EFI/driver/" && '\
+'mkdir -p "/Volumes/'"${vmname}"'/tmp/mount_efi/EFI" && '\
+'cp -r "/Volumes/'"${macOS_release_name:0:5}-files"'/ESP/"* "/Volumes/'"${vmname}"'/tmp/mount_efi/" && '\
 'installer_pid=$(ps | grep startosinstall | cut -d '"'"' '"'"' -f 3) && '\
 'kill -SIGUSR1 ${installer_pid}'
 send_keys
@@ -819,7 +816,7 @@ cycle_through_terminal_windows
 
 # Find background process PID, then
 # start the installer, send SIGUSR1 to concurrent bash script,
-# the other script copies files to EFI partition,
+# the other script copies files to EFI system partition,
 # then sends SIGUSR1 to the installer which restarts the virtual machine
 kbstring='background_pid="$(ps | grep '"'"' sh$'"'"' | cut -d '"'"' '"'"' -f 3)" && '\
 'app_path="$(ls -d /Install*.app)" && '\
@@ -1000,11 +997,10 @@ machine's storage through VirtualBox Manager or VBoxManage. Power up the VM
 and boot macOS, then start Terminal and execute the following commands, making
 sure to replace \"/Volumes/path/to/VISO/\" with the correct path:
 
-${low_contrast_color}mkdir EFI${default_color}
+${low_contrast_color}mkdir ESP${default_color}
 ${low_contrast_color}sudo su # this will prompt for a password${default_color}
-${low_contrast_color}mount_msdos /dev/disk0s1 EFI${default_color}
-${low_contrast_color}cp /Volumes/path/to/VISO/startup.nsh ./EFI/startup.nsh${default_color}
-${low_contrast_color}cp /Volumes/path/to/VISO/*.bin ./EFI/${default_color}
+${low_contrast_color}diskutil mount -mountPoint ESP disk0s1${default_color}
+${low_contrast_color}cp /Volumes/path/to/VISO/ESP/* ESP/${default_color}
 
 After copying the files, boot into the EFI Internal Shell as desribed in the
 section \"Applying the EFI and NVRAM parameters\".
