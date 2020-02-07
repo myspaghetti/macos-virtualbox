@@ -2,7 +2,7 @@
 # Semi-automatic installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-guest-virtualbox
-# version 0.87.1
+# version 0.87.2
 
 # Requirements: 40GB available storage on host
 # Dependencies: bash >= 4.3, xxd, gzip, unzip, wget, dmg2img,
@@ -298,9 +298,10 @@ if [[ "${macOS_release_name:0:1}" =~ [Cc] ]]; then
     macOS_release_name="Catalina"
     CFBundleShortVersionString="10.15"
     sucatalog="${Catalina_sucatalog}"
-    printf 'As of January 2020, macOS Catalina 10.15.2 and 10.15.3 '"${warning_color}"'do not boot'"${default_color}"' on VirtualBox.
+    printf "${warning_color}"'Catalina 10.15.2 and 10.15.3 do not boot on VirtualBox'"${default_color}"' due to
+incompatibility with their boot.efi file.
 For a workaround, please visit the following URL:
-  '"${highlight_color}"'https://github.com/myspaghetti/macos-guest-virtualbox/issues/134#issuecomment-578764413'"${default_color}"'
+  '"${highlight_color}"'https://github.com/myspaghetti/macos-guest-virtualbox/issues/134#issuecomment-583216307'"${default_color}"'
 
 '"${highlight_color}"'Press enter to continue, CTRL-C to exit.'"${default_color}"
     clear_input_buffer_then_read
