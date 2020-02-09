@@ -1,5 +1,5 @@
 #!/bin/bash
-# Semi-automatic installer of macOS on VirtualBox
+# Push-button installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-guest-virtualbox
 # version 0.87.2
@@ -49,7 +49,7 @@ SYSTEM_INTEGRITY_PROTECTION='10'  # '10' - enabled, '77' - disabled
 # welcome message
 function welcome() {
 printf '
-                Semi-automatic installer of macOS on VirtualBox
+                  Push-button installer of macOS on VirtualBox
 -------------------------------------------------------------------------------
 
 This script installs only open-source software and unmodified Apple binaries.
@@ -906,13 +906,13 @@ for stage in ${stages}; do
 done
 printf "
         ${highlight_color}NAME${default_color}
-Semi-automatic installer of macOS on VirtualBox
+Push-button installer of macOS on VirtualBox
 
         ${highlight_color}DESCRIPTION${default_color}
 The script downloads, configures, and installs macOS High Sierra, Mojave,
-and Catalina on VirtualBox 5.2, 6.0, and 6.1. The script is semi-automatic
-and requires a little user interaction. A default fresh install only
-requires the user to sit patiently and, ten times, press enter when prompted.
+and Catalina on VirtualBox 5.2, 6.0, and 6.1. The script requires very little
+user interaction. A default fresh install only requires the user to sit
+patiently and, less than ten times, press enter when prompted.
 
         ${highlight_color}USAGE${default_color}
     ${low_contrast_color}${0} [STAGE]... ${default_color}
