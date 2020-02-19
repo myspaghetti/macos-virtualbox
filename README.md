@@ -1,5 +1,5 @@
 ## Push-button installer of macOS on VirtualBox
-This is a Bash script that creates a VirtualBox guest macOS virtual machine with unmodified macOS installation files downloaded directly from Apple servers.
+This is a Bash script that creates a VirtualBox guest macOS virtual machine by downloading unmodified macOS installation files directly from Apple servers.
 
 The script requires very little user interaction. A default install only requires the user to sit patiently and, less than ten times, press enter when prompted. The script doesn't install any closed-source additions or extra bootloaders. Tested on Cygwin. Works on macOS and WSL, should work on most Linux distros.
 
