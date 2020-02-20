@@ -3,9 +3,8 @@ This is a Bash script that creates a VirtualBox guest macOS virtual machine by d
 
 The script requires very little user interaction. A default install only requires the user to sit patiently and, less than ten times, press enter when prompted. The script doesn't install any closed-source additions or extra bootloaders. Tested on Cygwin. Works on macOS and WSL, should work on most Linux distros.
 
-### macOS Mojave (10.14) and High Sierra (10.13) currently supported
-#### macOS Catalina 10.15.2 and 10.15.3 fail to boot on VirtualBox
-Versions 10.15.0 and 10.15.1 of Catalina work, but they are not currently being distributed by Apple's software update servers, from which the script fetches the installer. A workaround for Catalina 10.15.2 and 10.15.3 is [available](https://github.com/myspaghetti/macos-guest-virtualbox/issues/134#issuecomment-583216307) involving using earlier versions of `boot.efi`. The issue [will be fixed in the next maintenance release of VirtualBox.](https://www.virtualbox.org/ticket/19188#comment:8)
+### macOS Mojave (10.14), High Sierra (10.13), and Catalins (10.15) currently supported
+macOS Catalina 10.15.2 and 10.15.3 require VirtualBox 6.1.4 or higher. A workaround for lower versions of VirtualBox involves using earlier versions of `boot.efi` as [described here](https://github.com/myspaghetti/macos-guest-virtualbox/issues/134#issuecomment-583216307).
 
 ## Documentation
 Documentation can be viewed by executing the command `./macos-guest-virtualbox.sh documentation`
