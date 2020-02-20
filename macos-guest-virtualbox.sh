@@ -2,7 +2,7 @@
 # Push-button installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-guest-virtualbox
-# version 0.87.4
+# version 0.87.5
 
 # Requirements: 40GB available storage on host
 # Dependencies: bash >= 4.3, xxd, gzip, unzip, wget, dmg2img,
@@ -301,13 +301,14 @@ if [[ "${macOS_release_name:0:1}" =~ [Cc] ]]; then
     macOS_release_name="Catalina"
     CFBundleShortVersionString="10.15"
     sucatalog="${Catalina_sucatalog}"
-    if [[ ! ( "${vbox_version:0:3}" =~ ^6\.1 && "${vbox_version:4:1}" -ge 4 ) ]]; then
-        if [[ ! "${vbox_version:0:1}" -gt 6 || ( "${vbox_version:0:1}" = 6 && ! "${vbox_version:2:1}" -ge 2 ) ]]; then
-            echo ""
-            echo "macOS Catalina requires VirtualBox version 6.1.4 or higher."
-            echo "Exiting."
-            exit
-        fi
+    if [[ ! ( "${vbox_version:0:1}" -gt 6 || \
+              "${vbox_version}" =~ ^6\.1\.[4-9] || \
+              "${vbox_version}" =~ ^6\.1\.[123][0-9] || \
+              "${vbox_version}" =~ ^6\.[2-9] ) ]]; then
+        echo ""
+        echo "macOS Catalina requires VirtualBox version 6.1.4 or higher."
+        echo "Exiting."
+        exit
     fi
 elif [[ "${macOS_release_name:0:1}" =~ [Hh] ]]; then
     macOS_release_name="HighSierra"
