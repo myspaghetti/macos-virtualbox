@@ -2,7 +2,7 @@
 # Push-button installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-guest-virtualbox
-# version 0.87.3
+# version 0.87.4
 
 # Requirements: 40GB available storage on host
 # Dependencies: bash >= 4.3, xxd, gzip, unzip, wget, dmg2img,
@@ -60,8 +60,8 @@ For iCloud and iMessage connectivity, the script needs to be edited with genuine
 or genuine-like Apple parameters. macOS will work without these parameters, but
 Apple-connected apps will not.
 
-The installation requires about '"${highlight_color}"'40GB'"${default_color}"' of available storage, 25GB for
-temporary installation files and 15GB for the virtual machine'"'"'s dynamically
+The installation requires about '"${highlight_color}"'40GB'"${default_color}"' of available storage, 20GB for
+temporary installation files and 20GB for the virtual machine'"'"'s dynamically
 allocated storage disk image.
 
 The script can be resumed, as described when running the following command:
@@ -301,13 +301,14 @@ if [[ "${macOS_release_name:0:1}" =~ [Cc] ]]; then
     macOS_release_name="Catalina"
     CFBundleShortVersionString="10.15"
     sucatalog="${Catalina_sucatalog}"
-    printf "${warning_color}"'Catalina 10.15.2 and 10.15.3 do not boot on VirtualBox'"${default_color}"' due to
-incompatibility with their boot.efi file.
-For a workaround, please visit the following URL:
-  '"${highlight_color}"'https://github.com/myspaghetti/macos-guest-virtualbox/issues/134#issuecomment-583216307'"${default_color}"'
-
-'"${highlight_color}"'Press enter to continue, CTRL-C to exit.'"${default_color}"
-    clear_input_buffer_then_read
+    if [[ ! ( "${vbox_version:0:3}" =~ ^6\.1 && "${vbox_version:4:1}" -ge 4 ) ]]; then
+        if [[ ! "${vbox_version:0:1}" -gt 6 || ( "${vbox_version:0:1}" = 6 && ! "${vbox_version:2:1}" -ge 2 ) ]]; then
+            echo ""
+            echo "macOS Catalina requires VirtualBox version 6.1.4 or higher."
+            echo "Exiting."
+            exit
+        fi
+    fi
 elif [[ "${macOS_release_name:0:1}" =~ [Hh] ]]; then
     macOS_release_name="HighSierra"
     CFBundleShortVersionString="10.13"
