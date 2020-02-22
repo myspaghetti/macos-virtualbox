@@ -2,7 +2,7 @@
 # Push-button installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-guest-virtualbox
-# version 0.87.5
+# version 0.87.6
 
 # Requirements: 40GB available storage on host
 # Dependencies: bash >= 4.3, xxd, gzip, unzip, wget, dmg2img,
@@ -944,8 +944,8 @@ VirtualBox installation and having the script automatically configure the VM.
 
     ${low_contrast_color}${0} delete_temporary_files${default_color}
 
-The above stage might be used when no more virtual machines need to be installed,
-and the temporary files can be deleted.
+The above stage might be used when no more virtual machines need to be
+installed, and the temporary files can be deleted.
 
     ${low_contrast_color}${0} "'\\'"${default_color}
 ${low_contrast_color}configure_vm create_nvram_files create_macos_installation_files_viso${default_color}
@@ -1005,14 +1005,14 @@ sure to replace \"/Volumes/path/to/VISO/\" with the correct path:
 ${low_contrast_color}mkdir ESP${default_color}
 ${low_contrast_color}sudo su # this will prompt for a password${default_color}
 ${low_contrast_color}diskutil mount -mountPoint ESP disk0s1${default_color}
-${low_contrast_color}cp /Volumes/path/to/VISO/ESP/* ESP/${default_color}
+${low_contrast_color}cp -r /Volumes/path/to/VISO/ESP/* ESP/${default_color}
 
 After copying the files, boot into the EFI Internal Shell as desribed in the
 section \"Applying the EFI and NVRAM parameters\".
 
         ${highlight_color}Storage size${default_color}
 The script by default assigns a target virtual disk storage size of 80GB, which
-is populated to about 15GB on the host on initial installation. After the
+is populated to about 20GB on the host on initial installation. After the
 installation is complete, the storage size may be increased. First increase the
 virtual disk image size through VirtualBox Manager or VBoxManage, then in
 Terminal in the virtual machine run ${low_contrast_color}sudo diskutil repairDisk disk0${default_color}, and then
@@ -1021,19 +1021,31 @@ repairing the disk from Terminal, delete the \"Free space\" partition so it allo
 the system APFS container to take up the available space.
 
         ${highlight_color}Graphics controller${default_color}
-Selecting the VBoxSVGA controller instead of VBoxVGA for the graphics controller may considerably increase graphics performance.
+Selecting the VBoxSVGA controller instead of VBoxVGA for the graphics controller
+may considerably increase graphics performance.
 
-        ${highlight_color}Performance and unsupported features${default_color}
+        ${highlight_color}Unsupported features${default_color}
 Developing and maintaining VirtualBox or macOS features is beyond the scope of
 this script. Some features may behave unexpectedly, such as USB device support,
-audio support, and other features.
+audio support, FileVault boot password prompt support, and other features.
 
+        ${highlight_color}Performance${default_color}
 After successfully creating a working macOS virtual machine, consider importing
 it into QEMU/KVM so it can run with hardware passthrough at near-native
-performance. QEMU/KVM requires additional configuration that is beyond the
-scope of the script.
+performance. QEMU/KVM requires additional configuration that is beyond the scope
+of the script.
 
-For more information visit the URL:
+        ${highlight_color}Audio${default_color}
+macOS may not support any built-in VirtualBox audio controllers. The bootloader
+OpenCore may be able to load open-source audio drivers in VirtualBox.
+
+        ${highlight_color}FileVault${default_color}
+The VirtualBox EFI implementation does not properly load the FileVault full disk
+encryption password prompt upon boot. The bootloader OpenCore may be able to
+load the password prompt.
+
+        ${highlight_color}Further information${default_color}
+Further information is available at the following URL:
         ${highlight_color}https://github.com/myspaghetti/macos-guest-virtualbox${default_color}
 
 "
