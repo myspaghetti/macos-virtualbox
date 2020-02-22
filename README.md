@@ -18,7 +18,7 @@ The script by default assigns a target virtual disk storage size of 80GB, which 
 ## Graphics controller
 Selecting VBoxSVGA instead of VBoxVGA for the graphics controller may considerably increase graphics performance. VBoxVGA is assigned by default for compatibility reasons.
 
-## Performance and unsupported features
+## Unsupported features
 Developing and maintaining VirtualBox or macOS features is beyond the scope of this script. Some features may behave unexpectedly, such as USB device support, audio support, FileVault boot password prompt support, and other features.
 
 ### Performance
