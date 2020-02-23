@@ -2,7 +2,7 @@
 # Push-button installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-guest-virtualbox
-# version 0.87.6
+# version 0.87.7
 
 # Requirements: 40GB available storage on host
 # Dependencies: bash >= 4.3, xxd, gzip, unzip, wget, dmg2img,
@@ -10,12 +10,12 @@
 
 function set_variables() {
 # Customize the installation by setting these variables:
-vmname="macOS"                   # name of the VirtualBox virtual machine
+vm_name="macOS"                  # name of the VirtualBox virtual machine
 macOS_release_name="Mojave"      # install "HighSierra" "Mojave" or "Catalina"
-storagesize=80000                # VM disk image size in MB. Minimum 22000
-cpucount=2                       # VM CPU cores, minimum 2
-memorysize=4096                  # VM RAM in MB, minimum 2048
-gpuvram=128                      # VM video RAM in MB, minimum 34, maximum 128
+storage_size=80000               # VM disk image size in MB. Minimum 22000
+cpu_count=2                      # VM CPU cores, minimum 2
+memory_size=4096                 # VM RAM in MB, minimum 2048
+gpu_vram=128                     # VM video RAM in MB, minimum 34, maximum 128
 resolution="1280x800"            # VM display resolution
 
 # The following commented commands, when run on a genuine Mac,
@@ -73,12 +73,12 @@ clear_input_buffer_then_read
 
 # custom settings prompt
 printf '
-vmname="'"${vmname}"'"                   # name of the VirtualBox virtual machine
+vm_name="'"${vm_name}"'"                  # name of the VirtualBox virtual machine
 macOS_release_name="'"${macOS_release_name}"'"      # install "HighSierra" "Mojave" or "Catalina"
-storagesize='"${storagesize}"'                # VM disk image size in MB. minimum 22000
-cpucount='"${cpucount}"'                       # VM CPU cores, minimum 2
-memorysize='"${memorysize}"'                  # VM RAM in MB, minimum 2048
-gpuvram='"${gpuvram}"'                      # VM video RAM in MB, minimum 34, maximum 128
+storage_size='"${storage_size}"'               # VM disk image size in MB. minimum 22000
+cpu_count='"${cpu_count}"'                      # VM CPU cores, minimum 2
+memory_size='"${memory_size}"'                 # VM RAM in MB, minimum 2048
+gpu_vram='"${gpu_vram}"'                     # VM video RAM in MB, minimum 34, maximum 128
 resolution="'"${resolution}"'"            # VM display resolution
 
 These values may be customized by editing them at the top of the script file.
@@ -90,24 +90,24 @@ clear_input_buffer_then_read
 # check dependencies
 
 function check_bash_version() {
-if [ -z "${BASH_VERSION}" ]; then
+if [[ -z "${BASH_VERSION}" ]]; then
     echo "Can't determine BASH_VERSION. Exiting."
     exit
-elif [ "${BASH_VERSION:0:1}" -lt 4 ]; then
+elif [[ "${BASH_VERSION:0:1}" -lt 4 ]]; then
     echo "Please run this script on Bash 4.3 or higher."
-    if [ -n "$(sw_vers 2>/dev/null)" ]; then
+    if [[ -n "$(sw_vers 2>/dev/null)" ]]; then
         echo "macOS detected. Make sure the script is not running on"
         echo "the default /bin/bash which is version 3."
     fi
     exit
-elif [ "${BASH_VERSION:0:1}" -eq 4 -a "${BASH_VERSION:2:1}" -le 2 ]; then
+elif [[ "${BASH_VERSION:0:1}" -eq 4 && "${BASH_VERSION:2:1}" -le 2 ]]; then
     echo "Please run this script on Bash 4.3 or higher."
     exit
 fi
 }
 
 function check_gnu_coreutils_prefix() {
-if [ -n "$(gcsplit --help 2>/dev/null)" ]; then
+if [[ -n "$(gcsplit --help 2>/dev/null)" ]]; then
     function csplit() {
         gcsplit "$@"
     }
@@ -132,30 +132,30 @@ fi
 function check_dependencies() {
 
 # check if running on macOS and non-GNU coreutils
-if [ -n "$(sw_vers 2>/dev/null)" ]; then
+if [[ -n "$(sw_vers 2>/dev/null)" ]]; then
     # Add Homebrew GNU coreutils to PATH if path exists
     homebrew_gnubin="/usr/local/opt/coreutils/libexec/gnubin"
-    if [ -d "${homebrew_gnubin}" ]; then
+    if [[ -d "${homebrew_gnubin}" ]]; then
         PATH="${homebrew_gnubin}:${PATH}"
     fi
     # if csplit isn't GNU variant, exit
-    if [ -z "$(csplit --help 2>/dev/null)" ]; then
+    if [[ -z "$(csplit --help 2>/dev/null)" ]]; then
         echo ""
         printf 'macOS detected.\nPlease use a package manager such as '"${highlight_color}"'homebrew'"${default_color}"', '"${highlight_color}"'pkgsrc'"${default_color}"', '"${highlight_color}"'nix'"${default_color}"', or '"${highlight_color}"'MacPorts'"${default_color}"'.\n'
         echo "Please make sure the following packages are installed and that"
         echo "their path is in the PATH variable:"
-        printf "${highlight_color}"'bash  coreutils  wget  unzip  dmg2img'"${default_color}"'\n'
+        printf "${highlight_color}"'bash  coreutils  dmg2igm  gzip  unzip  wget  xxd'"${default_color}"'\n'
         echo "Please make sure Bash and coreutils are the GNU variant."
         exit
     fi
 fi
 
 # check for xxd, gzip, unzip, coreutils, wget
-if [ -z "$(echo "xxd" | xxd -p 2>/dev/null)" \
-     -o -z "$(gzip --help 2>/dev/null)" \
-     -o -z "$(unzip -hh 2>/dev/null)" \
-     -o -z "$(csplit --help 2>/dev/null)" \
-     -o -z "$(wget --version 2>/dev/null)" ]; then
+if [[ -z "$(echo "xxd" | xxd -p 2>/dev/null)" || \
+      -z "$(gzip --help 2>/dev/null)" || \
+      -z "$(unzip -hh 2>/dev/null)" || \
+      -z "$(csplit --help 2>/dev/null)" || \
+      -z "$(wget --version 2>/dev/null)" ]]; then
     echo "Please make sure the following packages are installed:"
     echo "coreutils    gzip    unzip    xxd    wget"
     echo "Please make sure the coreutils package is the GNU variant."
@@ -171,8 +171,8 @@ fi
 
 # VirtualBox in ${PATH}
 # Cygwin
-if [ -n "$(cygcheck -V 2>/dev/null)" ]; then
-    if [ -n "$(cmd.exe /d /s /c call VBoxManage.exe -v 2>/dev/null)" ]; then
+if [[ -n "$(cygcheck -V 2>/dev/null)" ]]; then
+    if [[ -n "$(cmd.exe /d /s /c call VBoxManage.exe -v 2>/dev/null)" ]]; then
         function VBoxManage() {
             cmd.exe /d /s /c call VBoxManage.exe "$@"
         }
@@ -180,7 +180,7 @@ if [ -n "$(cygcheck -V 2>/dev/null)" ]; then
         cmd_path_VBoxManage='C:\Program Files\Oracle\VirtualBox\VBoxManage.exe'
         echo "Can't find VBoxManage in PATH variable,"
         echo "checking ${cmd_path_VBoxManage}"
-        if [ -n "$(cmd.exe /d /s /c call "${cmd_path_VBoxManage}" -v 2>/dev/null)" ]; then
+        if [[ -n "$(cmd.exe /d /s /c call "${cmd_path_VBoxManage}" -v 2>/dev/null)" ]]; then
             function VBoxManage() {
                 cmd.exe /d /s /c call "${cmd_path_VBoxManage}" "$@"
             }
@@ -213,7 +213,7 @@ elif [[ "$(cat /proc/sys/kernel/osrelease 2>/dev/null)" =~ [Mm]icrosoft ]]; then
         printf "${highlight_color}"'Press enter to continue, CTRL-C to exit.'"${default_color}"
         clear_input_buffer_then_read
     fi
-    if [ -n "$(VBoxManage.exe -v 2>/dev/null)" ]; then
+    if [[ -n "$(VBoxManage.exe -v 2>/dev/null)" ]]; then
         function VBoxManage() {
             VBoxManage.exe "$@"
         }
@@ -221,7 +221,7 @@ elif [[ "$(cat /proc/sys/kernel/osrelease 2>/dev/null)" =~ [Mm]icrosoft ]]; then
         wsl_path_VBoxManage='/mnt/c/Program Files/Oracle/VirtualBox/VBoxManage.exe'
         echo "Can't find VBoxManage in PATH variable,"
         echo "checking ${wsl_path_VBoxManage}"
-        if [ -n "$("${wsl_path_VBoxManage}" -v 2>/dev/null)" ]; then
+        if [[ -n "$("${wsl_path_VBoxManage}" -v 2>/dev/null)" ]]; then
             PATH="${PATH}:${wsl_path_VBoxManage%/*}"
             function VBoxManage() {
                 VBoxManage.exe "$@"
@@ -235,7 +235,7 @@ elif [[ "$(cat /proc/sys/kernel/osrelease 2>/dev/null)" =~ [Mm]icrosoft ]]; then
         fi
     fi
 # everything else (not cygwin and not wsl)
-elif [ -z "$(VBoxManage -v 2>/dev/null)" ]; then
+elif [[ -z "$(VBoxManage -v 2>/dev/null)" ]]; then
     echo "Please make sure VirtualBox version 6.0 or higher is installed,"
     echo "and that the path to the VBoxManage executable is in the PATH variable."
     exit
@@ -244,7 +244,7 @@ fi
 # VirtualBox version
 vbox_version="$(VBoxManage -v 2>/dev/null)"
 vbox_version="$( printf ${vbox_version} | tr -d '\r')"
-if [ -z "${vbox_version}" -o -z "${vbox_version:2:1}" ]; then
+if [[ -z "${vbox_version}" || -z "${vbox_version:2:1}" ]]; then
     echo "Can't determine VirtualBox version. Exiting."
     exit
 elif [[ ( "${vbox_version:0:1}" -lt 5 ) || ( "${vbox_version:0:1}" = 5 && "${vbox_version:2:1}" -lt 2 ) ]]; then
@@ -265,8 +265,8 @@ fi
 
 # Oracle VM VirtualBox Extension Pack
 extpacks="$(VBoxManage list extpacks 2>/dev/null)"
-if [ "$(expr match "${extpacks}" '.*Oracle VM VirtualBox Extension Pack')" -le "0" \
-    -o "$(expr match "${extpacks}" '.*Usable:[[:blank:]]*false')" -gt "0" ]; then
+if [[ "$(expr match "${extpacks}" '.*Oracle VM VirtualBox Extension Pack')" -le "0" || \
+      "$(expr match "${extpacks}" '.*Usable:[[:blank:]]*false')" -gt "0" ]]; then
     echo "Please make sure Oracle VM VirtualBox Extension Pack is installed, and that"
     echo "all installed VirtualBox extensions are listed as usable when"
     echo "running the command \"VBoxManage list extpacks\""
@@ -274,16 +274,16 @@ if [ "$(expr match "${extpacks}" '.*Oracle VM VirtualBox Extension Pack')" -le "
 fi
 
 # dmg2img
-if [ -z "$(dmg2img -d 2>/dev/null)" ]; then
-    if [ -z "$(cygcheck -V 2>/dev/null)" ]; then
+if [[ -z "$(dmg2img -d 2>/dev/null)" ]]; then
+    if [[ -z "$(cygcheck -V 2>/dev/null)" ]]; then
         echo "Please install the package dmg2img."
         exit
-    elif [ -z "$(${PWD}/dmg2img -d 2>/dev/null)" ]; then
+    elif [[ -z "$(${PWD}/dmg2img -d 2>/dev/null)" ]]; then
         echo "Locally installing dmg2img"
         wget "http://vu1tur.eu.org/tools/dmg2img-1.6.6-win32.zip" \
              ${wgetargs} \
              --output-document="dmg2img-1.6.6-win32.zip"
-        if [ ! -s dmg2img-1.6.6-win32.zip ]; then
+        if [[ ! -s dmg2img-1.6.6-win32.zip ]]; then
              echo "Error downloading dmg2img. Please provide the package manually."
              exit
         fi
@@ -325,18 +325,18 @@ print_dimly "${macOS_release_name} selected to be downloaded and installed"
 
 function prompt_delete_existing_vm() {
 print_dimly "stage: prompt_delete_existing_vm"
-if [ -n "$(VBoxManage showvminfo "${vmname}" 2>/dev/null)" ]; then
+if [[ -n "$(VBoxManage showvminfo "${vm_name}" 2>/dev/null)" ]]; then
     echo ''
-    echo 'A virtual machine named "'"${vmname}"'" already exists.'
-    printf "${warning_color}"'Delete existing virtual machine "'"${vmname}"'"?'"${default_color}"
+    echo 'A virtual machine named "'"${vm_name}"'" already exists.'
+    printf "${warning_color}"'Delete existing virtual machine "'"${vm_name}"'"?'"${default_color}"
     delete=""
     read -n 1 -p ' [y/N] ' delete
     echo ""
-    if [ "${delete,,}" == "y" ]; then
-        VBoxManage unregistervm "${vmname}" --delete
+    if [[ "${delete,,}" == "y" ]]; then
+        VBoxManage unregistervm "${vm_name}" --delete
     else
         echo ""
-        printf "${highlight_color}"'Please assign a different VM name to variable "vmname" by editing the script,'"${default_color}"
+        printf "${highlight_color}"'Please assign a different VM name to variable "vm_name" by editing the script,'"${default_color}"
         echo "or skip this check manually as described when running the following command:"
         would_you_like_to_know_less
         exit
@@ -344,16 +344,16 @@ if [ -n "$(VBoxManage showvminfo "${vmname}" 2>/dev/null)" ]; then
 fi
 }
 
-# Attempt to create new virtual machine named "${vmname}"
+# Attempt to create new virtual machine named "${vm_name}"
 function create_vm() {
 print_dimly "stage: create_vm"
-if [ -n "$( VBoxManage createvm --name "${vmname}" --ostype "MacOS1013_64" --register 2>&1 >/dev/null )" ]; then
-    printf '\nError: Could not create virtual machine "'"${vmname}"'".
-'"${highlight_color}"'Please delete exising "'"${vmname}"'" VirtualBox configuration files '"${warning_color}"'manually'"${default_color}"'.
+if [[ -n "$( VBoxManage createvm --name "${vm_name}" --ostype "MacOS1013_64" --register 2>&1 >/dev/null )" ]]; then
+    printf '\nError: Could not create virtual machine "'"${vm_name}"'".
+'"${highlight_color}"'Please delete exising "'"${vm_name}"'" VirtualBox configuration files '"${warning_color}"'manually'"${default_color}"'.
 
 Error message:
 '
-    VBoxManage createvm --name "${vmname}" --ostype "MacOS1013_64" --register 2>/dev/tty
+    VBoxManage createvm --name "${vm_name}" --ostype "MacOS1013_64" --register 2>/dev/tty
     exit
 fi
 }
@@ -368,11 +368,11 @@ wget "${sucatalog}" \
      --output-document="${macOS_release_name}_sucatalog"
 
 # if file was not downloaded correctly
-if [ ! -s "${macOS_release_name}_sucatalog" ]; then
+if [[ ! -s "${macOS_release_name}_sucatalog" ]]; then
     wget --debug -O /dev/null -o "${macOS_release_name}_wget.log" "${sucatalog}"
     echo ""
     echo "Couldn't download the Apple software update catalog."
-    if [ "$(expr match "$(cat "${macOS_release_name}_wget.log")" '.*ERROR[[:print:]]*is not trusted')" -gt "0" ]; then
+    if [[ "$(expr match "$(cat "${macOS_release_name}_wget.log")" '.*ERROR[[:print:]]*is not trusted')" -gt "0" ]]; then
         printf '
 Make sure certificates from a certificate authority are installed.
 Certificates are often installed through the package manager with
@@ -482,7 +482,7 @@ function generate_nvram_bin_file() {
     # calculate crc32 using gzip, flip crc32 bytes into big-endian
     local crc32="$(printf "${entry}" | xxd -r -p | gzip -c | tail -c8 | od -tx4 -N4 -An --endian=big)"
     # save binary data
-    printf -- "${entry} ${crc32}" | xxd -r -p - "${vmname}_${filename}.bin"
+    printf -- "${entry} ${crc32}" | xxd -r -p - "${vm_name}_${filename}.bin"
 }
 
 # MLB
@@ -493,7 +493,7 @@ generate_nvram_bin_file MLB "${MLB_b16}" "4D1EDE05-38C7-4A6A-9CC6-4BCCA8B38C14"
 # Convert the mixed-ASCII-and-base16 ROM value
 # into an ASCII string that represents a base16 number.
 ROM_b16="$(for (( i=0; i<${#ROM}; )); do let j=i+1;
-               if [ "${ROM:${i}:1}" == "%" ]; then
+               if [[ "${ROM:${i}:1}" == "%" ]]; then
                    echo -n "${ROM:${j}:2}"; let i=i+3;
                else
                    x="$(echo -n "${ROM:${i}:1}" | od -t x1 -An | tr -d ' ')";
@@ -512,12 +512,12 @@ generate_nvram_bin_file csr-active-config "${SYSTEM_INTEGRITY_PROTECTION}" "7C43
 function create_macos_installation_files_viso() {
 print_dimly "stage: create_macos_installation_files_viso"
 echo "Creating EFI startup script"
-echo 'echo -off' > "${vmname}_startup.nsh"
+echo 'echo -off' > "${vm_name}_startup.nsh"
 if [[ ( "${vbox_version:0:1}" -lt 6 ) || ( "${vbox_version:0:1}" = 6 && "${vbox_version:2:1}" = 0 ) ]]; then
     echo 'load fs0:\EFI\OC\Drivers\AppleImageLoader.efi
 load fs0:\EFI\OC\Drivers\AppleUiSupport.efi
 load fs0:\EFI\OC\Drivers\ApfsDriverLoader.efi
-map -r' >> "${vmname}_startup.nsh"
+map -r' >> "${vm_name}_startup.nsh"
 fi
 echo 'if exist "fs0:\EFI\NVRAM\MLB.bin" then
   dmpstore -all -l fs0:\EFI\NVRAM\MLB.bin
@@ -542,7 +542,7 @@ for %a run (1 5)
   if exist "fs%a:\System\Library\CoreServices\boot.efi" then
     "fs%a:\System\Library\CoreServices\boot.efi"
   endif
-endfor' >> "${vmname}_startup.nsh"
+endfor' >> "${vm_name}_startup.nsh"
 
 echo ""
 echo "Creating VirtualBox 6 virtual ISO containing the"
@@ -559,12 +559,12 @@ for filename in "BaseSystem.chunklist" \
                 "AppleDiagnostics.dmg" \
                 "AppleDiagnostics.chunklist" \
                 "BaseSystem.dmg" ; do
-    if [ -s "${macOS_release_name}_${filename}" ]; then
+    if [[ -s "${macOS_release_name}_${filename}" ]]; then
         echo "/${filename}=\"${macOS_release_name}_${filename}\"" >> "${macOS_release_name}_Installation_files.viso"
     fi
 done
 
-if [ -s "${macOS_release_name}_InstallESD.part00" ]; then
+if [[ -s "${macOS_release_name}_InstallESD.part00" ]]; then
     for part in "${macOS_release_name}_InstallESD.part"*; do
         echo "/InstallESD${part##*InstallESD}=\"${part}\"" >> "${macOS_release_name}_Installation_files.viso"
     done
@@ -572,41 +572,41 @@ fi
 
 # NVRAM binary files
 for filename in "MLB.bin" "ROM.bin" "csr-active-config.bin" "system-id.bin"; do
-    if [ -s "${vmname}_${filename}" ]; then
-        echo "/ESP/EFI/NVRAM/${filename}=\"${vmname}_${filename}\"" >> "${macOS_release_name}_Installation_files.viso"
+    if [[ -s "${vm_name}_${filename}" ]]; then
+        echo "/ESP/EFI/NVRAM/${filename}=\"${vm_name}_${filename}\"" >> "${macOS_release_name}_Installation_files.viso"
     fi
 done
 
 # EFI drivers for VirtualBox 6.0 and 5.2
 for filename in "ApfsDriverLoader.efi" "AppleImageLoader.efi" "AppleUiSupport.efi"; do
-    if [ -s "${filename}" ]; then
+    if [[ -s "${filename}" ]]; then
         echo "/ESP/EFI/OC/Drivers/${filename}=\"${filename}\"" >> "${macOS_release_name}_Installation_files.viso"
     fi
 done
 
 # EFI startup script
-echo "/ESP/startup.nsh=\"${vmname}_startup.nsh\"" >> "${macOS_release_name}_Installation_files.viso"
+echo "/ESP/startup.nsh=\"${vm_name}_startup.nsh\"" >> "${macOS_release_name}_Installation_files.viso"
 
 }
 
 # Create the macOS base system virtual disk image
 function create_basesystem_vdi() {
 print_dimly "stage: create_basesystem_vdi"
-if [ -s "${macOS_release_name}_BaseSystem.vdi" ]; then
+if [[ -s "${macOS_release_name}_BaseSystem.vdi" ]]; then
     echo "${macOS_release_name}_BaseSystem.vdi bootstrap virtual disk image exists."
-elif [ ! -s "${macOS_release_name}_BaseSystem.dmg" ]; then
+elif [[ ! -s "${macOS_release_name}_BaseSystem.dmg" ]]; then
     echo ""
     echo "Could not find ${macOS_release_name}_BaseSystem.dmg; exiting."
     exit
 else
     echo "Converting to BaseSystem.dmg to BaseSystem.img"
-    if [ -n "$("${PWD}/dmg2img.exe" -d 2>/dev/null)" ]; then
+    if [[ -n "$("${PWD}/dmg2img.exe" -d 2>/dev/null)" ]]; then
         "${PWD}/dmg2img.exe" "${macOS_release_name}_BaseSystem.dmg" "${macOS_release_name}_BaseSystem.img"
     else
         dmg2img "${macOS_release_name}_BaseSystem.dmg" "${macOS_release_name}_BaseSystem.img"
     fi
     VBoxManage convertfromraw --format VDI "${macOS_release_name}_BaseSystem.img" "${macOS_release_name}_BaseSystem.vdi"
-    if [ -s "${macOS_release_name}_BaseSystem.vdi" ]; then
+    if [[ -s "${macOS_release_name}_BaseSystem.vdi" ]]; then
         rm "${macOS_release_name}_BaseSystem.img" 2>/dev/null
     fi
 fi
@@ -615,20 +615,20 @@ fi
 # Create the target virtual disk image
 function create_target_vdi() {
 print_dimly "stage: create_target_vdi"
-if [ -w "${vmname}.vdi" ]; then
-    echo "${vmname}.vdi target system virtual disk image exists."
-elif [ "${macOS_release_name}" = "Catalina" -a "${storagesize}" -lt 25000 ]; then
+if [[ -w "${vm_name}.vdi" ]]; then
+    echo "${vm_name}.vdi target system virtual disk image exists."
+elif [[ "${macOS_release_name}" = "Catalina" && "${storage_size}" -lt 25000 ]]; then
     echo "Attempting to install macOS Catalina on a disk smaller than 25000MB will fail."
     echo "Please assign a larger virtual disk image size. Exiting."
     exit
-elif [ "${storagesize}" -lt 22000 ]; then
+elif [[ "${storage_size}" -lt 22000 ]]; then
     echo "Attempting to install macOS on a disk smaller than 22000MB will fail."
     echo "Please assign a larger virtual disk image size. Exiting."
     exit
 else
-    echo "Creating ${vmname} target system virtual disk image."
-    VBoxManage createmedium --size="${storagesize}" \
-                            --filename "${vmname}.vdi" \
+    echo "Creating ${vm_name} target system virtual disk image."
+    VBoxManage createmedium --size="${storage_size}" \
+                            --filename "${vm_name}.vdi" \
                             --variant standard 2>/dev/tty
 fi
 }
@@ -636,27 +636,27 @@ fi
 # Create the installation media virtual disk image
 function create_install_vdi() {
 print_dimly "stage: create_install_vdi"
-if [ -w "Install ${macOS_release_name}.vdi" ]; then
+if [[ -w "Install ${macOS_release_name}.vdi" ]]; then
     echo '"'"Install ${macOS_release_name}.vdi"'" virtual disk image exists.'
     printf "${warning_color}"'Delete "'"Install ${macOS_release_name}.vdi"'"?'"${default_color}"
     delete=""
     read -n 1 -p " [y/N] " delete
     echo ""
-    if [ "${delete,,}" == "y" ]; then
-        if [[ "$( VBoxManage list runningvms )" =~ \""${vmname}"\" ]];
+    if [[ "${delete,,}" == "y" ]]; then
+        if [[ "$( VBoxManage list runningvms )" =~ \""${vm_name}"\" ]];
         then
             echo '"'"Install ${macOS_release_name}.vdi"'" may be deleted'
             echo "only when the virtual machine is powered off."
             echo "Exiting."
             exit
         else
-            VBoxManage storagectl "${vmname}" --remove --name SATA >/dev/null 2>&1
+            VBoxManage storagectl "${vm_name}" --remove --name SATA >/dev/null 2>&1
             VBoxManage closemedium "Install ${macOS_release_name}.vdi" >/dev/null 2>&1
             rm "Install ${macOS_release_name}.vdi"
         fi
     fi
 fi
-if [ ! -e "Install ${macOS_release_name}.vdi" ]; then
+if [[ ! -e "Install ${macOS_release_name}.vdi" ]]; then
     echo "Creating ${macOS_release_name} installation media virtual disk image."
     VBoxManage createmedium --size=12000 \
                             --filename "Install ${macOS_release_name}.vdi" \
@@ -666,39 +666,39 @@ fi
 
 function configure_vm() {
 print_dimly "stage: configure_vm"
-VBoxManage modifyvm "${vmname}" --cpus "${cpucount}" --memory "${memorysize}" \
- --vram "${gpuvram}" --pae on --boot1 none --boot2 none --boot3 none \
+VBoxManage modifyvm "${vm_name}" --cpus "${cpu_count}" --memory "${memory_size}" \
+ --vram "${gpu_vram}" --pae on --boot1 none --boot2 none --boot3 none \
  --boot4 none --firmware efi --rtcuseutc on --usbxhci on --chipset ich9 \
  --mouse usbtablet --keyboard usb --audiocontroller hda --audiocodec stac9221
 
-VBoxManage setextradata "${vmname}" \
+VBoxManage setextradata "${vm_name}" \
  "VBoxInternal2/EfiGraphicsResolution" "${resolution}"
-VBoxManage setextradata "${vmname}" \
+VBoxManage setextradata "${vm_name}" \
  "VBoxInternal/Devices/efi/0/Config/DmiSystemFamily" "${DmiSystemFamily}"
-VBoxManage setextradata "${vmname}" \
+VBoxManage setextradata "${vm_name}" \
  "VBoxInternal/Devices/efi/0/Config/DmiSystemProduct" "${DmiSystemProduct}"
-VBoxManage setextradata "${vmname}" \
+VBoxManage setextradata "${vm_name}" \
  "VBoxInternal/Devices/efi/0/Config/DmiSystemSerial" "${DmiSystemSerial}"
-VBoxManage setextradata "${vmname}" \
+VBoxManage setextradata "${vm_name}" \
  "VBoxInternal/Devices/efi/0/Config/DmiSystemUuid" "${DmiSystemUuid}"
-VBoxManage setextradata "${vmname}" \
+VBoxManage setextradata "${vm_name}" \
  "VBoxInternal/Devices/efi/0/Config/DmiOEMVBoxVer" "${DmiOEMVBoxVer}"
-VBoxManage setextradata "${vmname}" \
+VBoxManage setextradata "${vm_name}" \
  "VBoxInternal/Devices/efi/0/Config/DmiOEMVBoxRev" "${DmiOEMVBoxRev}"
-VBoxManage setextradata "${vmname}" \
+VBoxManage setextradata "${vm_name}" \
  "VBoxInternal/Devices/efi/0/Config/DmiBIOSVersion" "${DmiBIOSVersion}"
-VBoxManage setextradata "${vmname}" \
+VBoxManage setextradata "${vm_name}" \
  "VBoxInternal/Devices/efi/0/Config/DmiBoardProduct" "${DmiBoardProduct}"
-VBoxManage setextradata "${vmname}" \
+VBoxManage setextradata "${vm_name}" \
  "VBoxInternal/Devices/efi/0/Config/DmiBoardSerial" "${DmiBoardSerial}"
-VBoxManage setextradata "${vmname}" \
+VBoxManage setextradata "${vm_name}" \
  "VBoxInternal/Devices/efi/0/Config/DmiSystemVendor" "Apple Inc."
-VBoxManage setextradata "${vmname}" \
+VBoxManage setextradata "${vm_name}" \
  "VBoxInternal/Devices/efi/0/Config/DmiSystemVersion" "1.0"
-VBoxManage setextradata "${vmname}" \
+VBoxManage setextradata "${vm_name}" \
  "VBoxInternal/Devices/smc/0/Config/DeviceKey" \
   "ourhardworkbythesewordsguardedpleasedontsteal(c)AppleComputerInc"
-VBoxManage setextradata "${vmname}" \
+VBoxManage setextradata "${vm_name}" \
  "VBoxInternal/Devices/smc/0/Config/GetKeyFromRealSMC" 0
 }
 
@@ -706,22 +706,22 @@ function populate_virtual_disks() {
 print_dimly "stage: populate_virtual_disks"
 # Attach virtual disk images of the base system, installation, and target
 # to the virtual machine
-VBoxManage storagectl "${vmname}" --remove --name SATA >/dev/null 2>&1
+VBoxManage storagectl "${vm_name}" --remove --name SATA >/dev/null 2>&1
 if [[ -n $(
-    2>&1 VBoxManage storagectl "${vmname}" --add sata --name SATA --hostiocache on >/dev/null
-    2>&1 VBoxManage storageattach "${vmname}" --storagectl SATA --port 0 \
-                --type hdd --nonrotational on --medium "${vmname}.vdi" >/dev/null
-    2>&1 VBoxManage storageattach "${vmname}" --storagectl SATA --port 1 --hotpluggable on \
+    2>&1 VBoxManage storagectl "${vm_name}" --add sata --name SATA --hostiocache on >/dev/null
+    2>&1 VBoxManage storageattach "${vm_name}" --storagectl SATA --port 0 \
+                --type hdd --nonrotational on --medium "${vm_name}.vdi" >/dev/null
+    2>&1 VBoxManage storageattach "${vm_name}" --storagectl SATA --port 1 --hotpluggable on \
                 --type hdd --nonrotational on --medium "Install ${macOS_release_name}.vdi" >/dev/null
-    2>&1 VBoxManage storageattach "${vmname}" --storagectl SATA --port 2 --hotpluggable on \
+    2>&1 VBoxManage storageattach "${vm_name}" --storagectl SATA --port 2 --hotpluggable on \
                 --type hdd --nonrotational on --medium "${macOS_release_name}_BaseSystem.vdi" >/dev/null
-    2>&1 VBoxManage storageattach "${vmname}" --storagectl SATA --port 3 \
+    2>&1 VBoxManage storageattach "${vm_name}" --storagectl SATA --port 3 \
                 --type dvddrive --medium "${macOS_release_name}_Installation_files.viso" >/dev/null
 ) ]]; then
     echo "One or more virtual storage files could not be loaded. Exiting."; exit
 fi
-echo "Starting virtual machine ${vmname}. This should take a couple of minutes."
-( VBoxManage startvm "${vmname}" >/dev/null 2>&1 )
+echo "Starting virtual machine ${vm_name}. This should take a couple of minutes."
+( VBoxManage startvm "${vm_name}" >/dev/null 2>&1 )
 prompt_lang_utils
 prompt_terminal_ready
 print_dimly "Please wait"
@@ -732,7 +732,7 @@ kbstring='disks="$(diskutil list | grep -o "\*[0-9][^ ]* GB *disk[0-9]$" | grep 
 'disks=(${disks[@]}) && '\
 'if [ -z "${disks}" ]; then echo "Could not find disks"; fi && '\
 '[ -n "${disks[0]}" ] && '\
-'diskutil partitionDisk "/dev/${disks[0]}" 1 GPT APFS "'"${vmname}"'" R && '\
+'diskutil partitionDisk "/dev/${disks[0]}" 1 GPT APFS "'"${vm_name}"'" R && '\
 'diskutil partitionDisk "/dev/${disks[1]}" 1 GPT JHFS+ "Install" R && '
 send_keys
 # Create secondary base system on the Install disk
@@ -767,9 +767,9 @@ detached from the VM and released from VirtualBox.
 print_dimly "If the partitioning fails, exit the script by pressing CTRL-C.
 Otherwise, please wait."
 # Detach the original 2GB BaseSystem.vdi
-while [[ "$( VBoxManage list runningvms )" =~ \""${vmname}"\" ]]; do sleep 2 >/dev/null 2>&1; done;
+while [[ "$( VBoxManage list runningvms )" =~ \""${vm_name}"\" ]]; do sleep 2 >/dev/null 2>&1; done;
 # Release basesystem vdi from VirtualBox configuration
-VBoxManage storageattach "${vmname}" --storagectl SATA --port 2 --medium none >/dev/null 2>&1
+VBoxManage storageattach "${vm_name}" --storagectl SATA --port 2 --medium none >/dev/null 2>&1
 VBoxManage closemedium "${macOS_release_name}_BaseSystem.vdi" >/dev/null 2>&1
 echo "${macOS_release_name}_BaseSystem.vdi detached from the virtual machine"
 echo "and released from VirtualBox Manager."
@@ -777,24 +777,24 @@ echo "and released from VirtualBox Manager."
 
 function populate_macos_target() {
 print_dimly "stage: populate_macos_target"
-if [[ "$( VBoxManage list runningvms )" =~ \""${vmname}"\" ]]; then
+if [[ "$( VBoxManage list runningvms )" =~ \""${vm_name}"\" ]]; then
     printf "${highlight_color}"'Please '"${warning_color}"'manually'"${highlight_color}"' shut down the virtual machine and press enter to continue.'"${default_color}"
     clear_input_buffer_then_read
 fi
-VBoxManage storagectl "${vmname}" --remove --name SATA >/dev/null 2>&1
+VBoxManage storagectl "${vm_name}" --remove --name SATA >/dev/null 2>&1
 if [[ -n $(
-    2>&1 VBoxManage storagectl "${vmname}" --add sata --name SATA --hostiocache on >/dev/null
-    2>&1 VBoxManage storageattach "${vmname}" --storagectl SATA --port 0 \
-                --type hdd --nonrotational on --medium "${vmname}.vdi" >/dev/null
-    2>&1 VBoxManage storageattach "${vmname}" --storagectl SATA --port 1 --hotpluggable on \
+    2>&1 VBoxManage storagectl "${vm_name}" --add sata --name SATA --hostiocache on >/dev/null
+    2>&1 VBoxManage storageattach "${vm_name}" --storagectl SATA --port 0 \
+                --type hdd --nonrotational on --medium "${vm_name}.vdi" >/dev/null
+    2>&1 VBoxManage storageattach "${vm_name}" --storagectl SATA --port 1 --hotpluggable on \
                 --type hdd --nonrotational on --medium "Install ${macOS_release_name}.vdi" >/dev/null
-    2>&1 VBoxManage storageattach "${vmname}" --storagectl SATA --port 2 \
+    2>&1 VBoxManage storageattach "${vm_name}" --storagectl SATA --port 2 \
                 --type dvddrive --medium "${macOS_release_name}_Installation_files.viso" >/dev/null
 ) ]]; then
     echo "One or more virtual storage files could not be loaded. Exiting."; exit
 fi
 echo "The VM will boot from the populated installer base system virtual disk."
-( VBoxManage startvm "${vmname}" >/dev/null 2>&1 )
+( VBoxManage startvm "${vm_name}" >/dev/null 2>&1 )
 prompt_lang_utils
 prompt_terminal_ready
 add_another_terminal
@@ -809,9 +809,9 @@ echo ""
 kbstring='disks="$(diskutil list | grep -o "[0-9][^ ]* GB *disk[0-9]$" | sort -gr | grep -o disk[0-9])" && '\
 'disks=(${disks[@]}) && '\
 'printf '"'"'trap "exit 0" SIGUSR1; while true; do sleep 10; done;'"'"' | sh && '\
-'mkdir -p "/Volumes/'"${vmname}"'/tmp/mount_efi" && '\
-'mount_msdos /dev/${disks[0]}s1 "/Volumes/'"${vmname}"'/tmp/mount_efi" && '\
-'cp -r "/Volumes/'"${macOS_release_name:0:5}-files"'/ESP/"* "/Volumes/'"${vmname}"'/tmp/mount_efi/" && '\
+'mkdir -p "/Volumes/'"${vm_name}"'/tmp/mount_efi" && '\
+'mount_msdos /dev/${disks[0]}s1 "/Volumes/'"${vm_name}"'/tmp/mount_efi" && '\
+'cp -r "/Volumes/'"${macOS_release_name:0:5}-files"'/ESP/"* "/Volumes/'"${vm_name}"'/tmp/mount_efi/" && '\
 'installer_pid=$(ps | grep startosinstall | cut -d '"'"' '"'"' -f 3) && '\
 'kill -SIGUSR1 ${installer_pid}'
 send_keys
@@ -826,7 +826,7 @@ cycle_through_terminal_windows
 kbstring='background_pid="$(ps | grep '"'"' sh$'"'"' | cut -d '"'"' '"'"' -f 3)" && '\
 'app_path="$(ls -d /Install*.app)" && '\
 'cd "/${app_path}/Contents/Resources/" && '\
-'./startosinstall --agreetolicense --pidtosignal ${background_pid} --rebootdelay 500 --volume "/Volumes/'"${vmname}"'"'
+'./startosinstall --agreetolicense --pidtosignal ${background_pid} --rebootdelay 500 --volume "/Volumes/'"${vm_name}"'"'
 send_keys
 send_enter
 if [[ ( "${vbox_version:0:1}" -lt 6 ) || ( "${vbox_version:0:1}" = 6 && "${vbox_version:2:1}" = 0 ) ]]; then
@@ -834,12 +834,12 @@ if [[ ( "${vbox_version:0:1}" -lt 6 ) || ( "${vbox_version:0:1}" = 6 && "${vbox_
 powers off the virtual machine and detaches the device "'"Install ${macOS_release_name}.vdi"'" to avoid
 booting into the initial installer environment again.'
     clear_input_buffer_then_read
-    VBoxManage controlvm "${vmname}" poweroff >/dev/null 2>&1
+    VBoxManage controlvm "${vm_name}" poweroff >/dev/null 2>&1
     for (( i=10; i>5; i-- )); do printf '   \r'"${i}"; sleep 0.5; done
-    VBoxManage storagectl "${vmname}" --remove --name SATA >/dev/null 2>&1
-    VBoxManage storagectl "${vmname}" --add sata --name SATA --hostiocache on >/dev/null 2>&1
-    VBoxManage storageattach "${vmname}" --storagectl SATA --port 0 \
-               --type hdd --nonrotational on --medium "${vmname}.vdi"
+    VBoxManage storagectl "${vm_name}" --remove --name SATA >/dev/null 2>&1
+    VBoxManage storagectl "${vm_name}" --add sata --name SATA --hostiocache on >/dev/null 2>&1
+    VBoxManage storageattach "${vm_name}" --storagectl SATA --port 0 \
+               --type hdd --nonrotational on --medium "${vm_name}.vdi"
     echo ""
     for (( i=5; i>0; i-- )); do printf '   \r'"${i}"; sleep 0.5; done
 fi
@@ -855,7 +855,7 @@ printf '\n'"${highlight_color}"'That'"'"'s it! Enjoy your virtual machine.'"${de
 
 function delete_temporary_files() {
 print_dimly "stage: delete_temporary_files"
-if [[ ! "$(VBoxManage showvminfo "${vmname}")" =~ State:[\ \t]*powered\ off ]];
+if [[ ! "$(VBoxManage showvminfo "${vm_name}")" =~ State:[\ \t]*powered\ off ]];
 then
     printf 'Temporary files may be deleted when the virtual machine is powered off
 and without a suspended state by running the following command at the script'"'"'s
@@ -864,10 +864,10 @@ working directory:
   '"${highlight_color}${0} delete_temporary_files${default_color}"'\n'
 else
     # detach temporary VDIs and attach the macOS target disk
-    VBoxManage storagectl "${vmname}" --remove --name SATA >/dev/null 2>&1
-    VBoxManage storagectl "${vmname}" --add sata --name SATA --hostiocache on >/dev/null 2>&1
-    VBoxManage storageattach "${vmname}" --storagectl SATA --port 0 \
-               --type hdd --nonrotational on --medium "${vmname}.vdi"
+    VBoxManage storagectl "${vm_name}" --remove --name SATA >/dev/null 2>&1
+    VBoxManage storagectl "${vm_name}" --add sata --name SATA --hostiocache on >/dev/null 2>&1
+    VBoxManage storageattach "${vm_name}" --storagectl SATA --port 0 \
+               --type hdd --nonrotational on --medium "${vm_name}.vdi"
     VBoxManage closemedium "Install ${macOS_release_name}.vdi" >/dev/null 2>&1
     VBoxManage closemedium "${macOS_release_name}_BaseSystem.vdi" >/dev/null 2>&1
     printf 'The following temporary files are safe to delete:
@@ -875,12 +875,12 @@ else
       "'"${macOS_release_name}_BaseSystem"*'"
       "'"${macOS_release_name}_Install"*'"
       "'"Install ${macOS_release_name}.vdi"'"
-      "'"${vmname}_"*".bin"'"
-      "'"${vmname}_startup.nsh"'"
+      "'"${vm_name}_"*".bin"'"
+      "'"${vm_name}_startup.nsh"'"
       "'"ApfsDriverLoader.efi"'"
       "'"Apple"*".efi"'"
       "'"AppleSupport-v2.0.4-RELEASE.zip"'"\n'
-    if [ -w "dmg2img.exe" ]; then
+    if [[ -w "dmg2img.exe" ]]; then
         printf '      "'"dmg2img.exe"'"\n'
     fi
     echo ""
@@ -888,13 +888,13 @@ else
     delete=""
     read -n 1 -p " [y/N] " delete
     echo ""
-    if [ "${delete,,}" == "y" ]; then
+    if [[ "${delete,,}" == "y" ]]; then
         rm "${macOS_release_name}_Apple"* \
            "${macOS_release_name}_BaseSystem"* \
            "${macOS_release_name}_Install"* \
            "Install ${macOS_release_name}.vdi" \
-           "${vmname}_"*".bin" \
-           "${vmname}_startup.nsh" \
+           "${vm_name}_"*".bin" \
+           "${vm_name}_startup.nsh" \
            "ApfsDriverLoader.efi" \
            "Apple"*".efi" \
            "AppleSupport-v2.0.4-RELEASE.zip" 2>/dev/null
@@ -1217,7 +1217,7 @@ function clear_input_buffer_then_read() {
 function send_keys() {
     scancode=$(for (( i=0; i < ${#kbstring}; i++ ));
                do c[i]=${kbstring:i:1}; echo -n ${kscd[${c[i]}]}" "; done)
-    VBoxManage controlvm "${vmname}" keyboardputscancode ${scancode} 1>/dev/null 2>&1
+    VBoxManage controlvm "${vm_name}" keyboardputscancode ${scancode} 1>/dev/null 2>&1
 }
 
 # read variable kbspecial and send keystrokes by name,
@@ -1227,7 +1227,7 @@ function send_special() {
     for keypress in ${kbspecial}; do
         scancode="${scancode}${kscd[${keypress}]}"" "
     done
-    VBoxManage controlvm "${vmname}" keyboardputscancode ${scancode} 1>/dev/null 2>&1
+    VBoxManage controlvm "${vm_name}" keyboardputscancode ${scancode} 1>/dev/null 2>&1
 }
 
 function send_enter() {
@@ -1277,7 +1277,7 @@ function cycle_through_terminal_windows() {
 }
 
 function would_you_like_to_know_less() {
-    if [ -z "$(less --version 2>/dev/null)" ]; then
+    if [[ -z "$(less --version 2>/dev/null)" ]]; then
         printf '  '"${highlight_color}${0} documentation${default_color}"'\n'
     else
         printf '  '"${highlight_color}${0} documentation | less -R${default_color}"'\n'
