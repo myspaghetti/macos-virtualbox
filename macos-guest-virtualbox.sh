@@ -1,22 +1,27 @@
 #!/bin/bash
-# Push-button installer of macOS on VirtualBox
+
+# macOS-VirtualBox 快速安装指南
+
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-guest-virtualbox
 # version 0.87.7
 
-# Requirements: 40GB available storage on host
-# Dependencies: bash >= 4.3, xxd, gzip, unzip, wget, dmg2img,
-#               VirtualBox with Extension Pack >= 6.0
+# modifier：suliveevil
+# url：https://github.com/suliveevil/macos-guest-virtualbox
+
+# 要求: 40GB 可用空间
+# 依赖: bash >= 4.3, xxd, gzip, unzip, wget, dmg2img,
+# VirtualBox 和 Extension Pack >= 6.1.4
 
 function set_variables() {
-# Customize the installation by setting these variables:
-vm_name="macOS"                  # name of the VirtualBox virtual machine
-macOS_release_name="Mojave"      # install "HighSierra" "Mojave" or "Catalina"
-storage_size=80000               # VM disk image size in MB. Minimum 22000
-cpu_count=2                      # VM CPU cores, minimum 2
-memory_size=4096                 # VM RAM in MB, minimum 2048
-gpu_vram=128                     # VM video RAM in MB, minimum 34, maximum 128
-resolution="1280x800"            # VM display resolution
+# 通过修改以下变量进行自定义设置:
+vm_name="macOS"                  # 虚拟机名称
+macOS_release_name="Mojave"      # 安装 "HighSierra" "Mojave" 或 "Catalina"
+storage_size=80000               # 硬盘大小（MB），最小 22000
+cpu_count=2                      # CPU 核心，最小 2
+memory_size=4096                 # 内存（MB），最小2048
+gpu_vram=128                     # 显存（MB），最小 34，最大 128
+resolution="1920x1200"            # 分辨率
 
 # The following commented commands, when run on a genuine Mac,
 # may provide the values for NVRAM and other parameters required by iCloud,
@@ -49,19 +54,18 @@ SYSTEM_INTEGRITY_PROTECTION='10'  # '10' - enabled, '77' - disabled
 # welcome message
 function welcome() {
 printf '
-                  Push-button installer of macOS on VirtualBox
+                  macOS-VirtualBox 快速安装指南
 -------------------------------------------------------------------------------
 
-This script installs only open-source software and unmodified Apple binaries.
+脚本只安装开源软件和未经修改的 Apple binaries.
 
-The script checks for dependencies and will prompt to install them if unmet.
+脚本会检测依赖并提示安装所需依赖
 
 For iCloud and iMessage connectivity, the script needs to be edited with genuine
 or genuine-like Apple parameters. macOS will work without these parameters, but
 Apple-connected apps will not.
 
-The installation requires about '"${highlight_color}"'40GB'"${default_color}"' of available storage, 20GB for
-temporary installation files and 20GB for the virtual machine'"'"'s dynamically
+|安装需要 '"${highlight_color}"'40GB'"${default_color}"' 硬盘可用空间, 20GB 用于临时安装文件，20GB 用于虚拟机'"'"'s dynamically
 allocated storage disk image.
 
 The script can be resumed, as described when running the following command:
@@ -911,7 +915,7 @@ for stage in ${stages}; do
 done
 printf "
         ${highlight_color}NAME${default_color}
-Push-button installer of macOS on VirtualBox
+macOS-VirtualBox 快速安装指南
 
         ${highlight_color}DESCRIPTION${default_color}
 The script downloads, configures, and installs macOS High Sierra, Mojave,
