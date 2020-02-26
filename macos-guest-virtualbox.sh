@@ -15,8 +15,8 @@
 
 function set_variables() {
 # 通过修改以下变量进行自定义设置:
-vm_name="macOS"                  # 虚拟机名称
-macOS_release_name="Mojave"      # 安装 "HighSierra" "Mojave" 或 "Catalina"
+vm_name="macOS_Catalina"                  # 虚拟机名称
+macOS_release_name="Catalina"      # 安装 "HighSierra" "Mojave" 或 "Catalina"
 storage_size=80000               # 硬盘大小（MB），最小 22000
 cpu_count=2                      # CPU 核心，最小 2
 memory_size=4096                 # 内存（MB），最小2048
@@ -85,13 +85,13 @@ memory_size='"${memory_size}"'                 # VM RAM in MB, minimum 2048
 gpu_vram='"${gpu_vram}"'                     # VM video RAM in MB, minimum 34, maximum 128
 resolution="'"${resolution}"'"            # VM display resolution
 
-These values may be customized by editing them at the top of the script file.
+这些变量可以在前面几行脚本内进行修改。
 
 '"${highlight_color}"'Press enter to continue, CTRL-C to exit.'"${default_color}"
 clear_input_buffer_then_read
 }
 
-# check dependencies
+# 检查依赖
 
 function check_bash_version() {
 if [[ -z "${BASH_VERSION}" ]]; then
@@ -245,7 +245,7 @@ elif [[ -z "$(VBoxManage -v 2>/dev/null)" ]]; then
     exit
 fi
 
-# VirtualBox version
+# VirtualBox 版本
 vbox_version="$(VBoxManage -v 2>/dev/null)"
 vbox_version="$( printf ${vbox_version} | tr -d '\r')"
 if [[ -z "${vbox_version}" || -z "${vbox_version:2:1}" ]]; then
@@ -310,7 +310,7 @@ if [[ "${macOS_release_name:0:1}" =~ [Cc] ]]; then
               "${vbox_version}" =~ ^6\.1\.[123][0-9] || \
               "${vbox_version}" =~ ^6\.[2-9] ) ]]; then
         echo ""
-        echo "macOS Catalina requires VirtualBox version 6.1.4 or higher."
+        echo "macOS Catalina 要求 VirtualBox 6.1.4 及以上版本."
         echo "Exiting."
         exit
     fi
@@ -366,7 +366,7 @@ function prepare_macos_installation_files() {
 print_dimly "stage: prepare_macos_installation_files"
 # Find the correct download URL in the Apple catalog
 echo ""
-echo "Downloading Apple macOS ${macOS_release_name} software update catalog"
+echo "下载 Apple macOS ${macOS_release_name} software update catalog"
 wget "${sucatalog}" \
      ${wgetargs} \
      --output-document="${macOS_release_name}_sucatalog"
