@@ -65,7 +65,7 @@ For iCloud and iMessage connectivity, the script needs to be edited with genuine
 or genuine-like Apple parameters. macOS will work without these parameters, but
 Apple-connected apps will not.
 
-|安装需要 '"${highlight_color}"'40GB'"${default_color}"' 硬盘可用空间, 20GB 用于临时安装文件，20GB 用于虚拟机'"'"'s dynamically
+安装需要 '"${highlight_color}"'40GB'"${default_color}"' 硬盘可用空间, 20GB 用于临时安装文件，20GB 用于虚拟机'"'"'s dynamically
 allocated storage disk image.
 
 The script can be resumed, as described when running the following command:
