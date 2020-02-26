@@ -7,7 +7,7 @@
 # version 0.87.7
 
 # modifier：suliveevil
-# url：https://github.com/suliveevil/macos-guest-virtualbox
+# url：https://github.com/suliveevil/macOS-VirtualBox.git
 
 # 要求: 40GB 可用空间
 # 依赖: bash >= 4.3, xxd, gzip, unzip, wget, dmg2img,
