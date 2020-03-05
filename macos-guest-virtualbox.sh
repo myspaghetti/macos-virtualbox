@@ -2,7 +2,7 @@
 # Push-button installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-guest-virtualbox
-# version 0.87.7
+# version 0.87.8
 
 # Requirements: 40GB available storage on host
 # Dependencies: bash >= 4.3, xxd, gzip, unzip, wget, dmg2img,
@@ -11,7 +11,7 @@
 function set_variables() {
 # Customize the installation by setting these variables:
 vm_name="macOS"                  # name of the VirtualBox virtual machine
-macOS_release_name="Mojave"      # install "HighSierra" "Mojave" or "Catalina"
+macOS_release_name="Catalina"    # install "HighSierra" "Mojave" or "Catalina"
 storage_size=80000               # VM disk image size in MB. Minimum 22000
 cpu_count=2                      # VM CPU cores, minimum 2
 memory_size=4096                 # VM RAM in MB, minimum 2048
@@ -74,7 +74,7 @@ clear_input_buffer_then_read
 # custom settings prompt
 printf '
 vm_name="'"${vm_name}"'"                  # name of the VirtualBox virtual machine
-macOS_release_name="'"${macOS_release_name}"'"      # install "HighSierra" "Mojave" or "Catalina"
+macOS_release_name="'"${macOS_release_name}"'"    # install "HighSierra" "Mojave" or "Catalina"
 storage_size='"${storage_size}"'               # VM disk image size in MB. minimum 22000
 cpu_count='"${cpu_count}"'                      # VM CPU cores, minimum 2
 memory_size='"${memory_size}"'                 # VM RAM in MB, minimum 2048
