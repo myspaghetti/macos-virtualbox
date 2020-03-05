@@ -2,7 +2,7 @@
 # Push-button installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-guest-virtualbox
-# version 0.87.8
+# version 0.88.0
 
 # Requirements: 40GB available storage on host
 # Dependencies: bash >= 4.3, xxd, gzip, unzip, wget, dmg2img,
@@ -25,7 +25,7 @@ resolution="1280x800"            # VM display resolution
 # message if they do not match the genuine Mac exactly.
 # Non-genuine yet genuine-like parameters usually work.
 
-# system_profiler SPHardwareDataType
+#   system_profiler SPHardwareDataType
 DmiSystemFamily="MacBook Pro"        # Model Name
 DmiSystemProduct="MacBookPro11,2"    # Model Identifier
 DmiSystemSerial="NO_DEVICE_SN"       # Serial Number (system)
@@ -33,17 +33,24 @@ DmiSystemUuid="CAFECAFE-CAFE-CAFE-CAFE-DECAFFDECAFF" # Hardware UUID
 DmiOEMVBoxVer="string:1"             # Apple ROM Info
 DmiOEMVBoxRev="string:.23456"        # Apple ROM Info
 DmiBIOSVersion="string:MBP7.89"      # Boot ROM Version
-# ioreg -l | grep -m 1 board-id
+#   ioreg -l | grep -m 1 board-id
 DmiBoardProduct="Mac-3CBD00234E554E41"
-# nvram 4D1EDE05-38C7-4A6A-9CC6-4BCCA8B38C14:MLB
+#   nvram 4D1EDE05-38C7-4A6A-9CC6-4BCCA8B38C14:MLB
 DmiBoardSerial="NO_LOGIC_BOARD_SN"
 MLB="${DmiBoardSerial}"
-# nvram 4D1EDE05-38C7-4A6A-9CC6-4BCCA8B38C14:ROM
+#   nvram 4D1EDE05-38C7-4A6A-9CC6-4BCCA8B38C14:ROM
 ROM='%aa*%bbg%cc%dd'
-# ioreg -l -p IODeviceTree | grep \"system-id
+#   ioreg -l -p IODeviceTree | grep \"system-id
 SYSTEM_UUID="aabbccddeeff00112233445566778899"
-# csrutil status
+#   csrutil status
 SYSTEM_INTEGRITY_PROTECTION='10'  # '10' - enabled, '77' - disabled
+
+# Additional configurations may be saved in external files and loaded with the
+# following command prior to running the script:
+#   export macos_vm_vars_file=/path/to/variable_assignment_file
+# "variable_assignment_file" is a plain text file that contains zero or more
+# lines with a variable assignment for any variable specified above.
+[[ -r "${macos_vm_vars_file}" ]] && source "${macos_vm_vars_file}"
 }
 
 # welcome message
@@ -64,11 +71,13 @@ The installation requires about '"${highlight_color}"'40GB'"${default_color}"' o
 temporary installation files and 20GB for the virtual machine'"'"'s dynamically
 allocated storage disk image.
 
-The script can be resumed, as described when running the following command:
+Documentation about optional configuration, resuming the script by stages, and
+other topics can be viewed with the following command:
+
 '
 would_you_like_to_know_less
 printf '
-'"${highlight_color}"'Press enter to review the script settings.'"${default_color}"
+'"${highlight_color}"'Press enter to review the script configuration.'"${default_color}"
 clear_input_buffer_then_read
 
 # custom settings prompt
@@ -81,7 +90,7 @@ memory_size='"${memory_size}"'                 # VM RAM in MB, minimum 2048
 gpu_vram='"${gpu_vram}"'                     # VM video RAM in MB, minimum 34, maximum 128
 resolution="'"${resolution}"'"            # VM display resolution
 
-These values may be customized by editing them at the top of the script file.
+These values may be customized as described in the documentation.
 
 '"${highlight_color}"'Press enter to continue, CTRL-C to exit.'"${default_color}"
 clear_input_buffer_then_read
@@ -953,15 +962,30 @@ ${low_contrast_color}configure_vm create_nvram_files create_macos_installation_f
 The above stages might be used to update the EFI and NVRAM variables required
 for iCloud and iMessage connectivity and other Apple-connected apps.
 
+        ${highlight_color}Configuration${default_color}
+The script's default configuration is stored in the ${low_contrast_color}set_variables()${default_color} function at
+the top of the script. No manual configuration is required to run the script.
+
+The configuration may be manually edited either by editing the variable
+assignment in ${low_contrast_color}set_variables()${default_color} or by running the following
+command prior to running the script:
+
+    ${low_contrast_color}export macos_vm_vars=/path/to/variable_assignment_file${default_color}
+
+\"${low_contrast_color}variable_assignment_file${default_color}\" is a plain text file that contains zero or more
+lines with a variable assignment for any variable specified in ${low_contrast_color}set_variables()${default_color},
+for example ${low_contrast_color}macOS_release_name=\"HighSierra\"${default_color} or ${low_contrast_color}DmiSystemFamily=\"iMac\"${default_color}
+
         ${highlight_color}iCloud and iMessage connectivity${default_color}
 iCloud, iMessage, and other connected Apple services require a valid device
 name and serial number, board ID and serial number, and other genuine
 (or genuine-like) Apple parameters. These parameters may be edited at the top
-of the script, accompanied by an explanation. Editing them is not required when
-installing or running macOS, only when connecting to the iCould app, iMessage,
-and other apps that authenticate the device with Apple.
+of the script or loaded through a configuration file as described in the
+section above. Assigning these parameters is not required when installing or
+running macOS, only when connecting to the iCould app, iMessage, and other
+apps that authenticate the device with Apple.
 
-The variables needed to be assigned in the script are the following:
+These are the variables that are required for iMessage connectivity:
 
 ${low_contrast_color}DmiSystemFamily    # Model name${default_color}
 ${low_contrast_color}DmiSystemProduct   # Model identifier${default_color}
