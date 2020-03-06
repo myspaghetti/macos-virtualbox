@@ -2,7 +2,7 @@
 # Push-button installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-guest-virtualbox
-# version 0.88.0
+# version 0.88.1
 
 # Requirements: 40GB available storage on host
 # Dependencies: bash >= 4.3, xxd, gzip, unzip, wget, dmg2img,
@@ -970,7 +970,7 @@ The configuration may be manually edited either by editing the variable
 assignment in ${low_contrast_color}set_variables()${default_color} or by running the following
 command prior to running the script:
 
-    ${low_contrast_color}export macos_vm_vars=/path/to/variable_assignment_file${default_color}
+    ${low_contrast_color}export macos_vm_vars_file=/path/to/variable_assignment_file${default_color}
 
 \"${low_contrast_color}variable_assignment_file${default_color}\" is a plain text file that contains zero or more
 lines with a variable assignment for any variable specified in ${low_contrast_color}set_variables()${default_color},
