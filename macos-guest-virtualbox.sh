@@ -2,7 +2,7 @@
 # Push-button installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-guest-virtualbox
-# version 0.88.1
+# version 0.88.2
 
 # Requirements: 40GB available storage on host
 # Dependencies: bash >= 4.3, xxd, gzip, unzip, wget, dmg2img,
@@ -1065,8 +1065,9 @@ OpenCore may be able to load open-source audio drivers in VirtualBox.
 
         ${highlight_color}FileVault${default_color}
 The VirtualBox EFI implementation does not properly load the FileVault full disk
-encryption password prompt upon boot. The bootloader OpenCore may be able to
-load the password prompt.
+encryption password prompt upon boot. The bootloader OpenCore is be able to
+load the password prompt with the values for \"ProvideConsoleGop\" and
+\"AppleSmcIo\" set to \"true\".
 
         ${highlight_color}Further information${default_color}
 Further information is available at the following URL:
