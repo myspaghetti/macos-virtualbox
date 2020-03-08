@@ -153,7 +153,7 @@ if [[ -n "$(sw_vers 2>/dev/null)" ]]; then
         printf 'macOS detected.\nPlease use a package manager such as '"${highlight_color}"'homebrew'"${default_color}"', '"${highlight_color}"'pkgsrc'"${default_color}"', '"${highlight_color}"'nix'"${default_color}"', or '"${highlight_color}"'MacPorts'"${default_color}"'.\n'
         echo "Please make sure the following packages are installed and that"
         echo "their path is in the PATH variable:"
-        printf "${highlight_color}"'bash  coreutils  dmg2igm  gzip  unzip  wget  xxd'"${default_color}"'\n'
+        printf "${highlight_color}"'bash  coreutils  dmg2img  gzip  unzip  wget  xxd'"${default_color}"'\n'
         echo "Please make sure Bash and coreutils are the GNU variant."
         exit
     fi
