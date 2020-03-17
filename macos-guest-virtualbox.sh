@@ -2,7 +2,7 @@
 # Push-button installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-guest-virtualbox
-# version 0.88.2
+# version 0.88.3
 
 # Requirements: 40GB available storage on host
 # Dependencies: bash >= 4.3, xxd, gzip, unzip, wget, dmg2img,
@@ -718,16 +718,32 @@ print_dimly "stage: populate_virtual_disks"
 VBoxManage storagectl "${vm_name}" --remove --name SATA >/dev/null 2>&1
 if [[ -n $(
     2>&1 VBoxManage storagectl "${vm_name}" --add sata --name SATA --hostiocache on >/dev/null
+) ]]; then
+    echo "Could not configure virtual machine storage controller. Exiting."; exit
+fi
+if [[ -n $(
     2>&1 VBoxManage storageattach "${vm_name}" --storagectl SATA --port 0 \
                 --type hdd --nonrotational on --medium "${vm_name}.vdi" >/dev/null
+) ]]; then
+    echo "Could not attach \"${vm_name}.vdi\". Exiting."; exit
+fi
+if [[ -n $(
     2>&1 VBoxManage storageattach "${vm_name}" --storagectl SATA --port 1 --hotpluggable on \
                 --type hdd --nonrotational on --medium "Install ${macOS_release_name}.vdi" >/dev/null
+) ]]; then
+    echo "Could not attach \"Install ${macOS_release_name}.vdi\". Exiting."; exit
+fi
+if [[ -n $(
     2>&1 VBoxManage storageattach "${vm_name}" --storagectl SATA --port 2 --hotpluggable on \
                 --type hdd --nonrotational on --medium "${macOS_release_name}_BaseSystem.vdi" >/dev/null
+) ]]; then
+    echo "Could not attacl \"${macOS_release_name}_BaseSystem.vdi\". Exiting."; exit
+fi
+if [[ -n $(
     2>&1 VBoxManage storageattach "${vm_name}" --storagectl SATA --port 3 \
                 --type dvddrive --medium "${macOS_release_name}_Installation_files.viso" >/dev/null
 ) ]]; then
-    echo "One or more virtual storage files could not be loaded. Exiting."; exit
+    echo "Could not attach \"${macOS_release_name}_Installation_files.viso\". Exiting."; exit
 fi
 echo "Starting virtual machine ${vm_name}. This should take a couple of minutes."
 ( VBoxManage startvm "${vm_name}" >/dev/null 2>&1 )
@@ -780,8 +796,8 @@ while [[ "$( VBoxManage list runningvms )" =~ \""${vm_name}"\" ]]; do sleep 2 >/
 # Release basesystem vdi from VirtualBox configuration
 VBoxManage storageattach "${vm_name}" --storagectl SATA --port 2 --medium none >/dev/null 2>&1
 VBoxManage closemedium "${macOS_release_name}_BaseSystem.vdi" >/dev/null 2>&1
-echo "${macOS_release_name}_BaseSystem.vdi detached from the virtual machine"
-echo "and released from VirtualBox Manager."
+echo "${macOS_release_name}_BaseSystem.vdi successfully detached from"
+echo "the virtual machine and released from VirtualBox Manager."
 }
 
 function populate_macos_target() {
@@ -793,14 +809,26 @@ fi
 VBoxManage storagectl "${vm_name}" --remove --name SATA >/dev/null 2>&1
 if [[ -n $(
     2>&1 VBoxManage storagectl "${vm_name}" --add sata --name SATA --hostiocache on >/dev/null
+) ]]; then
+    echo "Could not configure virtual machine storage controller. Exiting."; exit
+fi
+if [[ -n $(
     2>&1 VBoxManage storageattach "${vm_name}" --storagectl SATA --port 0 \
                 --type hdd --nonrotational on --medium "${vm_name}.vdi" >/dev/null
+) ]]; then
+    echo "Could not attach \"${vm_name}.vdi\". Exiting."; exit
+fi
+if [[ -n $(
     2>&1 VBoxManage storageattach "${vm_name}" --storagectl SATA --port 1 --hotpluggable on \
                 --type hdd --nonrotational on --medium "Install ${macOS_release_name}.vdi" >/dev/null
+) ]]; then
+    echo "Could not attach \"Install ${macOS_release_name}.vdi\". Exiting."; exit
+fi
+if [[ -n $(
     2>&1 VBoxManage storageattach "${vm_name}" --storagectl SATA --port 2 \
                 --type dvddrive --medium "${macOS_release_name}_Installation_files.viso" >/dev/null
 ) ]]; then
-    echo "One or more virtual storage files could not be loaded. Exiting."; exit
+    echo "Could not attach \"${macOS_release_name}_Installation_files.viso\". Exiting."; exit
 fi
 echo "The VM will boot from the populated installer base system virtual disk."
 ( VBoxManage startvm "${vm_name}" >/dev/null 2>&1 )
