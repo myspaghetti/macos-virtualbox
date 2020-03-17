@@ -737,7 +737,7 @@ if [[ -n $(
     2>&1 VBoxManage storageattach "${vm_name}" --storagectl SATA --port 2 --hotpluggable on \
                 --type hdd --nonrotational on --medium "${macOS_release_name}_BaseSystem.vdi" >/dev/null
 ) ]]; then
-    echo "Could not attacl \"${macOS_release_name}_BaseSystem.vdi\". Exiting."; exit
+    echo "Could not attach \"${macOS_release_name}_BaseSystem.vdi\". Exiting."; exit
 fi
 if [[ -n $(
     2>&1 VBoxManage storageattach "${vm_name}" --storagectl SATA --port 3 \
