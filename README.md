@@ -28,7 +28,7 @@ After successfully creating a working macOS virtual machine, consider importing 
 macOS may not support any built-in VirtualBox audio controllers. The bootloader [OpenCore](https://github.com/acidanthera/OpenCorePkg/releases) may be able to load open-source audio drivers in VirtualBox.
 
 ### FileVault
-The VirtualBox EFI implementation does not properly load the FileVault full disk encryption password prompt upon boot. The bootloader [OpenCore](https://github.com/acidanthera/OpenCorePkg/releases/tag/0.5.6) is able to load the password prompt with the values for `ProvideConsoleGop` and `AppleSmcIo` set to `true`. See minimal [config.plist](https://github.com/myspaghetti/macos-guest-virtualbox/files/4302518/config.plist.txt).
+The VirtualBox EFI implementation does not properly load the FileVault full disk encryption password prompt upon boot. The bootloader [OpenCore](https://github.com/acidanthera/OpenCorePkg/releases/tag/0.5.6) is able to load the password prompt with the parameter `ProvideConsoleGop` set to `true`. See minimal [config.plist](https://github.com/myspaghetti/macos-guest-virtualbox/files/4302518/config.plist.txt).
 
 ## Dependencies
 * [VirtualBox](https://www.virtualbox.org/wiki/Downloads)≥6.0 with Extension Pack
