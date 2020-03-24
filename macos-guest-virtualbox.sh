@@ -965,9 +965,9 @@ arguments, each of the available stages except \"${low_contrast_color}documentat
 \"${low_contrast_color}troubleshoot${default_color}\" is executed in succession in the order listed:
 
 ${low_contrast_stages}
-The stage \"${low_contrast_color}documentation${default_color}\" or \"${low_contrast_color}troubleshoot${default_color}\" is only executed when it is
+The stage \"${low_contrast_color}documentation${default_color}\" and \"${low_contrast_color}troubleshoot${default_color}\" is only executed when it is
 specified as the first command-line argument, with all subsequent arguments
-ignored. When specified after any argument, \"${low_contrast_color}documentation${default_color}\" or \"${low_contrast_color}troubleshoot${default_color}\"
+ignored. When specified after any argument, \"${low_contrast_color}documentation${default_color}\" and \"${low_contrast_color}troubleshoot${default_color}\"
 is ignored.
 
 The four stages \"${low_contrast_color}check_bash_version${default_color}\", \"${low_contrast_color}check_gnu_coreutils_prefix${default_color}\",
