@@ -2,7 +2,7 @@
 # Push-button installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-guest-virtualbox
-# version 0.88.3
+# version 0.88.4
 
 # Requirements: 40GB available storage on host
 # Dependencies: bash >= 4.3, xxd, gzip, unzip, wget, dmg2img,
@@ -12,7 +12,7 @@ function set_variables() {
 # Customize the installation by setting these variables:
 vm_name="macOS"                  # name of the VirtualBox virtual machine
 macOS_release_name="Catalina"    # install "HighSierra" "Mojave" or "Catalina"
-storage_size=80000               # VM disk image size in MB. Minimum 22000
+storage_size=80000               # VM disk image size in MB, minimum 22000
 cpu_count=2                      # VM CPU cores, minimum 2
 memory_size=4096                 # VM RAM in MB, minimum 2048
 gpu_vram=128                     # VM video RAM in MB, minimum 34, maximum 128
@@ -961,17 +961,19 @@ patiently and, less than ten times, press enter when prompted.
 
 The script is divided into stages. Stage titles may be given as command-line
 arguments for the script. When the script is run with no command-line
-arguments, each of the available stages, except \"documentation\", is executed
-in succession in the order listed:
+arguments, each of the available stages except \"${low_contrast_color}documentation${default_color}\" and
+\"${low_contrast_color}troubleshoot${default_color}\" is executed in succession in the order listed:
 
 ${low_contrast_stages}
-When \"documentation\" is the first command-line argument, only the
-\"documentation\" stage is executed and all other arguments are ignored.
+The stage \"${low_contrast_color}documentation${default_color}\" or \"${low_contrast_color}troubleshoot${default_color}\" is only executed when it is
+specified as the first command-line argument, with all subsequent arguments
+ignored. When specified after any argument, \"${low_contrast_color}documentation${default_color}\" or \"${low_contrast_color}troubleshoot${default_color}\"
+is ignored.
 
-The four stages \"check_bash_version\", \"check_gnu_coreutils_prefix\",
-\"set_variables\", and \"check_dependencies\" are always performed when any stage
-title other than \"documentation\" is specified first, and if the checks pass
-then the stages specified in the command-line arguments are performed.
+The four stages \"${low_contrast_color}check_bash_version${default_color}\", \"${low_contrast_color}check_gnu_coreutils_prefix${default_color}\",
+\"${low_contrast_color}set_variables${default_color}\", and \"${low_contrast_color}check_dependencies${default_color}\" are always performed when any stage
+title other than \"${low_contrast_color}documentation${default_color}\" or \"${low_contrast_color}troubleshoot${default_color}\" is specified as the first
+argument, and the rest of the stages are parsed only after the checks pass.
 
         ${highlight_color}EXAMPLES${default_color}
     ${low_contrast_color}${0} configure_vm${default_color}
@@ -1102,6 +1104,33 @@ Further information is available at the following URL:
         ${highlight_color}https://github.com/myspaghetti/macos-guest-virtualbox${default_color}
 
 "
+}
+
+function troubleshoot() {
+head -n 5 "${0}"
+echo '################################################################################'
+echo 'BASH_VERSION '"${BASH_VERSION}"
+echo 'VBOX_VERSION '"$(VBoxManage -v)"
+echo '################################################################################'
+echo 'vbox.log'
+VBoxManage showvminfo "${vm_name}" --log 0
+echo '################################################################################'
+echo 'vminfo'
+VBoxManage showvminfo "${vm_name}" --machinereadable --details
+VBoxManage getextradata "${vm_name}"
+echo '################################################################################'
+echo 'OS info'
+sw_vers 2>/dev/null
+cat /proc/sys/kernel/osrelease 2>/dev/null
+echo '################################################################################'
+echo 'md5 hashes'
+md5sum "${macOS_release_name}_BaseSystem"* 2>/dev/null
+md5sum "${macOS_release_name}_Install"* 2>/dev/null
+md5sum "${macOS_release_name}_Apple"* 2>/dev/null
+md5 "${macOS_release_name}_BaseSystem"* 2>/dev/null
+md5 "${macOS_release_name}_Install"* 2>/dev/null
+md5 "${macOS_release_name}_Apple"* 2>/dev/null
+echo '################################################################################'
 }
 
 # GLOBAL VARIABLES AND FUNCTIONS THAT MIGHT BE CALLED MORE THAN ONCE
@@ -1356,12 +1385,16 @@ stages='
     populate_virtual_disks 
     populate_macos_target 
     delete_temporary_files 
+
+    documentation 
+    troubleshoot 
 '
 stages_without_newlines="$(printf "${stages}" | tr -d '\n')"
 # every stage name must be preceded and followed by a space character
 # for the command-line argument checking below to work
-[ -z "${1}" ] && for stage in ${stages}; do ${stage}; done && exit
-[ "${1}" = "documentation" ] && documentation && exit
+[[ -z "${1}" ]] && for stage in ${stages}; do ${stage}; done && exit
+[[ "${1}" = "documentation" ]] && documentation && exit
+if [[ "${1}" = "troubleshoot" ]]; then set_variables; troubleshoot; exit; fi
 for argument in $@; do
     [[ "${stages_without_newlines}" != *" ${argument} "* ]] &&
     echo "" &&
@@ -1373,4 +1406,4 @@ check_bash_version
 check_gnu_coreutils_prefix
 set_variables
 check_dependencies
-for argument in "$@"; do ${argument}; done
+for argument in "$@"; do [[ "${argument}" != "documentation" && "${argument}" != "troubleshoot" ]] && ${argument}; done
