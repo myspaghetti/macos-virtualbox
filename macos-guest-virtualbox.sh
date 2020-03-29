@@ -2,7 +2,7 @@
 # Push-button installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-guest-virtualbox
-# version 0.88.5
+# version 0.88.6
 
 # Requirements: 40GB available storage on host
 # Dependencies: bash >= 4.3, xxd, gzip, unzip, wget, dmg2img,
@@ -528,6 +528,7 @@ load fs0:\EFI\OC\Drivers\AppleUiSupport.efi
 load fs0:\EFI\OC\Drivers\ApfsDriverLoader.efi
 map -r' >> "${vm_name}_startup.nsh"
 fi
+# EFI Internal Shell 2.1 (VBox 6.0) doesn't support for-loops that start with 0
 echo 'if exist "fs0:\EFI\NVRAM\MLB.bin" then
   dmpstore -all -l fs0:\EFI\NVRAM\MLB.bin
   dmpstore -all -l fs0:\EFI\NVRAM\ROM.bin
@@ -1110,6 +1111,11 @@ head -n 5 "${0}"
 echo '################################################################################'
 echo 'BASH_VERSION '"${BASH_VERSION}"
 echo 'VBOX_VERSION '"$(VBoxManage -v)"
+macosver="$(sw_vers 2>/dev/null)"
+wslver="$(cat /proc/sys/kernel/osrelease 2>/dev/null)"
+winver="$(cmd.exe /d /s /c call ver 2>/dev/null)"
+echo 'OS VERSION '"${macosver}${wslver}${winver}"
+echo ''
 echo '################################################################################'
 echo 'vbox.log'
 VBoxManage showvminfo "${vm_name}" --log 0
@@ -1117,10 +1123,6 @@ echo '##########################################################################
 echo 'vminfo'
 VBoxManage showvminfo "${vm_name}" --machinereadable --details
 VBoxManage getextradata "${vm_name}"
-echo '################################################################################'
-echo 'OS info'
-sw_vers 2>/dev/null
-cat /proc/sys/kernel/osrelease 2>/dev/null
 echo '################################################################################'
 echo 'md5 hashes'
 md5sum "${macOS_release_name}_BaseSystem"* 2>/dev/null
