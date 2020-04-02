@@ -2,7 +2,7 @@
 # Push-button installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-guest-virtualbox
-# version 0.88.6
+# version 0.88.7
 
 # Requirements: 40GB available storage on host
 # Dependencies: bash >= 4.3, xxd, gzip, unzip, wget, dmg2img,
@@ -252,7 +252,7 @@ fi
 
 # VirtualBox version
 vbox_version="$(VBoxManage -v 2>/dev/null)"
-vbox_version="$( printf ${vbox_version} | tr -d '\r')"
+vbox_version="${vbox_version//[$'\r\n']/}"
 if [[ -z "${vbox_version}" || -z "${vbox_version:2:1}" ]]; then
     echo "Can't determine VirtualBox version. Exiting."
     exit
@@ -1110,19 +1110,19 @@ function troubleshoot() {
 head -n 5 "${0}"
 echo '################################################################################'
 echo 'BASH_VERSION '"${BASH_VERSION}"
-echo 'VBOX_VERSION '"$(VBoxManage -v)"
-macosver="$(sw_vers 2>/dev/null)"
-wslver="$(cat /proc/sys/kernel/osrelease 2>/dev/null)"
-winver="$(cmd.exe /d /s /c call ver 2>/dev/null)"
-echo 'OS VERSION '"${macosver}${wslver}${winver}"
-echo ''
+vbox_ver="$(VBoxManage -v)"
+echo 'VBOX_VERSION '"${vbox_ver//[$'\r\n']/}"
+macos_ver="$(sw_vers 2>/dev/null)"
+wsl_ver="$(cat /proc/sys/kernel/osrelease 2>/dev/null)"
+win_ver="$(cmd.exe /d /s /c call ver 2>/dev/null)"
+echo 'OS VERSION '"${macos_ver}${wsl_ver}${win_ver//[$'\r\n']/}"
 echo '################################################################################'
 echo 'vbox.log'
-VBoxManage showvminfo "${vm_name}" --log 0
+VBoxManage showvminfo "${vm_name}" --log 0 2>&1
 echo '################################################################################'
 echo 'vminfo'
-VBoxManage showvminfo "${vm_name}" --machinereadable --details
-VBoxManage getextradata "${vm_name}"
+VBoxManage showvminfo "${vm_name}" --machinereadable --details 2>&1
+VBoxManage getextradata "${vm_name}" 2>&1
 echo '################################################################################'
 echo 'md5 hashes'
 md5sum "${macOS_release_name}_BaseSystem"* 2>/dev/null
@@ -1390,12 +1390,12 @@ stages='
     documentation 
     troubleshoot 
 '
-stages_without_newlines="$(printf "${stages}" | tr -d '\n')"
+stages_without_newlines="${stages//[$'\r\n']/}"
 # every stage name must be preceded and followed by a space character
 # for the command-line argument checking below to work
 [[ -z "${1}" ]] && for stage in ${stages}; do ${stage}; done && exit
 [[ "${1}" = "documentation" ]] && documentation && exit
-if [[ "${1}" = "troubleshoot" ]]; then set_variables; troubleshoot; exit; fi
+if [[ "${1}" = "troubleshoot" ]]; then set_variables; check_dependencies >/dev/null; troubleshoot; exit; fi
 for argument in $@; do
     [[ "${stages_without_newlines}" != *" ${argument} "* ]] &&
     echo "" &&
