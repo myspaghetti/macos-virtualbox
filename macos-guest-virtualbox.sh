@@ -2,7 +2,7 @@
 # Push-button installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-guest-virtualbox
-# version 0.88.7
+# version 0.88.8
 
 # Requirements: 40GB available storage on host
 # Dependencies: bash >= 4.3, xxd, gzip, unzip, wget, dmg2img,
@@ -748,6 +748,7 @@ if [[ -n $(
 fi
 echo "Starting virtual machine ${vm_name}. This should take a couple of minutes."
 ( VBoxManage startvm "${vm_name}" >/dev/null 2>&1 )
+echo "While the script is running, please do not interact with the virtual machine."
 prompt_lang_utils
 prompt_terminal_ready
 print_dimly "Please wait"
