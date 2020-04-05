@@ -2,7 +2,7 @@
 # Push-button installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-guest-virtualbox
-# version 0.89.0
+# version 0.89.1
 
 # Requirements: 40GB available storage on host
 # Dependencies: bash >= 4.3, xxd, gzip, unzip, wget, dmg2img,
@@ -1403,8 +1403,8 @@ for argument in $@; do
     echo "by entering the following command:" &&
     would_you_like_to_know_less && echo "" && echo "Available stages: ${stages}" && exit
 done
-stages="${stages/documentation/}" # strip any occurrence of "documentation"
-stages="${stages/troubleshoot/}" # strip any occurrence of "troubleshoot"
+stages="${stages//documentation/}"  # strip all occurrences of "documentation"
+stages="${stages//troubleshoot/}"   # strip all occurrences of "troubleshoot"
 [[ -z "${1}" ]] && for stage in ${stages}; do ${stage}; done && exit
 check_bash_version
 check_gnu_coreutils_prefix
