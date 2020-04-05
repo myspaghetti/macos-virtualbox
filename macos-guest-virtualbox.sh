@@ -2,7 +2,7 @@
 # Push-button installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-guest-virtualbox
-# version 0.89.1
+# version 0.89.2
 
 # Requirements: 40GB available storage on host
 # Dependencies: bash >= 4.3, xxd, gzip, unzip, wget, dmg2img,
@@ -1394,18 +1394,22 @@ stages='
 stages_without_newlines="${stages//[$'\r\n']/}"
 [[ "${1}" = "documentation" ]] && documentation && exit
 if [[ "${1}" = "troubleshoot" ]]; then set_variables; check_dependencies >/dev/null; troubleshoot; exit; fi
-# every stage name must be preceded and followed by a space character
-# for the command-line argument checking below to work
-for argument in $@; do
-    [[ "${stages_without_newlines}" != *" ${argument} "* ]] &&
-    echo "" &&
-    echo "Can't parse one or more specified arguments. See documentation" &&
-    echo "by entering the following command:" &&
-    would_you_like_to_know_less && echo "" && echo "Available stages: ${stages}" && exit
-done
 stages="${stages//documentation/}"  # strip all occurrences of "documentation"
 stages="${stages//troubleshoot/}"   # strip all occurrences of "troubleshoot"
 [[ -z "${1}" ]] && for stage in ${stages}; do ${stage}; done && exit
+# every stage name must be preceded and followed by a space character
+# for the command-line argument checking below to work
+for argument in $@; do
+    if [[ "${stages_without_newlines}" != *" ${argument} "* ]]; then
+        echo ""
+        echo "Can't parse one or more specified arguments. See documentation"
+        echo "by entering the following command:"
+        would_you_like_to_know_less
+        echo ""
+        echo "Available stages: ${stages}"
+        exit
+    fi
+done
 check_bash_version
 check_gnu_coreutils_prefix
 set_variables
