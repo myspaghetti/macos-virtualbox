@@ -2,7 +2,7 @@
 # Push-button installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-guest-virtualbox
-# version 0.88.8
+# version 0.88.9
 
 # Requirements: 40GB available storage on host
 # Dependencies: bash >= 4.3, xxd, gzip, unzip, wget, dmg2img,
@@ -798,7 +798,7 @@ while [[ "$( VBoxManage list runningvms )" =~ \""${vm_name}"\" ]]; do sleep 2 >/
 # Release basesystem vdi from VirtualBox configuration
 VBoxManage storageattach "${vm_name}" --storagectl SATA --port 2 --medium none >/dev/null 2>&1
 VBoxManage closemedium "${macOS_release_name}_BaseSystem.vdi" >/dev/null 2>&1
-echo "${macOS_release_name}_BaseSystem.vdi successfully detached from"
+echo " ${macOS_release_name}_BaseSystem.vdi successfully detached from"
 echo "the virtual machine and released from VirtualBox Manager."
 }
 
@@ -1394,7 +1394,7 @@ stages='
 stages_without_newlines="${stages//[$'\r\n']/}"
 # every stage name must be preceded and followed by a space character
 # for the command-line argument checking below to work
-[[ -z "${1}" ]] && for stage in ${stages}; do ${stage}; done && exit
+[[ -z "${1}" ]] && for stage in ${stages}; do  [[ "${stage}" != "documentation" && "${stage}" != "troubleshoot" ]] && ${stage}; done && exit
 [[ "${1}" = "documentation" ]] && documentation && exit
 if [[ "${1}" = "troubleshoot" ]]; then set_variables; check_dependencies >/dev/null; troubleshoot; exit; fi
 for argument in $@; do
