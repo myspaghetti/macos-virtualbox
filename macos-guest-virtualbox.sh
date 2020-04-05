@@ -2,7 +2,7 @@
 # Push-button installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-guest-virtualbox
-# version 0.89.2
+# version 0.89.3
 
 # Requirements: 40GB available storage on host
 # Dependencies: bash >= 4.3, xxd, gzip, unzip, wget, dmg2img,
@@ -345,7 +345,7 @@ if [[ -n "$(VBoxManage showvminfo "${vm_name}" 2>/dev/null)" ]]; then
         VBoxManage unregistervm "${vm_name}" --delete
     else
         echo ""
-        printf "${highlight_color}"'Please assign a different VM name to variable "vm_name" by editing the script,'"${default_color}"
+        printf "${highlight_color}"'Please assign a different VM name to variable "vm_name" by editing the script,'"${default_color}\n"
         echo "or skip this check manually as described when running the following command:"
         would_you_like_to_know_less
         exit
