@@ -2,7 +2,7 @@
 # Push-button installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-guest-virtualbox
-# version 0.88.9
+# version 0.89.0
 
 # Requirements: 40GB available storage on host
 # Dependencies: bash >= 4.3, xxd, gzip, unzip, wget, dmg2img,
@@ -1392,11 +1392,10 @@ stages='
     troubleshoot 
 '
 stages_without_newlines="${stages//[$'\r\n']/}"
-# every stage name must be preceded and followed by a space character
-# for the command-line argument checking below to work
-[[ -z "${1}" ]] && for stage in ${stages}; do  [[ "${stage}" != "documentation" && "${stage}" != "troubleshoot" ]] && ${stage}; done && exit
 [[ "${1}" = "documentation" ]] && documentation && exit
 if [[ "${1}" = "troubleshoot" ]]; then set_variables; check_dependencies >/dev/null; troubleshoot; exit; fi
+# every stage name must be preceded and followed by a space character
+# for the command-line argument checking below to work
 for argument in $@; do
     [[ "${stages_without_newlines}" != *" ${argument} "* ]] &&
     echo "" &&
@@ -1404,8 +1403,11 @@ for argument in $@; do
     echo "by entering the following command:" &&
     would_you_like_to_know_less && echo "" && echo "Available stages: ${stages}" && exit
 done
+stages="${stages/documentation/}" # strip any occurrence of "documentation"
+stages="${stages/troubleshoot/}" # strip any occurrence of "troubleshoot"
+[[ -z "${1}" ]] && for stage in ${stages}; do ${stage}; done && exit
 check_bash_version
 check_gnu_coreutils_prefix
 set_variables
 check_dependencies
-for argument in "$@"; do [[ "${argument}" != "documentation" && "${argument}" != "troubleshoot" ]] && ${argument}; done
+for argument in "$@"; do ${argument}; done
