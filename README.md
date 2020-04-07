@@ -32,7 +32,6 @@ The VirtualBox EFI implementation does not properly load the FileVault full disk
 
 ## Dependencies
 * [VirtualBox](https://www.virtualbox.org/wiki/Downloads)≥6.0 with Extension Pack
-* `Bash`≥4.3 (GNU variant; run on Windows through [Cygwin](https://cygwin.com/install.html) or WSL)
-* `coreutils` (GNU variant; install through package manager)
-* `gzip`, `unzip`, `wget`, `xxd` (install through package manager)
-* `dmg2img` (install through package manager on Linux, macOS, or WSL; let the script download it automatically on Cygwin)
+* GNU `Bash`≥4.3 (run on Windows through [Cygwin](https://cygwin.com/install.html) or WSL)
+* GNU `coreutils`≥8.22, GNU `gzip`≥1.5, Info-ZIP `unzip`≥v6.0, GNU `wget`≥1.14, `xxd`≥1.7 (install through package manager)
+* `dmg2img`≥1.6.5 (install through package manager on Linux, macOS, or WSL; the script downloads it automatically on Cygwin)
