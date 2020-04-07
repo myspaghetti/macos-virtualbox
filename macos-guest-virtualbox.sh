@@ -2,11 +2,15 @@
 # Push-button installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-guest-virtualbox
-# version 0.89.4
+# version 0.89.5
 
-# Requirements: 40GB available storage on host
-# Dependencies: bash >= 4.3, xxd, gzip, unzip, wget, dmg2img,
-#               VirtualBox with Extension Pack >= 6.0
+# Dependencies: bash  coreutils  gzip  unzip  wget  xxd  dmg2img
+# Supported versions:
+#               VirtualBox with Extension Pack >= 6.1.4
+#               GNU bash >= 4.3, GNU coreutils >= 8.22,
+#               GNU gzip >= 1.5, GNU wget >= 1.14,
+#               Info-ZIP unzip >= 6.0, xxd >= 1.7,
+#               dmg2img >= 1.6.5
 
 function set_variables() {
 # Customize the installation by setting these variables:
@@ -57,7 +61,7 @@ SYSTEM_INTEGRITY_PROTECTION='10'  # '10' - enabled, '77' - disabled
 function welcome() {
 printf '
                   Push-button installer of macOS on VirtualBox
--------------------------------------------------------------------------------
+--------------------------------------------------------------------------------
 
 This script installs only open-source software and unmodified Apple binaries.
 
