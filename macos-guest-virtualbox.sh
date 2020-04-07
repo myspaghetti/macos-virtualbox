@@ -2,7 +2,7 @@
 # Push-button installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-guest-virtualbox
-# version 0.89.3
+# version 0.89.4
 
 # Requirements: 40GB available storage on host
 # Dependencies: bash >= 4.3, xxd, gzip, unzip, wget, dmg2img,
@@ -800,6 +800,7 @@ VBoxManage storageattach "${vm_name}" --storagectl SATA --port 2 --medium none >
 VBoxManage closemedium "${macOS_release_name}_BaseSystem.vdi" >/dev/null 2>&1
 echo " ${macOS_release_name}_BaseSystem.vdi successfully detached from"
 echo "the virtual machine and released from VirtualBox Manager."
+sleep 3
 }
 
 function populate_macos_target() {
