@@ -31,9 +31,11 @@ macOS may not support any built-in VirtualBox audio controllers. The bootloader 
 The VirtualBox EFI implementation does not properly load the FileVault full disk encryption password prompt upon boot. The bootloader [OpenCore](https://github.com/acidanthera/OpenCorePkg/releases/tag/0.5.6) is able to load the password prompt with the parameter `ProvideConsoleGop` set to `true`. See minimal [config.plist](https://github.com/myspaghetti/macos-guest-virtualbox/files/4302518/config.plist.txt).
 
 ## Dependencies
-All the dependencies should be available through the package manager: `bash` `coreutils` `gzip` `unzip` `wget` `xxd` `dmg2img`  `virtualbox`
+All the dependencies should be available through a package manager:  
+`bash` `coreutils` `gzip` `unzip` `wget` `xxd` `dmg2img`  `virtualbox`
 
 * [VirtualBox](https://www.virtualbox.org/wiki/Downloads)≥6.1.4 with Extension Pack, though versions as low as 5.2 may work.
 * GNU `Bash`≥4.3, on Windows run through [Cygwin](https://cygwin.com/install.html) or WSL.
 * GNU `coreutils`≥8.22, GNU `gzip`≥1.5, Info-ZIP `unzip`≥v6.0, GNU `wget`≥1.14, `xxd`≥1.7
 * `dmg2img`≥1.6.5, on Cygwin the package is not available through the package manager so the script downloads it automatically.
+
