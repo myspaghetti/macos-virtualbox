@@ -2,7 +2,7 @@
 # Push-button installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-guest-virtualbox
-# version 0.89.5
+# version 0.89.6
 
 # Dependencies: bash  coreutils  gzip  unzip  wget  xxd  dmg2img
 # Supported versions:
@@ -102,19 +102,33 @@ clear_input_buffer_then_read
 
 # check dependencies
 
-function check_bash_version() {
-if [[ -z "${BASH_VERSION}" ]]; then
-    echo "Can't determine BASH_VERSION. Exiting."
-    exit
-elif [[ "${BASH_VERSION:0:1}" -lt 4 ]]; then
-    echo "Please run this script on Bash 4.3 or higher."
-    if [[ -n "$(sw_vers 2>/dev/null)" ]]; then
-        echo "macOS detected. Make sure the script is not running on"
-        echo "the default /bin/bash which is version 3."
+function check_shell() {
+if [[ "${SHELL}" =~ /bash ]]; then
+    if [[ -z "${BASH_VERSION}" ]]; then
+        echo "Can't determine BASH_VERSION. Exiting."
+        exit
+    elif [[ "${BASH_VERSION:0:1}" -lt 4 ]]; then
+        echo "Please run this script on Bash 4.3 or higher."
+        if [[ -n "$(sw_vers 2>/dev/null)" ]]; then
+            echo "macOS detected. Make sure the script is not running on"
+            echo "the default /bin/bash which is version 3."
+        fi
+        exit
+    elif [[ "${BASH_VERSION:0:1}" -eq 4 && "${BASH_VERSION:2:1}" -le 2 ]]; then
+        echo "Please run this script on Bash 4.3 or higher."
+        exit
     fi
-    exit
-elif [[ "${BASH_VERSION:0:1}" -eq 4 && "${BASH_VERSION:2:1}" -le 2 ]]; then
-    echo "Please run this script on Bash 4.3 or higher."
+elif [[ "${SHELL}" =~ /zsh ]]; then
+    if [[ -z "${ZSH_VERSION}" ]]; then
+        echo "Can't determine ZSH_VERSION. Exiting."
+        exit
+    elif [[ "${ZSH_VERSION:0:1}" -lt 5 ]]; then
+        echo "Please run this script on zsh 5 or higher."
+        exit
+    fi
+    setopt extendedglob sh_word_split ksh_arrays posix_argzero
+else
+    echo "Can't determine SHELL. Exiting."
     exit
 fi
 }
@@ -176,7 +190,8 @@ if [[ -z "$(echo "xxd" | xxd -p 2>/dev/null)" || \
 fi
 
 # wget supports --show-progress from version 1.16
-if [[ "$(wget --version 2>/dev/null | head -n 1)" =~ 1\.1[6-9]|1\.2[0-9] ]]; then
+regex='1\.1[6-9]|1\.2[0-9]'
+if [[ "$(wget --version 2>/dev/null | head -n 1)" =~ ${regex} ]]; then
     wgetargs="--quiet --continue --show-progress"  # pretty
 else
     wgetargs="--continue"  # ugly
@@ -342,10 +357,9 @@ if [[ -n "$(VBoxManage showvminfo "${vm_name}" 2>/dev/null)" ]]; then
     echo ''
     echo 'A virtual machine named "'"${vm_name}"'" already exists.'
     printf "${warning_color}"'Delete existing virtual machine "'"${vm_name}"'"?'"${default_color}"
-    delete=""
-    read -n 1 -p ' [y/N] ' delete
-    echo ""
-    if [[ "${delete,,}" == "y" ]]; then
+    prompt_delete_y_n
+    if [[ "${delete}" == "y" ]]; then
+        echo "Deleting ${vm_name} virtual machine."
         VBoxManage unregistervm "${vm_name}" --delete
     else
         echo ""
@@ -653,10 +667,9 @@ print_dimly "stage: create_install_vdi"
 if [[ -w "Install ${macOS_release_name}.vdi" ]]; then
     echo '"'"Install ${macOS_release_name}.vdi"'" virtual disk image exists.'
     printf "${warning_color}"'Delete "'"Install ${macOS_release_name}.vdi"'"?'"${default_color}"
-    delete=""
-    read -n 1 -p " [y/N] " delete
+    prompt_delete_y_n
     echo ""
-    if [[ "${delete,,}" == "y" ]]; then
+    if [[ "${delete}" == "y" ]]; then
         if [[ "$( VBoxManage list runningvms )" =~ \""${vm_name}"\" ]];
         then
             echo '"'"Install ${macOS_release_name}.vdi"'" may be deleted'
@@ -753,6 +766,7 @@ fi
 echo "Starting virtual machine ${vm_name}. This should take a couple of minutes."
 ( VBoxManage startvm "${vm_name}" >/dev/null 2>&1 )
 echo "While the script is running, please do not interact with the virtual machine."
+[[ -z "${kscd}" ]] && declare_scancode_dict
 prompt_lang_utils
 prompt_terminal_ready
 print_dimly "Please wait"
@@ -839,6 +853,7 @@ if [[ -n $(
 fi
 echo "The VM will boot from the populated installer base system virtual disk."
 ( VBoxManage startvm "${vm_name}" >/dev/null 2>&1 )
+[[ -z "${kscd}" ]] && declare_scancode_dict
 prompt_lang_utils
 prompt_terminal_ready
 add_another_terminal
@@ -929,10 +944,8 @@ else
     fi
     echo ""
     printf "${warning_color}"'Delete temporary files?'"${default_color}"
-    delete=""
-    read -n 1 -p " [y/N] " delete
-    echo ""
-    if [[ "${delete,,}" == "y" ]]; then
+    prompt_delete_y_n
+    if [[ "${delete}" == "y" ]]; then
         rm "${macOS_release_name}_Apple"* \
            "${macOS_release_name}_BaseSystem"* \
            "${macOS_release_name}_Install"* \
@@ -969,17 +982,18 @@ patiently and, less than ten times, press enter when prompted.
 The script is divided into stages. Stage titles may be given as command-line
 arguments for the script. When the script is run with no command-line
 arguments, each of the available stages except \"${low_contrast_color}documentation${default_color}\" and
-\"${low_contrast_color}troubleshoot${default_color}\" is executed in succession in the order listed:
+\"${low_contrast_color}troubleshoot${default_color}\" is performed in succession in the order listed:
 
 ${low_contrast_stages}
-The stage \"${low_contrast_color}documentation${default_color}\" and \"${low_contrast_color}troubleshoot${default_color}\" is only executed when it is
-specified as the first command-line argument, with all subsequent arguments
-ignored. When specified after any argument, \"${low_contrast_color}documentation${default_color}\" and \"${low_contrast_color}troubleshoot${default_color}\"
-is ignored.
+Either of the stages \"${low_contrast_color}documentation${default_color}\" and \"${low_contrast_color}troubleshoot${default_color}\" is only performed when
+it is specified as the first command-line argument, with all subsequent
+arguments ignored. When specified after any argument, either of \"${low_contrast_color}documentation${default_color}\"
+and \"${low_contrast_color}troubleshoot${default_color}\" is ignored.
 
-The four stages \"${low_contrast_color}check_bash_version${default_color}\", \"${low_contrast_color}check_gnu_coreutils_prefix${default_color}\",
-\"${low_contrast_color}set_variables${default_color}\", and \"${low_contrast_color}check_dependencies${default_color}\" are always performed when any stage
-title other than \"${low_contrast_color}documentation${default_color}\" or \"${low_contrast_color}troubleshoot${default_color}\" is specified as the first
+The stage \"${low_contrast_color}check_shell${default_color}\" is always performed when the script loads.
+The stages \"${low_contrast_color}check_gnu_coreutils_prefix${default_color}\", \"${low_contrast_color}set_variables${default_color}\", and
+\"${low_contrast_color}check_dependencies${default_color}\" are always performed when any stage title other than
+\"${low_contrast_color}documentation${default_color}\" or \"${low_contrast_color}troubleshoot${default_color}\" is specified as the first
 argument, and the rest of the stages are parsed only after the checks pass.
 
         ${highlight_color}EXAMPLES${default_color}
@@ -1162,140 +1176,143 @@ function sleep() {
 # Virtualbox Mac scancodes found here:
 # https://wiki.osdev.org/PS/2_Keyboard#Scan_Code_Set_1
 # First half of hex code - press, second half - release, unless otherwise specified
-declare -A kscd=(
-    ["ESC"]="01 81"
-    ["1"]="02 82"
-    ["2"]="03 83"
-    ["3"]="04 84"
-    ["4"]="05 85"
-    ["5"]="06 86"
-    ["6"]="07 87"
-    ["7"]="08 88"
-    ["8"]="09 89"
-    ["9"]="0A 8A"
-    ["0"]="0B 8B"
-    ["-"]="0C 8C"
-    ["="]="0D 8D"
-    ["BKSP"]="0E 8E"
-    ["TAB"]="0F 8F"
-    ["q"]="10 90"
-    ["w"]="11 91"
-    ["e"]="12 92"
-    ["r"]="13 93"
-    ["t"]="14 94"
-    ["y"]="15 95"
-    ["u"]="16 96"
-    ["i"]="17 97"
-    ["o"]="18 98"
-    ["p"]="19 99"
-    ["["]="1A 9A"
-    ["]"]="1B 9B"
-    ["ENTER"]="1C 9C"
-    ["CTRLprs"]="1D"
-    ["CTRLrls"]="9D"
-    ["a"]="1E 9E"
-    ["s"]="1F 9F"
-    ["d"]="20 A0"
-    ["f"]="21 A1"
-    ["g"]="22 A2"
-    ["h"]="23 A3"
-    ["j"]="24 A4"
-    ["k"]="25 A5"
-    ["l"]="26 A6"
-    [";"]="27 A7"
-    ["'"]="28 A8"
-    ['`']="29 A9"
-    ["LSHIFTprs"]="2A"
-    ["LSHIFTrls"]="AA"
-    ['\']="2B AB"
-    ["z"]="2C AC"
-    ["x"]="2D AD"
-    ["c"]="2E AE"
-    ["v"]="2F AF"
-    ["b"]="30 B0"
-    ["n"]="31 B1"
-    ["m"]="32 B2"
-    [","]="33 B3"
-    ["."]="34 B4"
-    ["/"]="35 B5"
-    ["RSHIFTprs"]="36"
-    ["RSHIFTrls"]="B6"
-    ["ALTprs"]="38"
-    ["ALTrls"]="B8"
-    ["LALT"]="38 B8"
-    ["SPACE"]="39 B9"
-    [" "]="39 B9"
-    ["CAPS"]="3A BA"
-    ["CAPSLOCK"]="3A BA"
-    ["F1"]="3B BB"
-    ["F2"]="3C BC"
-    ["F3"]="3D BD"
-    ["F4"]="3E BE"
-    ["F5"]="3F BF"
-    ["F6"]="40 C0"
-    ["F7"]="41 C1"
-    ["F8"]="42 C2"
-    ["F9"]="43 C3"
-    ["F10"]="44 C4"
-    ["UP"]="E0 48 E0 C8"
-    ["RIGHT"]="E0 4D E0 CD"
-    ["LEFT"]="E0 4B E0 CB"
-    ["DOWN"]="E0 50 E0 D0"
-    ["HOME"]="E0 47 E0 C7"
-    ["END"]="E0 4F E0 CF"
-    ["PGUP"]="E0 49 E0 C9"
-    ["PGDN"]="E0 51 E0 D1"
-    ["CMDprs"]="E0 5C"
-    ["CMDrls"]="E0 DC"
-    # all codes below start with LSHIFTprs as commented in first item:
-    ["!"]="2A 02 82 AA" # LSHIFTprs 1prs 1rls LSHIFTrls
-    ["@"]="2A 03 83 AA"
-    ["#"]="2A 04 84 AA"
-    ["$"]="2A 05 85 AA"
-    ["%"]="2A 06 86 AA"
-    ["^"]="2A 07 87 AA"
-    ["&"]="2A 08 88 AA"
-    ["*"]="2A 09 89 AA"
-    ["("]="2A 0A 8A AA"
-    [")"]="2A 0B 8B AA"
-    ["_"]="2A 0C 8C AA"
-    ["+"]="2A 0D 8D AA"
-    ["Q"]="2A 10 90 AA"
-    ["W"]="2A 11 91 AA"
-    ["E"]="2A 12 92 AA"
-    ["R"]="2A 13 93 AA"
-    ["T"]="2A 14 94 AA"
-    ["Y"]="2A 15 95 AA"
-    ["U"]="2A 16 96 AA"
-    ["I"]="2A 17 97 AA"
-    ["O"]="2A 18 98 AA"
-    ["P"]="2A 19 99 AA"
-    ["{"]="2A 1A 9A AA"
-    ["}"]="2A 1B 9B AA"
-    ["A"]="2A 1E 9E AA"
-    ["S"]="2A 1F 9F AA"
-    ["D"]="2A 20 A0 AA"
-    ["F"]="2A 21 A1 AA"
-    ["G"]="2A 22 A2 AA"
-    ["H"]="2A 23 A3 AA"
-    ["J"]="2A 24 A4 AA"
-    ["K"]="2A 25 A5 AA"
-    ["L"]="2A 26 A6 AA"
-    [":"]="2A 27 A7 AA"
-    ['"']="2A 28 A8 AA"
-    ["~"]="2A 29 A9 AA"
-    ["|"]="2A 2B AB AA"
-    ["Z"]="2A 2C AC AA"
-    ["X"]="2A 2D AD AA"
-    ["C"]="2A 2E AE AA"
-    ["V"]="2A 2F AF AA"
-    ["B"]="2A 30 B0 AA"
-    ["N"]="2A 31 B1 AA"
-    ["M"]="2A 32 B2 AA"
-    ["<"]="2A 33 B3 AA"
-    [">"]="2A 34 B4 AA"
-    ["?"]="2A 35 B5 AA"
-)
+function declare_scancode_dict() {
+    declare -gA kscd
+    kscd=(
+        ["ESC"]="01 81"
+        ["1"]="02 82"
+        ["2"]="03 83"
+        ["3"]="04 84"
+        ["4"]="05 85"
+        ["5"]="06 86"
+        ["6"]="07 87"
+        ["7"]="08 88"
+        ["8"]="09 89"
+        ["9"]="0A 8A"
+        ["0"]="0B 8B"
+        ["-"]="0C 8C"
+        ["="]="0D 8D"
+        ["BKSP"]="0E 8E"
+        ["TAB"]="0F 8F"
+        ["q"]="10 90"
+        ["w"]="11 91"
+        ["e"]="12 92"
+        ["r"]="13 93"
+        ["t"]="14 94"
+        ["y"]="15 95"
+        ["u"]="16 96"
+        ["i"]="17 97"
+        ["o"]="18 98"
+        ["p"]="19 99"
+        ["["]="1A 9A"
+        ["]"]="1B 9B"
+        ["ENTER"]="1C 9C"
+        ["CTRLprs"]="1D"
+        ["CTRLrls"]="9D"
+        ["a"]="1E 9E"
+        ["s"]="1F 9F"
+        ["d"]="20 A0"
+        ["f"]="21 A1"
+        ["g"]="22 A2"
+        ["h"]="23 A3"
+        ["j"]="24 A4"
+        ["k"]="25 A5"
+        ["l"]="26 A6"
+        [";"]="27 A7"
+        ["'"]="28 A8"
+        ['`']="29 A9"
+        ["LSHIFTprs"]="2A"
+        ["LSHIFTrls"]="AA"
+        ['\']="2B AB"
+        ["z"]="2C AC"
+        ["x"]="2D AD"
+        ["c"]="2E AE"
+        ["v"]="2F AF"
+        ["b"]="30 B0"
+        ["n"]="31 B1"
+        ["m"]="32 B2"
+        [","]="33 B3"
+        ["."]="34 B4"
+        ["/"]="35 B5"
+        ["RSHIFTprs"]="36"
+        ["RSHIFTrls"]="B6"
+        ["ALTprs"]="38"
+        ["ALTrls"]="B8"
+        ["LALT"]="38 B8"
+        ["SPACE"]="39 B9"
+        [" "]="39 B9"
+        ["CAPS"]="3A BA"
+        ["CAPSLOCK"]="3A BA"
+        ["F1"]="3B BB"
+        ["F2"]="3C BC"
+        ["F3"]="3D BD"
+        ["F4"]="3E BE"
+        ["F5"]="3F BF"
+        ["F6"]="40 C0"
+        ["F7"]="41 C1"
+        ["F8"]="42 C2"
+        ["F9"]="43 C3"
+        ["F10"]="44 C4"
+        ["UP"]="E0 48 E0 C8"
+        ["RIGHT"]="E0 4D E0 CD"
+        ["LEFT"]="E0 4B E0 CB"
+        ["DOWN"]="E0 50 E0 D0"
+        ["HOME"]="E0 47 E0 C7"
+        ["END"]="E0 4F E0 CF"
+        ["PGUP"]="E0 49 E0 C9"
+        ["PGDN"]="E0 51 E0 D1"
+        ["CMDprs"]="E0 5C"
+        ["CMDrls"]="E0 DC"
+        # all codes below start with LSHIFTprs as commented in first item:
+        ["!"]="2A 02 82 AA" # LSHIFTprs 1prs 1rls LSHIFTrls
+        ["@"]="2A 03 83 AA"
+        ["#"]="2A 04 84 AA"
+        ["$"]="2A 05 85 AA"
+        ["%"]="2A 06 86 AA"
+        ["^"]="2A 07 87 AA"
+        ["&"]="2A 08 88 AA"
+        ["*"]="2A 09 89 AA"
+        ["("]="2A 0A 8A AA"
+        [")"]="2A 0B 8B AA"
+        ["_"]="2A 0C 8C AA"
+        ["+"]="2A 0D 8D AA"
+        ["Q"]="2A 10 90 AA"
+        ["W"]="2A 11 91 AA"
+        ["E"]="2A 12 92 AA"
+        ["R"]="2A 13 93 AA"
+        ["T"]="2A 14 94 AA"
+        ["Y"]="2A 15 95 AA"
+        ["U"]="2A 16 96 AA"
+        ["I"]="2A 17 97 AA"
+        ["O"]="2A 18 98 AA"
+        ["P"]="2A 19 99 AA"
+        ["{"]="2A 1A 9A AA"
+        ["}"]="2A 1B 9B AA"
+        ["A"]="2A 1E 9E AA"
+        ["S"]="2A 1F 9F AA"
+        ["D"]="2A 20 A0 AA"
+        ["F"]="2A 21 A1 AA"
+        ["G"]="2A 22 A2 AA"
+        ["H"]="2A 23 A3 AA"
+        ["J"]="2A 24 A4 AA"
+        ["K"]="2A 25 A5 AA"
+        ["L"]="2A 26 A6 AA"
+        [":"]="2A 27 A7 AA"
+        ['"']="2A 28 A8 AA"
+        ["~"]="2A 29 A9 AA"
+        ["|"]="2A 2B AB AA"
+        ["Z"]="2A 2C AC AA"
+        ["X"]="2A 2D AD AA"
+        ["C"]="2A 2E AE AA"
+        ["V"]="2A 2F AF AA"
+        ["B"]="2A 30 B0 AA"
+        ["N"]="2A 31 B1 AA"
+        ["M"]="2A 32 B2 AA"
+        ["<"]="2A 33 B3 AA"
+        [">"]="2A 34 B4 AA"
+        ["?"]="2A 35 B5 AA"
+    )
+}
 
 function clear_input_buffer_then_read() {
     while read -d '' -r -t 0; do read -d '' -t 0.1 -n 10000; break; done
@@ -1304,8 +1321,9 @@ function clear_input_buffer_then_read() {
 
 # read variable kbstring and convert string to scancodes and send to guest vm
 function send_keys() {
-    scancode=$(for (( i=0; i < ${#kbstring}; i++ ));
-               do c[i]=${kbstring:i:1}; echo -n ${kscd[${c[i]}]}" "; done)
+    scancode=$(for (( i=0; i < ${#kbstring}; i++ )); do
+                 c[${i}]=${kbstring:${i}:1}; echo -n ${kscd[${c[${i}]}]}" "
+               done)
     VBoxManage controlvm "${vm_name}" keyboardputscancode ${scancode} 1>/dev/null 2>&1
 }
 
@@ -1373,35 +1391,49 @@ function would_you_like_to_know_less() {
     fi
 }
 
+function prompt_delete_y_n() {
+    delete=""
+    if [[ "${SHELL}" =~ /zsh ]]; then
+        read -s -q delete\?' [y/N] '
+        delete="${delete:l}"
+    elif [[ "${SHELL}" =~ /bash ]]; then
+        read -n 1 -p ' [y/N] ' delete
+        delete="${delete,,}"
+    fi
+    echo ""
+}
+
 # command-line argument processing
 stages='
-    check_bash_version 
-    check_gnu_coreutils_prefix 
-    set_variables 
-    welcome 
-    check_dependencies 
-    prompt_delete_existing_vm 
-    create_vm 
-    prepare_macos_installation_files 
-    create_nvram_files 
-    create_macos_installation_files_viso 
-    create_basesystem_vdi 
-    create_target_vdi 
-    create_install_vdi 
-    configure_vm 
-    populate_virtual_disks 
-    populate_macos_target 
-    delete_temporary_files 
+    check_shell
+    check_gnu_coreutils_prefix
+    set_variables
+    welcome
+    check_dependencies
+    prompt_delete_existing_vm
+    create_vm
+    prepare_macos_installation_files
+    create_nvram_files
+    create_macos_installation_files_viso
+    create_basesystem_vdi
+    create_target_vdi
+    create_install_vdi
+    configure_vm
+    populate_virtual_disks
+    populate_macos_target
+    delete_temporary_files
 
-    documentation 
-    troubleshoot 
+    documentation
+    troubleshoot
 '
+check_shell
 stages_without_newlines="${stages//[$'\r\n']/}"
 [[ "${1}" = "documentation" ]] && documentation && exit
 if [[ "${1}" = "troubleshoot" ]]; then set_variables; check_dependencies >/dev/null; troubleshoot; exit; fi
-stages="${stages//documentation/}"  # strip all occurrences of "documentation"
-stages="${stages//troubleshoot/}"   # strip all occurrences of "troubleshoot"
-[[ -z "${1}" ]] && for stage in ${stages}; do ${stage}; done && exit
+stages_without_newlines="${stages//[$'\r\n']/ }"                      # replace newline with space character
+stages_without_newlines="${stages_without_newlines//documentation/}"  # strip all occurrences of "documentation"
+stages_without_newlines="${stages_without_newlines//troubleshoot/}"   # strip all occurrences of "troubleshoot"
+[[ -z "${1}" ]] && for stage in ${stages_without_newlines}; do ${stage}; done && exit
 # every stage name must be preceded and followed by a space character
 # for the command-line argument checking below to work
 for argument in $@; do
@@ -1415,7 +1447,6 @@ for argument in $@; do
         exit
     fi
 done
-check_bash_version
 check_gnu_coreutils_prefix
 set_variables
 check_dependencies
