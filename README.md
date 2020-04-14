@@ -1,7 +1,7 @@
 ## Push-button installer of macOS on VirtualBox
 This is a Bash script that creates a VirtualBox guest macOS virtual machine by downloading unmodified macOS installation files directly from Apple servers.
 
-The script requires very little user interaction. A default install only requires the user to sit patiently and, less than ten times, press enter when prompted. The script doesn't install any closed-source additions or extra bootloaders. Tested on Cygwin. Works on macOS and WSL, should work on most Linux distros.
+A default install only requires the user to sit patiently and, less than ten times, press enter when prompted by the script, without interacting with the virtual machine. The script doesn't install any closed-source additions or extra bootloaders. Tested on Cygwin. Works on macOS and WSL, should work on most Linux distros.
 
 ### macOS Catalina (10.15), Mojave (10.14), and High Sierra (10.13) currently supported
 macOS Catalina 10.15.2 and 10.15.3 require VirtualBox version 6.1.4 or higher. A workaround for lower versions of VirtualBox which involves using earlier versions of `boot.efi` is [described in issue 134](https://github.com/myspaghetti/macos-guest-virtualbox/issues/134#issuecomment-583216307).
@@ -38,4 +38,3 @@ All the dependencies should be available through a package manager:
 * GNU `Bash`≥4.3, on Windows run through [Cygwin](https://cygwin.com/install.html) or WSL.
 * GNU `coreutils`≥8.22, GNU `gzip`≥1.5, Info-ZIP `unzip`≥v6.0, GNU `wget`≥1.14, `xxd`≥1.7
 * `dmg2img`≥1.6.5, on Cygwin the package is not available through the package manager so the script downloads it automatically.
-
