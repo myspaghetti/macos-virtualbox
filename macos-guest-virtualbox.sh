@@ -2,7 +2,7 @@
 # Push-button installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-guest-virtualbox
-# version 0.89.6
+# version 0.89.7
 
 # Dependencies: bash  coreutils  gzip  unzip  wget  xxd  dmg2img
 # Supported versions:
@@ -60,23 +60,18 @@ SYSTEM_INTEGRITY_PROTECTION='10'  # '10' - enabled, '77' - disabled
 # welcome message
 function welcome() {
 printf '
-                  Push-button installer of macOS on VirtualBox
---------------------------------------------------------------------------------
+                  '"${highlight_color}"'Push-button installer of macOS on VirtualBox'"${default_color}"'
 
-This script installs only open-source software and unmodified Apple binaries.
+This script installs only open-source software and unmodified Apple binaries,
+and requires about '"${highlight_color}"'40GB'"${default_color}"' of available storage, of which 20GB are for temporary
+installation files that may be deleted when the script is finished.
 
-The script checks for dependencies and will prompt to install them if unmet.
+The script interacts with the virtual machine twice, '"${highlight_color}"'please do not interact'"${default_color}"'
+'"${highlight_color}"'with the virtual machine manually'"${default_color}"' before the script is finished.
 
-For iCloud and iMessage connectivity, the script needs to be edited with genuine
-or genuine-like Apple parameters. macOS will work without these parameters, but
-Apple-connected apps will not.
-
-The installation requires about '"${highlight_color}"'40GB'"${default_color}"' of available storage, 20GB for
-temporary installation files and 20GB for the virtual machine'"'"'s dynamically
-allocated storage disk image.
-
-Documentation about optional configuration, resuming the script by stages, and
-other topics can be viewed with the following command:
+Documentation about optional configuration, '"${highlight_color}"'iCloud and iMessage connectivity'"${default_color}"',
+resuming the script by stages, and other topics can be viewed with the
+following command:
 
 '
 would_you_like_to_know_less
@@ -1157,10 +1152,10 @@ echo '##########################################################################
 # GLOBAL VARIABLES AND FUNCTIONS THAT MIGHT BE CALLED MORE THAN ONCE
 
 # terminal text colors
-warning_color="\e[48;2;255;0;0m\e[38;2;255;255;255m" # white on red
-highlight_color="\e[48;2;0;0;9m\e[38;2;255;255;255m" # white on black
-low_contrast_color="\e[48;2;0;0;9m\e[38;2;128;128;128m" # grey on black
-default_color="\033[0m"
+warning_color=$'\e[48;2;255;0;0m\e[38;2;255;255;255m' # white on red
+highlight_color=$'\e[48;2;0;0;9m\e[38;2;255;255;255m' # white on black
+low_contrast_color=$'\e[48;2;0;0;9m\e[38;2;128;128;128m' # grey on black
+default_color=$'\033[0m'
 
 # prints positional parameters in low contrast preceded and followed by newline
 function print_dimly() {
