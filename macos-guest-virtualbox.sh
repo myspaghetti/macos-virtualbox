@@ -2,7 +2,7 @@
 # Push-button installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-guest-virtualbox
-# version 0.89.7
+# version 0.89.8
 
 # Dependencies: bash  coreutils  gzip  unzip  wget  xxd  dmg2img
 # Supported versions:
@@ -1089,10 +1089,6 @@ Terminal in the virtual machine run ${low_contrast_color}sudo diskutil repairDis
 ${low_contrast_color}sudo diskutil apfs resizeContainer disk1 0${default_color} or from Disk Utility, after
 repairing the disk from Terminal, delete the \"Free space\" partition so it allows
 the system APFS container to take up the available space.
-
-        ${highlight_color}Graphics controller${default_color}
-Selecting the VBoxSVGA controller instead of VBoxVGA for the graphics controller
-may considerably increase graphics performance.
 
         ${highlight_color}Unsupported features${default_color}
 Developing and maintaining VirtualBox or macOS features is beyond the scope of
