@@ -15,9 +15,6 @@ iCloud, iMessage, and other connected Apple services require a valid device name
 ## Storage size
 The script by default assigns a target virtual disk storage size of 80GB, which is populated to about 20GB on the host on initial installation. After the installation is complete, the storage size may be increased. See `documentation` for further information.
 
-## Graphics controller
-Selecting VBoxSVGA instead of VBoxVGA for the graphics controller may considerably increase graphics performance. VBoxVGA is assigned by default for compatibility reasons.
-
 ## Unsupported features
 Developing and maintaining VirtualBox or macOS features is beyond the scope of this script. Some features may behave unexpectedly, such as USB device support, audio support, FileVault boot password prompt support, and other features.
 
@@ -34,7 +31,7 @@ The VirtualBox EFI implementation does not properly load the FileVault full disk
 All the dependencies should be available through a package manager:  
 `bash` `coreutils` `gzip` `unzip` `wget` `xxd` `dmg2img`  `virtualbox`
 
-* [VirtualBox](https://www.virtualbox.org/wiki/Downloads)≥6.1.4 with Extension Pack, though versions as low as 5.2 may work.
+* [VirtualBox](https://www.virtualbox.org/wiki/Downloads)≥6.1.6 with Extension Pack, though versions as low as 5.2 may work.
 * GNU `Bash`≥4.3, on Windows run through [Cygwin](https://cygwin.com/install.html) or WSL.
 * GNU `coreutils`≥8.22, GNU `gzip`≥1.5, Info-ZIP `unzip`≥v6.0, GNU `wget`≥1.14, `xxd`≥1.7
 * `dmg2img`≥1.6.5, on Cygwin the package is not available through the package manager so the script downloads it automatically.
