@@ -2,7 +2,7 @@
 # Push-button installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-guest-virtualbox
-# version 0.89.8
+# version 0.89.9
 
 # Dependencies: bash  coreutils  gzip  unzip  wget  xxd  dmg2img
 # Supported versions:
@@ -60,7 +60,7 @@ SYSTEM_INTEGRITY_PROTECTION='10'  # '10' - enabled, '77' - disabled
 # welcome message
 function welcome() {
 printf '
-                  '"${highlight_color}"'Push-button installer of macOS on VirtualBox'"${default_color}"'
+'"${highlight_color}"'Push-button installer of macOS on VirtualBox'"${default_color}"'
 
 This script installs only open-source software and unmodified Apple binaries,
 and requires about '"${highlight_color}"'40GB'"${default_color}"' of available storage, of which 20GB are for temporary
@@ -79,15 +79,26 @@ printf '
 '"${highlight_color}"'Press enter to review the script configuration.'"${default_color}"
 clear_input_buffer_then_read
 
+function pad_to_33_chars() {
+    local padded="${1}                                 "
+    printf "${padded:0:33}"
+}
+
 # custom settings prompt
-printf '
-vm_name="'"${vm_name}"'"                  # name of the VirtualBox virtual machine
-macOS_release_name="'"${macOS_release_name}"'"    # install "HighSierra" "Mojave" or "Catalina"
-storage_size='"${storage_size}"'               # VM disk image size in MB. minimum 22000
-cpu_count='"${cpu_count}"'                      # VM CPU cores, minimum 2
-memory_size='"${memory_size}"'                 # VM RAM in MB, minimum 2048
-gpu_vram='"${gpu_vram}"'                     # VM video RAM in MB, minimum 34, maximum 128
-resolution="'"${resolution}"'"            # VM display resolution
+echo ''
+echo 'vm_name="'"${vm_name}"'"'
+pad_to_33_chars 'macOS_release_name="'"${macOS_release_name}"'"'
+echo '# install "HighSierra" "Mojave" or "Catalina"'
+pad_to_33_chars 'storage_size='"${storage_size}"
+echo '# VM disk image size in MB. minimum 22000'
+pad_to_33_chars 'cpu_count='"${cpu_count}"
+echo '# VM CPU cores, minimum 2'
+pad_to_33_chars 'memory_size='"${memory_size}"
+echo '# VM RAM in MB, minimum 2048'
+pad_to_33_chars 'gpu_vram='"${gpu_vram}"
+echo '# VM video RAM in MB, minimum 34, maximum 128'
+pad_to_33_chars 'resolution="'"${resolution}"'"'
+printf '# VM display resolution
 
 These values may be customized as described in the documentation.
 
@@ -663,7 +674,6 @@ if [[ -w "Install ${macOS_release_name}.vdi" ]]; then
     echo '"'"Install ${macOS_release_name}.vdi"'" virtual disk image exists.'
     printf "${warning_color}"'Delete "'"Install ${macOS_release_name}.vdi"'"?'"${default_color}"
     prompt_delete_y_n
-    echo ""
     if [[ "${delete}" == "y" ]]; then
         if [[ "$( VBoxManage list runningvms )" =~ \""${vm_name}"\" ]];
         then
