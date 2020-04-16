@@ -6,7 +6,7 @@
 
 # Dependencies: bash  coreutils  gzip  unzip  wget  xxd  dmg2img
 # Supported versions:
-#               VirtualBox with Extension Pack >= 6.1.4
+#               VirtualBox with Extension Pack >= 6.1.6
 #               GNU bash >= 4.3, GNU coreutils >= 8.22,
 #               GNU gzip >= 1.5, GNU wget >= 1.14,
 #               Info-ZIP unzip >= 6.0, xxd >= 1.7,
