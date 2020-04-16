@@ -976,10 +976,10 @@ printf "
 Push-button installer of macOS on VirtualBox
 
         ${highlight_color}DESCRIPTION${default_color}
-The script downloads, configures, and installs macOS High Sierra, Mojave,
-and Catalina on VirtualBox 5.2, 6.0, and 6.1. The script requires very little
-user interaction. A default fresh install only requires the user to sit
-patiently and, less than ten times, press enter when prompted.
+The script downloads macOS High Sierra, Mojave, and Catalina from Apple servers
+and installs them on VirtualBox 5.2, 6.0, and 6.1. The script doesn't install
+any closed-source additions or bootloaders. A default install requires the user
+less than ten times to press enter when prompted to complete the installation.
 
         ${highlight_color}USAGE${default_color}
     ${low_contrast_color}${0} [STAGE]... ${default_color}
