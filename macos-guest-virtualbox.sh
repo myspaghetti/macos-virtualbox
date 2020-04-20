@@ -2,7 +2,7 @@
 # Push-button installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-guest-virtualbox
-# version 0.89.9
+# version 0.90.0
 
 # Dependencies: bash  coreutils  gzip  unzip  wget  xxd  dmg2img
 # Supported versions:
@@ -633,14 +633,18 @@ elif [[ ! -s "${macOS_release_name}_BaseSystem.dmg" ]]; then
     echo "Could not find ${macOS_release_name}_BaseSystem.dmg; exiting."
     exit
 else
-    echo "Converting to BaseSystem.dmg to BaseSystem.img"
+    local failed=''
+    echo "Converting BaseSystem.dmg to BaseSystem.img"
     if [[ -n "$("${PWD}/dmg2img.exe" -d 2>/dev/null)" ]]; then
-        "${PWD}/dmg2img.exe" "${macOS_release_name}_BaseSystem.dmg" "${macOS_release_name}_BaseSystem.img"
+        "${PWD}/dmg2img.exe" "${macOS_release_name}_BaseSystem.dmg" "${macOS_release_name}_BaseSystem.img" || local failed='failed'
     else
-        dmg2img "${macOS_release_name}_BaseSystem.dmg" "${macOS_release_name}_BaseSystem.img"
+        dmg2img "${macOS_release_name}_BaseSystem.dmg" "${macOS_release_name}_BaseSystem.img" || local failed='failed'
     fi
-    VBoxManage convertfromraw --format VDI "${macOS_release_name}_BaseSystem.img" "${macOS_release_name}_BaseSystem.vdi"
-    if [[ -s "${macOS_release_name}_BaseSystem.vdi" ]]; then
+    VBoxManage convertfromraw --format VDI "${macOS_release_name}_BaseSystem.img" "${macOS_release_name}_BaseSystem.vdi" || local failed='failed'
+    if [[ -n "${failed}" ]]; then
+        echo "Failed to create \"${macOS_release_name}_BaseSystem.vdi\". Exiting."
+        exit
+    else
         rm "${macOS_release_name}_BaseSystem.img" 2>/dev/null
     fi
 fi
