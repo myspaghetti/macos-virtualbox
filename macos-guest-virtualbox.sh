@@ -2,7 +2,7 @@
 # Push-button installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-guest-virtualbox
-# version 0.90.0
+# version 0.90.1
 
 # Dependencies: bash  coreutils  gzip  unzip  wget  xxd  dmg2img
 # Supported versions:
@@ -1103,6 +1103,15 @@ Terminal in the virtual machine run ${low_contrast_color}sudo diskutil repairDis
 ${low_contrast_color}sudo diskutil apfs resizeContainer disk1 0${default_color} or from Disk Utility, after
 repairing the disk from Terminal, delete the \"Free space\" partition so it allows
 the system APFS container to take up the available space.
+
+        ${highlight_color}Primary display resolution${default_color}
+The following command assigns the virtual machine primary display resolution:
+${low_contrast_color}VBoxManage setextradata \"\${vm_name}\" \\${default_color}
+  ${low_contrast_color}\"VBoxInternal2/EfiGraphicsResolution\" \"\${resolution}\"${default_color}
+The following primary display resolutions are supported by macOS on VirtualBox:
+${low_contrast_color}5120x2880  2880x1800  2560x1600  2560x1440  1920x1200  1600x1200  1680x1050${default_color}
+${low_contrast_color}1440x900   1280x800   1024x768   640x480${default_color}
+Secondary displays can have an arbitrary resolution.
 
         ${highlight_color}Unsupported features${default_color}
 Developing and maintaining VirtualBox or macOS features is beyond the scope of
