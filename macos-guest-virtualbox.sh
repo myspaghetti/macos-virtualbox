@@ -2,7 +2,7 @@
 # Push-button installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-guest-virtualbox
-# version 0.90.4
+# version 0.90.5
 
 # Dependencies: bash  coreutils  gzip  unzip  wget  xxd  dmg2img
 # Supported versions:
@@ -142,7 +142,7 @@ elif [[ "${SHELL}" =~ /zsh ]]; then
         echo "Please run this script on zsh version 5.5 or higher."
         exit
     fi
-    setopt extendedglob sh_word_split ksh_arrays posix_argzero
+    setopt extendedglob sh_word_split ksh_arrays posix_argzero nullglob
 else
     echo "Can't determine SHELL. Exiting."
     exit
@@ -151,23 +151,26 @@ fi
 
 function check_gnu_coreutils_prefix() {
 if [[ -n "$(gcsplit --help 2>/dev/null)" ]]; then
-    function csplit() {
-        gcsplit "$@"
-    }
-    function tac() {
-        gtac "$@"
-    }
-    function split() {
-        gsplit "$@"
-    }
     function base64() {
         gbase64 "$@"
+    }
+    function csplit() {
+        gcsplit "$@"
     }
     function expr() {
         gexpr "$@"
     }
+    function ls() {
+        gls "$@"
+    }
     function od() {
         god "$@"
+    }
+    function split() {
+        gsplit "$@"
+    }
+    function tac() {
+        gtac "$@"
     }
 fi
 }
@@ -945,37 +948,30 @@ else
     # detach temporary VDIs and attach the macOS target disk
     VBoxManage storagectl "${vm_name}" --remove --name SATA >/dev/null 2>&1
     VBoxManage storagectl "${vm_name}" --add sata --name SATA --hostiocache on >/dev/null 2>&1
-    VBoxManage storageattach "${vm_name}" --storagectl SATA --port 0 \
-               --type hdd --nonrotational on --medium "${vm_name}.vdi"
+    if [[ -s "${vm_name}.vdi" ]]; then
+        VBoxManage storageattach "${vm_name}" --storagectl SATA --port 0 \
+                   --type hdd --nonrotational on --medium "${vm_name}.vdi"
+    fi
     VBoxManage closemedium "Install ${macOS_release_name}.vdi" >/dev/null 2>&1
     VBoxManage closemedium "${macOS_release_name}_BaseSystem.vdi" >/dev/null 2>&1
-    printf 'The following temporary files are safe to delete:
-      "'"${macOS_release_name}_Apple"*'"
-      "'"${macOS_release_name}_BaseSystem"*'"
-      "'"${macOS_release_name}_Install"*'"
-      "'"Install ${macOS_release_name}.vdi"'"
-      "'"${vm_name}_"*".bin"'"
-      "'"${vm_name}_startup.nsh"'"
-      "'"ApfsDriverLoader.efi"'"
-      "'"Apple"*".efi"'"
-      "'"AppleSupport-v2.0.4-RELEASE.zip"'"\n'
-    if [[ -w "dmg2img.exe" ]]; then
-        printf '      "'"dmg2img.exe"'"\n'
-    fi
+    echo 'The following temporary files are safe to delete:'
     echo ""
-    printf "${warning_color}"'Delete temporary files?'"${default_color}"
+    temporary_files=("${macOS_release_name}_Apple"*
+                     "${macOS_release_name}_BaseSystem"*
+                     "${macOS_release_name}_Install"*
+                     "Install ${macOS_release_name}.vdi"
+                     "${vm_name}_"*".bin"
+                     "${vm_name}_startup.nsh"
+                     "ApfsDriverLoader.efi"
+                     "Apple"*".efi"
+                     "AppleSupport-v2.0.4-RELEASE.zip"
+                     "dmg2img.exe")
+    ls -d "${temporary_files[@]}" 2>/dev/null
+    echo ""
+    printf "${warning_color}"'Delete temporary files listed above?'"${default_color}"
     prompt_delete_y_n
     if [[ "${delete}" == "y" ]]; then
-        rm "${macOS_release_name}_Apple"* \
-           "${macOS_release_name}_BaseSystem"* \
-           "${macOS_release_name}_Install"* \
-           "Install ${macOS_release_name}.vdi" \
-           "${vm_name}_"*".bin" \
-           "${vm_name}_startup.nsh" \
-           "ApfsDriverLoader.efi" \
-           "Apple"*".efi" \
-           "AppleSupport-v2.0.4-RELEASE.zip" 2>/dev/null
-        rm "dmg2img.exe" 2>/dev/null
+        rm -f "${temporary_files[@]}" 2>/dev/null
     fi
 fi
 
