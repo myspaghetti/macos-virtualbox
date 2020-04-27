@@ -131,7 +131,7 @@ elif [[ "${SHELL}" =~ /zsh ]]; then
             echo "The script appears to be running on bash inside zsh."
             echo "Please explicitly execute the script with zsh or edit the #! at the top of the"
             echo "script so it points to the zsh executable."
-            fi
+        fi
         echo "Exiting."
         exit
     elif [[ "${ZSH_VERSION:0:1}" -lt 5 ]]; then
