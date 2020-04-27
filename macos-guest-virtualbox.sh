@@ -2,7 +2,7 @@
 # Push-button installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-guest-virtualbox
-# version 0.90.2
+# version 0.90.3
 
 # Dependencies: bash  coreutils  gzip  unzip  wget  xxd  dmg2img
 # Supported versions:
@@ -126,9 +126,13 @@ if [[ "${SHELL}" =~ /bash ]]; then
     fi
 elif [[ "${SHELL}" =~ /zsh ]]; then
     if [[ -z "${ZSH_VERSION}" ]]; then
-        echo "Can't determine ZSH_VERSION. The script runs on /bin/bash by default."
-        echo "Manually load the script with zsh or edit the #! line at the top of the script"
-        echo "to point to zsh. Exiting."
+        echo "Can't determine ZSH_VERSION."
+        if [[ -n "${BASH_VERSION}" ]]; then
+            echo "The script appears to be running on bash inside zsh."
+            echo "Please explicitly execute the script with zsh or edit the #! at the top of the"
+            echo "script so it points to the zsh executable."
+            fi
+        echo "Exiting."
         exit
     elif [[ "${ZSH_VERSION:0:1}" -lt 5 ]]; then
         echo "Please run this script on zsh 5 or higher."
