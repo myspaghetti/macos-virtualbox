@@ -2,7 +2,7 @@
 # Push-button installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-guest-virtualbox
-# version 0.90.3
+# version 0.90.4
 
 # Dependencies: bash  coreutils  gzip  unzip  wget  xxd  dmg2img
 # Supported versions:
@@ -113,14 +113,16 @@ if [[ "${SHELL}" =~ /bash ]]; then
     if [[ -z "${BASH_VERSION}" ]]; then
         echo "Can't determine BASH_VERSION. Exiting."
         exit
-    elif [[ "${BASH_VERSION:0:1}" -lt 4 ]]; then
+    elif [[ ! ( "${BASH_VERSION:0:1}" -ge 4 ) ]]; then
         echo "Please run this script on Bash 4.3 or higher."
         if [[ -n "$(sw_vers 2>/dev/null)" ]]; then
             echo "macOS detected. Make sure the script is not running on"
             echo "the default /bin/bash which is version 3."
         fi
         exit
-    elif [[ "${BASH_VERSION:0:1}" -eq 4 && "${BASH_VERSION:2:1}" -le 2 ]]; then
+    elif [[ ! ( "${BASH_VERSION:0:1}" -ge 5
+             || "${BASH_VERSION:0:3}" =~ 4\.[3-9]
+             || "${BASH_VERSION:0:4}" =~ 4\.[12][0-9] ) ]]; then
         echo "Please run this script on Bash 4.3 or higher."
         exit
     fi
@@ -134,8 +136,10 @@ elif [[ "${SHELL}" =~ /zsh ]]; then
         fi
         echo "Exiting."
         exit
-    elif [[ "${ZSH_VERSION:0:1}" -lt 5 ]]; then
-        echo "Please run this script on zsh 5 or higher."
+    elif [[ ! ( "${ZSH_VERSION:0:1}" -ge 6 
+             || "${ZSH_VERSION:0:3}" =~ 5\.[5-9]
+             || "${ZSH_VERSION:0:4}" =~ 5\.[1-4][0-9] ) ]]; then
+        echo "Please run this script on zsh version 5.5 or higher."
         exit
     fi
     setopt extendedglob sh_word_split ksh_arrays posix_argzero
@@ -202,7 +206,7 @@ if [[ -z "$(echo "xxd" | xxd -p 2>/dev/null)" || \
 fi
 
 # wget supports --show-progress from version 1.16
-regex='1\.1[6-9]|1\.2[0-9]'
+regex='1\.1[6-9]|1\.[2-9][0-9]'
 if [[ "$(wget --version 2>/dev/null | head -n 1)" =~ ${regex} ]]; then
     wgetargs="--quiet --continue --show-progress"  # pretty
 else
@@ -287,7 +291,8 @@ vbox_version="${vbox_version//[$'\r\n']/}"
 if [[ -z "${vbox_version}" || -z "${vbox_version:2:1}" ]]; then
     echo "Can't determine VirtualBox version. Exiting."
     exit
-elif [[ ( "${vbox_version:0:1}" -lt 5 ) || ( "${vbox_version:0:1}" = 5 && "${vbox_version:2:1}" -lt 2 ) ]]; then
+elif [[ ! ( "${vbox_version:0:1}" -gt 5
+         || "${vbox_version:0:3}" =~ 5\.2 ) ]]; then
     echo ""
     echo "Please make sure VirtualBox version 5.2 or higher is installed."
     echo "Exiting."
@@ -295,7 +300,7 @@ elif [[ ( "${vbox_version:0:1}" -lt 5 ) || ( "${vbox_version:0:1}" = 5 && "${vbo
 elif [[ "${vbox_version:0:1}" = 5 ]]; then
     echo ""
     printf "${highlight_color}"'VirtualBox version '"${vbox_version}"' detected.'"${default_color}"' Please see the following
-URL for issues with the VISO filesystem on VirtualBox 5.2 to 5.2.36:
+URL for issues with the VISO filesystem on VirtualBox 5.2 to 5.2.40:
 
   https://github.com/myspaghetti/macos-guest-virtualbox/issues/86
 
@@ -341,9 +346,9 @@ if [[ "${macOS_release_name:0:1}" =~ [Cc] ]]; then
     macOS_release_name="Catalina"
     CFBundleShortVersionString="10.15"
     sucatalog="${Catalina_sucatalog}"
-    if [[ ! ( "${vbox_version:0:1}" -gt 6 || \
-              "${vbox_version}" =~ ^6\.1\.[4-9] || \
-              "${vbox_version}" =~ ^6\.1\.[123][0-9] || \
+    if [[ ! ( "${vbox_version:0:1}" -gt 6 ||
+              "${vbox_version}" =~ ^6\.1\.[4-9] ||
+              "${vbox_version}" =~ ^6\.1\.[123][0-9] ||
               "${vbox_version}" =~ ^6\.[2-9] ) ]]; then
         echo ""
         echo "macOS Catalina requires VirtualBox version 6.1.4 or higher."
@@ -463,7 +468,7 @@ split --verbose -a 2 -d -b 1000000000 "${macOS_release_name}_InstallESDDmg.pkg" 
 if [[ ! -s "ApfsDriverLoader.efi" ]]; then
     echo ""
     echo "Downloading open-source APFS EFI drivers used for VirtualBox 6.0 and 5.2"
-    [[ "${vbox_version:0:1}" -gt 6 || ( "${vbox_version:0:1}" = 6 && "${vbox_version:2:1}" -ge 1 ) ]] && echo "...even though that's not the version of VirtualBox that's been detected."
+    [[ "${vbox_version:0:1}" -gt 6 || ( "${vbox_version:0:1}" = 6 && "${vbox_version:2:1}" -ge 1 ) ]] && echo "...even though VirtualBox version 6.1 or higher is detected."
     wget 'https://github.com/acidanthera/AppleSupportPkg/releases/download/2.0.4/AppleSupport-v2.0.4-RELEASE.zip' \
         ${wgetargs} \
         --output-document 'AppleSupport-v2.0.4-RELEASE.zip'
@@ -497,7 +502,7 @@ function generate_nvram_bin_file() {
     local filename="${namestring}"
     # represent string as string-of-hex-bytes, add null byte after every byte,
     # terminate string with two null bytes
-    local name="$(for (( i=0; i<"${#namestring}"; i++ )); do printf -- "${namestring:${i}:1}" | xxd -p | tr -d '\n'; printf '00'; done; printf '0000' )"
+    local name="$( for (( i = 0 ; i < ${#namestring} ; i++ )); do printf -- "${namestring:${i}:1}" | xxd -p | tr -d '\n'; printf '00'; done; printf '0000' )"
     # size of string in bytes, represented by eight hex digits, big-endian
     local namesize="$(printf "%08x" $(( ${#name} / 2 )) )"
     # flip four big-endian bytes byte-order to little-endian
