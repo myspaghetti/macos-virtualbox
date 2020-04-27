@@ -197,7 +197,7 @@ if [[ -z "$(echo "xxd" | xxd -p 2>/dev/null)" || \
       -z "$(wget --version 2>/dev/null)" ]]; then
     echo "Please make sure the following packages are installed:"
     echo "coreutils    gzip    unzip    xxd    wget"
-    echo "Please make sure the coreutils package is the GNU variant."
+    echo "Please make sure the coreutils and gzip packages are the GNU variant."
     exit
 fi
 
