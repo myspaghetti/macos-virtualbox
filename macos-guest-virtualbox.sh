@@ -186,11 +186,10 @@ if [[ -n "$(sw_vers 2>/dev/null)" ]]; then
     fi
     # if csplit isn't GNU variant, exit
     if [[ -z "$(csplit --help 2>/dev/null)" ]]; then
-        echo ""
-        printf 'macOS detected.\nPlease use a package manager such as '"${highlight_color}"'homebrew'"${default_color}"', '"${highlight_color}"'pkgsrc'"${default_color}"', '"${highlight_color}"'nix'"${default_color}"', or '"${highlight_color}"'MacPorts'"${default_color}"'.\n'
+        printf $'\n''macOS detected.'$'\n''Please use a package manager such as '"${highlight_color}"'homebrew'"${default_color}"', '"${highlight_color}"'pkgsrc'"${default_color}"', '"${highlight_color}"'nix'"${default_color}"', or '"${highlight_color}"'MacPorts'"${default_color}"'.'$'\n'
         echo "Please make sure the following packages are installed and that"
         echo "their path is in the PATH variable:"
-        printf "${highlight_color}"'bash  coreutils  dmg2img  gzip  unzip  wget  xxd'"${default_color}"'\n'
+        printf "${highlight_color}"'bash  coreutils  dmg2img  gzip  unzip  wget  xxd'"${default_color}"$'\n'
         echo "Please make sure Bash and coreutils are the GNU variant."
         exit
     fi
@@ -244,20 +243,16 @@ if [[ -n "$(cygcheck -V 2>/dev/null)" ]]; then
 elif [[ "$(cat /proc/sys/kernel/osrelease 2>/dev/null)" =~ [Mm]icrosoft ]]; then
     osrelease="$(cat /proc/sys/kernel/osrelease 2>/dev/null)"
     if [[ "${osrelease}" =~ microsoft ]]; then # WSL2
-        echo ""
-        echo "Using WSL2 and VirtualBox requires using Hyper-V with VirtualBox."
-        printf "${warning_color}"'VirtualBox usually doen'"'"'t work with WSL2 installed.'"${default_color}"'\n'
-        echo ""
-        printf "${highlight_color}"'Press enter to continue, CTRL-C to exit.'"${default_color}"
+        echo $'\n'"Using WSL2 and VirtualBox requires using Hyper-V with VirtualBox."
+        printf "${warning_color}"'VirtualBox usually doen'"'"'t work with WSL2 installed.'"${default_color}"$'\n'
+        printf $'\n'"${highlight_color}"'Press enter to continue, CTRL-C to exit.'"${default_color}"
         clear_input_buffer_then_read
     elif [[ ( "${osrelease}" =~ Microsoft ) ]]; then # WSL (1)
-        echo ""
-        echo "Some versions of WSL require the script to run on a Windows filesystem path,"
-        printf 'for example   '"${highlight_color}"'/mnt/c/Users/Public/Documents'"${default_color}"'\n'
+        echo $'\n'"Some versions of WSL require the script to run on a Windows filesystem path,"
+        printf 'for example   '"${highlight_color}"'/mnt/c/Users/Public/Documents'"${default_color}"$'\n'
         echo "Switch to a path on the Windows filesystem if VBoxManage.exe fails to"
         echo "create or open a file."
-        echo ""
-        printf "${highlight_color}"'Press enter to continue, CTRL-C to exit.'"${default_color}"
+        printf $'\n'"${highlight_color}"'Press enter to continue, CTRL-C to exit.'"${default_color}"
         clear_input_buffer_then_read
     fi
     if [[ -n "$(VBoxManage.exe -v 2>/dev/null)" ]]; then
@@ -296,13 +291,11 @@ if [[ -z "${vbox_version}" || -z "${vbox_version:2:1}" ]]; then
     exit
 elif [[ ! ( "${vbox_version:0:1}" -gt 5
          || "${vbox_version:0:3}" =~ 5\.2 ) ]]; then
-    echo ""
-    echo "Please make sure VirtualBox version 5.2 or higher is installed."
+    echo $'\n'"Please make sure VirtualBox version 5.2 or higher is installed."
     echo "Exiting."
     exit
 elif [[ "${vbox_version:0:1}" = 5 ]]; then
-    echo ""
-    printf "${highlight_color}"'VirtualBox version '"${vbox_version}"' detected.'"${default_color}"' Please see the following
+    printf $'\n'"${highlight_color}"'VirtualBox version '"${vbox_version}"' detected.'"${default_color}"' Please see the following
 URL for issues with the VISO filesystem on VirtualBox 5.2 to 5.2.40:
 
   https://github.com/myspaghetti/macos-guest-virtualbox/issues/86
@@ -353,8 +346,7 @@ if [[ "${macOS_release_name:0:1}" =~ [Cc] ]]; then
               "${vbox_version}" =~ ^6\.1\.[4-9] ||
               "${vbox_version}" =~ ^6\.1\.[123][0-9] ||
               "${vbox_version}" =~ ^6\.[2-9] ) ]]; then
-        echo ""
-        echo "macOS Catalina requires VirtualBox version 6.1.4 or higher."
+        echo $'\n'"macOS Catalina requires VirtualBox version 6.1.4 or higher."
         echo "Exiting."
         exit
     fi
@@ -382,8 +374,7 @@ if [[ -n "$(VBoxManage showvminfo "${vm_name}" 2>/dev/null)" ]]; then
         echo "Deleting ${vm_name} virtual machine."
         VBoxManage unregistervm "${vm_name}" --delete
     else
-        echo ""
-        printf "${highlight_color}"'Please assign a different VM name to variable "vm_name" by editing the script,'"${default_color}\n"
+        printf $'\n'"${highlight_color}"'Please assign a different VM name to variable "vm_name" by editing the script,'"${default_color}"$'\n'
         echo "or skip this check manually as described when running the following command:"
         would_you_like_to_know_less
         exit
@@ -395,7 +386,7 @@ fi
 function create_vm() {
 print_dimly "stage: create_vm"
 if [[ -n "$( VBoxManage createvm --name "${vm_name}" --ostype "MacOS1013_64" --register 2>&1 >/dev/null )" ]]; then
-    printf '\nError: Could not create virtual machine "'"${vm_name}"'".
+    printf $'\n''Error: Could not create virtual machine "'"${vm_name}"'".
 '"${highlight_color}"'Please delete exising "'"${vm_name}"'" VirtualBox configuration files '"${warning_color}"'manually'"${default_color}"'.
 
 Error message:
@@ -408,8 +399,7 @@ fi
 function prepare_macos_installation_files() {
 print_dimly "stage: prepare_macos_installation_files"
 # Find the correct download URL in the Apple catalog
-echo ""
-echo "Downloading Apple macOS ${macOS_release_name} software update catalog"
+echo $'\n'"Downloading Apple macOS ${macOS_release_name} software update catalog"
 wget "${sucatalog}" \
      ${wgetargs} \
      --output-document="${macOS_release_name}_sucatalog"
@@ -417,8 +407,7 @@ wget "${sucatalog}" \
 # if file was not downloaded correctly
 if [[ ! -s "${macOS_release_name}_sucatalog" ]]; then
     wget --debug -O /dev/null -o "${macOS_release_name}_wget.log" "${sucatalog}"
-    echo ""
-    echo "Couldn't download the Apple software update catalog."
+    echo $'\n'"Couldn't download the Apple software update catalog."
     if [[ "$(expr match "$(cat "${macOS_release_name}_wget.log")" '.*ERROR[[:print:]]*is not trusted')" -gt "0" ]]; then
         printf '
 Make sure certificates from a certificate authority are installed.
@@ -444,8 +433,7 @@ for catalog in "${macOS_release_name}_sucatalog_"* "error"; do
     --output-document="${catalog}_InstallAssistantAuto.smd"
     found_version="$(head -n 6 "${catalog}_InstallAssistantAuto.smd" | tail -n 1)"
     if [[ "${found_version}" == *${CFBundleShortVersionString}* ]]; then
-        echo "Found download URL: ${urlbase}"
-        echo ""
+        echo "Found download URL: ${urlbase}"$'\n'
         rm "${macOS_release_name}_sucatalog"*
         break
     fi
@@ -462,15 +450,13 @@ for filename in "BaseSystem.chunklist" \
             --output-document "${macOS_release_name}_${filename}"
 done
 
-echo ""
-echo "Splitting the several-GB InstallESDDmg.pkg into 1GB parts because"
+echo $'\n'"Splitting the several-GB InstallESDDmg.pkg into 1GB parts because"
 echo "VirtualBox hasn't implemented UDF/HFS VISO support yet and macOS"
 echo "doesn't support ISO 9660 Level 3 with files larger than 2GB."
 split --verbose -a 2 -d -b 1000000000 "${macOS_release_name}_InstallESDDmg.pkg" "${macOS_release_name}_InstallESD.part"
 
 if [[ ! -s "ApfsDriverLoader.efi" ]]; then
-    echo ""
-    echo "Downloading open-source APFS EFI drivers used for VirtualBox 6.0 and 5.2"
+    echo $'\n'"Downloading open-source APFS EFI drivers used for VirtualBox 6.0 and 5.2"
     [[ "${vbox_version:0:1}" -gt 6 || ( "${vbox_version:0:1}" = 6 && "${vbox_version:2:1}" -ge 1 ) ]] && echo "...even though VirtualBox version 6.1 or higher is detected."
     wget 'https://github.com/acidanthera/AppleSupportPkg/releases/download/2.0.4/AppleSupport-v2.0.4-RELEASE.zip' \
         ${wgetargs} \
@@ -592,10 +578,8 @@ for %a run (1 5)
   endif
 endfor' >> "${vm_name}_startup.nsh"
 
-echo ""
-echo "Creating VirtualBox 6 virtual ISO containing the"
-echo "installation files from swcdn.apple.com"
-echo ""
+echo $'\n'"Creating VirtualBox 6 virtual ISO containing the"
+echo "installation files from swcdn.apple.com"$'\n'
 pseudouuid="$(od -tx -N16 /dev/urandom | xxd -r | xxd -p)"
 pseudouuid="${pseudouuid:0:8}-${pseudouuid:8:4}-${pseudouuid:12:4}-${pseudouuid:16:4}-${pseudouuid:20:12}"
 echo "--iprt-iso-maker-file-marker-bourne-sh "${pseudouuid}"
@@ -643,8 +627,7 @@ print_dimly "stage: create_basesystem_vdi"
 if [[ -s "${macOS_release_name}_BaseSystem.vdi" ]]; then
     echo "${macOS_release_name}_BaseSystem.vdi bootstrap virtual disk image exists."
 elif [[ ! -s "${macOS_release_name}_BaseSystem.dmg" ]]; then
-    echo ""
-    echo "Could not find ${macOS_release_name}_BaseSystem.dmg; exiting."
+    echo $'\n'"Could not find ${macOS_release_name}_BaseSystem.dmg; exiting."
     exit
 else
     local failed=''
@@ -880,13 +863,10 @@ echo "The VM will boot from the populated installer base system virtual disk."
 prompt_lang_utils
 prompt_terminal_ready
 add_another_terminal
-echo ""
-echo "The second open Terminal in the virtual machine copies EFI and NVRAM files"
+echo $'\n'"The second open Terminal in the virtual machine copies EFI and NVRAM files"
 echo "to the target EFI system partition when the installer finishes preparing."
-echo ""
-echo "After the installer finishes preparing and the EFI and NVRAM files are copied,"
-echo "macOS will install and run when booting the target disk."
-echo ""
+echo $'\n'"After the installer finishes preparing and the EFI and NVRAM files are copied,"
+echo "macOS will install and run when booting the target disk."$'\n'
 # run script concurrently, catch SIGUSR1 when installer finishes preparing
 kbstring='disks="$(diskutil list | grep -o "[0-9][^ ]* GB *disk[0-9]$" | sort -gr | grep -o disk[0-9])" && '\
 'disks=(${disks[@]}) && '\
@@ -917,13 +897,13 @@ powers off the virtual machine and detaches the device "'"Install ${macOS_releas
 booting into the initial installer environment again.'
     clear_input_buffer_then_read
     VBoxManage controlvm "${vm_name}" poweroff >/dev/null 2>&1
-    for (( i=10; i>5; i-- )); do printf '   \r'"${i}"; sleep 0.5; done
+    for (( i=10; i>5; i-- )); do printf $'   \r'"${i}"; sleep 0.5; done
     VBoxManage storagectl "${vm_name}" --remove --name SATA >/dev/null 2>&1
     VBoxManage storagectl "${vm_name}" --add sata --name SATA --hostiocache on >/dev/null 2>&1
     VBoxManage storageattach "${vm_name}" --storagectl SATA --port 0 \
                --type hdd --nonrotational on --medium "${vm_name}.vdi"
     echo ""
-    for (( i=5; i>0; i-- )); do printf '   \r'"${i}"; sleep 0.5; done
+    for (( i=5; i>0; i-- )); do printf $'   \r'"${i}"; sleep 0.5; done
 fi
 printf '
 For further information, such as applying EFI and NVRAM variables to enable
@@ -931,7 +911,7 @@ iMessage connectivity, see the documentation with the following command:
 
 '
 would_you_like_to_know_less
-printf '\n'"${highlight_color}"'That'"'"'s it! Enjoy your virtual machine.'"${default_color}"'\n'
+printf $'\n'"${highlight_color}"'That'"'"'s it! Enjoy your virtual machine.'"${default_color}"$'\n'
 
 }
 
@@ -943,7 +923,7 @@ then
 and without a suspended state by running the following command at the script'"'"'s
 working directory:
 
-  '"${highlight_color}${0} delete_temporary_files${default_color}"'\n'
+  '"${highlight_color}${0} delete_temporary_files${default_color}"$'\n'
 else
     # detach temporary VDIs and attach the macOS target disk
     VBoxManage storagectl "${vm_name}" --remove --name SATA >/dev/null 2>&1
@@ -954,8 +934,7 @@ else
     fi
     VBoxManage closemedium "Install ${macOS_release_name}.vdi" >/dev/null 2>&1
     VBoxManage closemedium "${macOS_release_name}_BaseSystem.vdi" >/dev/null 2>&1
-    echo 'The following temporary files are safe to delete:'
-    echo ""
+    echo 'The following temporary files are safe to delete:'$'\n'
     temporary_files=("${macOS_release_name}_Apple"*
                      "${macOS_release_name}_BaseSystem"*
                      "${macOS_release_name}_Install"*
@@ -967,8 +946,7 @@ else
                      "AppleSupport-v2.0.4-RELEASE.zip"
                      "dmg2img.exe")
     ls -d "${temporary_files[@]}" 2>/dev/null
-    echo ""
-    printf "${warning_color}"'Delete temporary files listed above?'"${default_color}"
+    printf $'\n'"${warning_color}"'Delete temporary files listed above?'"${default_color}"
     prompt_delete_y_n
     if [[ "${delete}" == "y" ]]; then
         rm -f "${temporary_files[@]}" 2>/dev/null
@@ -980,7 +958,7 @@ fi
 function documentation() {
 low_contrast_stages=""
 for stage in ${stages}; do
-    low_contrast_stages="${low_contrast_stages}"'    '"${low_contrast_color}${stage}${default_color}"'\n'
+    low_contrast_stages="${low_contrast_stages}"'    '"${low_contrast_color}${stage}${default_color}"$'\n'
 done
 printf "
         ${highlight_color}NAME${default_color}
@@ -1185,7 +1163,7 @@ default_color=$'\033[0m'
 
 # prints positional parameters in low contrast preceded and followed by newline
 function print_dimly() {
-printf "\n${low_contrast_color}$@${default_color}\n"
+printf $'\n'"${low_contrast_color}$@${default_color}"$'\n'
 }
 
 # don't need sleep when we can read!
@@ -1365,10 +1343,10 @@ function send_enter() {
 
 function prompt_lang_utils() {
     # called after the virtual machine boots up
-    printf '\n'"${highlight_color}"'Press enter when the Language window is ready.'"${default_color}"
+    printf $'\n'"${highlight_color}"'Press enter when the Language window is ready.'"${default_color}"
     clear_input_buffer_then_read
     send_enter
-    printf '\n'"${highlight_color}"'Press enter when the macOS Utilities window is ready.'"${default_color}"
+    printf $'\n'"${highlight_color}"'Press enter when the macOS Utilities window is ready.'"${default_color}"
     clear_input_buffer_then_read
     kbspecial='CTRLprs F2 CTRLrls u ENTER t ENTER'
     send_special
@@ -1376,7 +1354,7 @@ function prompt_lang_utils() {
 
 function prompt_terminal_ready() {
     # called after the Utilities window is ready
-    printf '\n'"${highlight_color}"'Press enter when the Terminal command prompt is ready.'"${default_color}"
+    printf $'\n'"${highlight_color}"'Press enter when the Terminal command prompt is ready.'"${default_color}"
     clear_input_buffer_then_read
 }
 
@@ -1406,9 +1384,9 @@ function cycle_through_terminal_windows() {
 
 function would_you_like_to_know_less() {
     if [[ -z "$(less --version 2>/dev/null)" ]]; then
-        printf '  '"${highlight_color}${0} documentation${default_color}"'\n'
+        printf '  '"${highlight_color}${0} documentation${default_color}"$'\n'
     else
-        printf '  '"${highlight_color}${0} documentation | less -R${default_color}"'\n'
+        printf '  '"${highlight_color}${0} documentation | less -R${default_color}"$'\n'
     fi
 }
 
@@ -1459,12 +1437,10 @@ stages_without_newlines="${stages_without_newlines//troubleshoot/}"   # strip al
 # for the command-line argument checking below to work
 for argument in $@; do
     if [[ "${stages_without_newlines}" != *" ${argument} "* ]]; then
-        echo ""
-        echo "Can't parse one or more specified arguments. See documentation"
+        echo $'\n'"Can't parse one or more specified arguments. See documentation"
         echo "by entering the following command:"
         would_you_like_to_know_less
-        echo ""
-        echo "Available stages: ${stages}"
+        echo $'\n'"Available stages: ${stages}"
         exit
     fi
 done
