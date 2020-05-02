@@ -2,7 +2,7 @@
 # Push-button installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-guest-virtualbox
-# version 0.90.5
+# version 0.90.6
 
 # Dependencies: bash  coreutils  gzip  unzip  wget  xxd  dmg2img
 # Supported versions:
@@ -973,22 +973,23 @@ press enter when prompted, less than ten times, to complete the installation.
         ${highlight_color}USAGE${default_color}
     ${low_contrast_color}${0} [STAGE]... ${default_color}
 
-The script is divided into stages. Stage titles may be given as command-line
-arguments for the script. When the script is run with no command-line
-arguments, each of the available stages except \"${low_contrast_color}documentation${default_color}\" and
-\"${low_contrast_color}troubleshoot${default_color}\" is performed in succession in the order listed:
+The installation is divided into stages. Stage titles may be given as command-
+line arguments for the script. When the script is run with no command-line
+arguments, each of the stages is performed in succession in the order listed:
 
 ${low_contrast_stages}
-Either of the stages \"${low_contrast_color}documentation${default_color}\" and \"${low_contrast_color}troubleshoot${default_color}\" is only performed when
-it is specified as the first command-line argument, with all subsequent
-arguments ignored. When specified after any argument, either of \"${low_contrast_color}documentation${default_color}\"
-and \"${low_contrast_color}troubleshoot${default_color}\" is ignored.
+Other than the stages above, the command-line arguments \"${low_contrast_color}documentation${default_color}\" and
+\"${low_contrast_color}troubleshoot${default_color}\" are available. \"${low_contrast_color}troubleshoot${default_color}\" outputs system information,
+VirtualBox logs, and checksums for some installation files. \"${low_contrast_color}documentation${default_color}\"
+outputs the script's documentation. If \"${low_contrast_color}documentation${default_color}\" is the first argument,
+no other arguments are parsed.
 
 The stage \"${low_contrast_color}check_shell${default_color}\" is always performed when the script loads.
+
 The stages \"${low_contrast_color}check_gnu_coreutils_prefix${default_color}\", \"${low_contrast_color}set_variables${default_color}\", and
 \"${low_contrast_color}check_dependencies${default_color}\" are always performed when any stage title other than
-\"${low_contrast_color}documentation${default_color}\" or \"${low_contrast_color}troubleshoot${default_color}\" is specified as the first
-argument, and the rest of the stages are parsed only after the checks pass.
+\"${low_contrast_color}documentation${default_color}\" is specified as the first argument, and the rest of the
+specified stages are performed only after the checks pass.
 
         ${highlight_color}EXAMPLES${default_color}
     ${low_contrast_color}${0} configure_vm${default_color}
@@ -1126,6 +1127,7 @@ Further information is available at the following URL:
 }
 
 function troubleshoot() {
+echo '################################################################################'
 head -n 5 "${0}"
 echo '################################################################################'
 echo 'BASH_VERSION '"${BASH_VERSION}"
@@ -1421,25 +1423,23 @@ stages='
     populate_virtual_disks
     populate_macos_target
     delete_temporary_files
-
-    documentation
-    troubleshoot
 '
+[[ -z "${1}" ]] && for stage in ${stages}; do ${stage}; done && exit
 check_shell
-[[ "${1}" = "documentation" ]] && documentation && exit
-if [[ "${1}" = "troubleshoot" ]]; then set_variables; check_dependencies >/dev/null; troubleshoot; exit; fi
-stages_without_newlines="${stages//[$'\r\n']/ }"                      # replace newline with space character
-stages_without_newlines="${stages_without_newlines//documentation/}"  # strip all occurrences of "documentation"
-stages_without_newlines="${stages_without_newlines//troubleshoot/}"   # strip all occurrences of "troubleshoot"
-[[ -z "${1}" ]] && for stage in ${stages_without_newlines}; do ${stage}; done && exit
-# every stage name must be preceded and followed by a space character
-# for the command-line argument checking below to work
-for argument in $@; do
-    if [[ "${stages_without_newlines}" != *" ${argument} "* ]]; then
-        echo $'\n'"Can't parse one or more specified arguments. See documentation"
-        echo "by entering the following command:"
+[[ "${1}" == "documentation" ]] && documentation && exit
+valid_arguments=(${stages//$'[\r\n]'/ } troubleshoot documentation)
+for specified_arg in "$@"; do
+    there_is_a_match=""
+    # doing matching the long way to prevent delimiter confusion
+    for valid_arg in "${valid_arguments[@]}"; do
+        [[ "${valid_arg}" = "${specified_arg}" ]] && there_is_a_match="true" && break
+    done
+    if [[ -z "${there_is_a_match}" ]]; then
+        echo $'\n'"One or more specified arguments is not recognized."
+        echo $'\nRecognized stages:\n'"${stages}"
+        echo $'Other recognized arguments:\n\n    documentation\n    troubleshoot'
+        echo $'\n'"View documentation by entering the following command:"
         would_you_like_to_know_less
-        echo $'\n'"Available stages: ${stages}"
         exit
     fi
 done
