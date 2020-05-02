@@ -1426,7 +1426,6 @@ stages='
     troubleshoot
 '
 check_shell
-stages_without_newlines="${stages//[$'\r\n']/}"
 [[ "${1}" = "documentation" ]] && documentation && exit
 if [[ "${1}" = "troubleshoot" ]]; then set_variables; check_dependencies >/dev/null; troubleshoot; exit; fi
 stages_without_newlines="${stages//[$'\r\n']/ }"                      # replace newline with space character
