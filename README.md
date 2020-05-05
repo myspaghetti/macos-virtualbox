@@ -1,8 +1,12 @@
 ## Push-button installer of macOS on VirtualBox
-![macOS virtual machine showing apps on Launchpad](https://repository-images.githubusercontent.com/156108442/c04dcf80-8eae-11ea-9620-020f8a863fec)
-This is a Bash script that creates a VirtualBox guest macOS virtual machine by downloading unmodified macOS installation files directly from Apple servers.
+![macOS virtual machine showing apps on Launchpad](https://repository-images.githubusercontent.com/156108442/c04dcf80-8eae-11ea-9620-020f8a863fec "macos-guest-virtualbox.sh")
+`macos-guest-virtualbox.sh` is a Bash script that creates a macOS virtual machine guest on VirtualBox with unmodified macOS installation files downloaded directly from Apple servers.
 
-A default install only requires the user to sit patiently and, less than ten times, press enter when prompted by the script, without interacting with the virtual machine. The script doesn't install any closed-source additions or extra bootloaders. Tested on Cygwin. Works on macOS and WSL, should work on most Linux distros.
+A default install only requires the user to sit patiently and, less than ten times, press enter when prompted by the script, without interacting with the virtual machine.
+
+The script runs without elevated privileges. The macOS guest isn't loaded with extra bootloaders, but it is compatible with [OpenCore](https://github.com/acidanthera/OpenCorePkg/releases).
+
+Tested on [Cygwin](https://cygwin.com/install.html). Works on macOS, Windows Subsystem for Linux, and centOS 7. Should work on most modern Linux distros.
 
 ### macOS Catalina (10.15), Mojave (10.14), and High Sierra (10.13) currently supported
 macOS Catalina version 10.15.2 and higher is only supported by VirtualBox version 6.1.4 and higher. A workaround for lower versions of VirtualBox which involves using earlier versions of `boot.efi` is [described in issue 134](https://github.com/myspaghetti/macos-guest-virtualbox/issues/134#issuecomment-583216307).
