@@ -1,5 +1,7 @@
-## Push-button installer of macOS on VirtualBox
 ![macOS virtual machine showing apps on Launchpad](https://repository-images.githubusercontent.com/156108442/c04dcf80-8eae-11ea-9620-020f8a863fec "macos-guest-virtualbox.sh")
+## Push-button installer of macOS on VirtualBox
+
+
 `macos-guest-virtualbox.sh` is a Bash script that creates a macOS virtual machine guest on VirtualBox with unmodified macOS installation files downloaded directly from Apple servers.
 
 A default install only requires the user to sit patiently and, less than ten times, press enter when prompted by the script, without interacting with the virtual machine.
