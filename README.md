@@ -1,25 +1,10 @@
 ![macOS virtual machine showing apps on Launchpad](https://repository-images.githubusercontent.com/156108442/c04dcf80-8eae-11ea-9620-020f8a863fec "macos-guest-virtualbox.sh")
 ## Push-button installer of macOS on VirtualBox
-
-
-
-
-
-
 [`macos-guest-virtualbox.sh`](https://raw.githubusercontent.com/myspaghetti/macos-guest-virtualbox/master/macos-guest-virtualbox.sh) is a Bash script that creates a macOS virtual machine guest on VirtualBox with unmodified macOS installation files downloaded directly from Apple servers. Tested on [Cygwin](https://cygwin.com/install.html). Works on macOS, Windows Subsystem for Linux, and centOS 7. Should work on most modern Linux distros.
-
-
 
 A default install only requires the user to sit patiently and, less than ten times, press enter when prompted by the script, without interacting with the virtual machine.
 
-
-
-
-
-### macOS Catalina (10.15), Mojave (10.14), and High Sierra (10.13) currently supported
-The macOS guest isn't loaded with extra bootloaders, but it is compatible with [OpenCore](https://github.com/acidanthera/OpenCorePkg/releases).
-
-
+### macOS Catalina (10.15), Mojave (10.14), and High Sierra (10.13) currently supported.
 
 ## Documentation
 Documentation can be viewed by executing the command `./macos-guest-virtualbox.sh documentation`
@@ -36,18 +21,11 @@ The following primary display resolutions are supported by macOS on VirtualBox: 
 ## Unsupported features
 Developing and maintaining VirtualBox or macOS features is beyond the scope of this script. Some features may behave unexpectedly, such as USB device support, audio support, FileVault boot password prompt support, and other features.
 
-
-
 #### Performance
 After successfully creating a working macOS virtual machine, consider importing it into QEMU/KVM so it can run with hardware passthrough at near-native performance. QEMU/KVM requires additional configuration that is beyond the scope of  the script.
 
 #### Bootloaders
-
 The macOS VirtualBox guest is loaded without extra bootloaders, but it is compatible with [OpenCore](https://github.com/acidanthera/OpenCorePkg/releases). OpenCore requires additional configuration that is beyond the scope of  the script.
-
-
-
-
 
 #### Audio
 macOS may not support any built-in VirtualBox audio controllers. The bootloader [OpenCore](https://github.com/acidanthera/OpenCorePkg/releases) may be able to load open-source audio drivers in VirtualBox, providing the configuration for STAC9221 (Intel HD Audio) or SigmaTel STAC9700,83,84 (ICH AC97) is available.
