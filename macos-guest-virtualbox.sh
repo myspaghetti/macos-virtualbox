@@ -2,7 +2,7 @@
 # Push-button installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-guest-virtualbox
-# version 0.90.7
+# version 0.90.8
 
 # Dependencies: bash  coreutils  gzip  unzip  wget  xxd  dmg2img
 # Supported versions:
@@ -241,20 +241,6 @@ if [[ -n "$(cygcheck -V 2>/dev/null)" ]]; then
     fi
 # Windows Subsystem for Linux (WSL)
 elif [[ "$(cat /proc/sys/kernel/osrelease 2>/dev/null)" =~ [Mm]icrosoft ]]; then
-    osrelease="$(cat /proc/sys/kernel/osrelease 2>/dev/null)"
-    if [[ "${osrelease}" =~ microsoft ]]; then # WSL2
-        echo $'\n'"Using WSL2 and VirtualBox requires using Hyper-V with VirtualBox."
-        printf "${warning_color}"'VirtualBox usually doen'"'"'t work with WSL2 installed.'"${default_color}"$'\n'
-        printf $'\n'"${highlight_color}"'Press enter to continue, CTRL-C to exit.'"${default_color}"
-        clear_input_buffer_then_read
-    elif [[ ( "${osrelease}" =~ Microsoft ) ]]; then # WSL (1)
-        echo $'\n'"Some versions of WSL require the script to run on a Windows filesystem path,"
-        printf 'for example   '"${highlight_color}"'/mnt/c/Users/Public/Documents'"${default_color}"$'\n'
-        echo "Switch to a path on the Windows filesystem if VBoxManage.exe fails to"
-        echo "create or open a file."
-        printf $'\n'"${highlight_color}"'Press enter to continue, CTRL-C to exit.'"${default_color}"
-        clear_input_buffer_then_read
-    fi
     if [[ -n "$(VBoxManage.exe -v 2>/dev/null)" ]]; then
         function VBoxManage() {
             VBoxManage.exe "$@"
@@ -642,7 +628,14 @@ else
     fi
     VBoxManage convertfromraw --format VDI "${macOS_release_name}_BaseSystem.img" "${macOS_release_name}_BaseSystem.vdi" || local failed='failed'
     if [[ -n "${failed}" ]]; then
-        echo "Failed to create \"${macOS_release_name}_BaseSystem.vdi\". Exiting."
+        echo "Failed to create \"${macOS_release_name}_BaseSystem.vdi\"."
+        if [[ "$(cat /proc/sys/kernel/osrelease 2>/dev/null)" =~ [Mm]icrosoft ]]; then
+            echo -e "\nSome versions of WSL require the script to run on a Windows filesystem path,"
+            echo -e "for example   ${highlight_color}/mnt/c/Users/Public/Documents${default_color}"
+            echo -e "Switch to a path on the Windows filesystem if VBoxManage.exe fails to"
+            echo -e "create or open a file.\n"
+        fi
+        echo "Exiting."
         exit
     else
         rm "${macOS_release_name}_BaseSystem.img" 2>/dev/null
@@ -818,7 +811,8 @@ When the installer virtual disk is finished being populated, the script will
 shut down the virtual machine. After shutdown, the initial base system will be
 detached from the VM and released from VirtualBox.
 '
-print_dimly "If the partitioning fails, exit the script by pressing CTRL-C.
+print_dimly "If the partitioning fails, exit the script by pressing CTRL-C
+and check that VirtualBox uses the VT-x/AMD-V paravirtualization interface.
 Otherwise, please wait."
 # Detach the original 2GB BaseSystem.vdi
 while [[ "$( VBoxManage list runningvms )" =~ \""${vm_name}"\" ]]; do sleep 2 >/dev/null 2>&1; done
@@ -1320,7 +1314,7 @@ function declare_scancode_dict() {
 
 function clear_input_buffer_then_read() {
     while read -d '' -r -t 0; do read -d '' -t 0.1 -n 10000; break; done
-    read
+    [[ -t 1 ]] && read
 }
 
 # read variable kbstring and convert string to scancodes and send to guest vm
@@ -1397,12 +1391,14 @@ function would_you_like_to_know_less() {
 
 function prompt_delete_y_n() {
     delete=""
-    if [[ "${SHELL}" =~ /zsh ]]; then
-        read -s -q delete\?' [y/N] '
-        delete="${delete:l}"
-    elif [[ "${SHELL}" =~ /bash ]]; then
-        read -n 1 -p ' [y/N] ' delete
-        delete="${delete,,}"
+    if [[ -t 1 ]]; then
+        if [[ "${SHELL}" =~ /zsh ]]; then
+            read -s -q delete\?' [y/N] '
+            delete="${delete:l}"
+        elif [[ "${SHELL}" =~ /bash ]]; then
+            read -n 1 -p ' [y/N] ' delete
+            delete="${delete,,}"
+        fi
     fi
     echo ""
 }
