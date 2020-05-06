@@ -2,7 +2,7 @@
 # Push-button installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-guest-virtualbox
-# version 0.90.6
+# version 0.90.7
 
 # Dependencies: bash  coreutils  gzip  unzip  wget  xxd  dmg2img
 # Supported versions:
@@ -59,24 +59,24 @@ SYSTEM_INTEGRITY_PROTECTION='10'  # '10' - enabled, '77' - disabled
 
 # welcome message
 function welcome() {
-printf '
-'"${highlight_color}"'Push-button installer of macOS on VirtualBox'"${default_color}"'
+echo -ne "
+${highlight_color}Push-button installer of macOS on VirtualBox${default_color}
 
 This script installs only open-source software and unmodified Apple binaries,
-and requires about '"${highlight_color}"'40GB'"${default_color}"' of available storage, of which 20GB are for temporary
+and requires about ${highlight_color}40GB${default_color} of available storage, of which 20GB are for temporary
 installation files that may be deleted when the script is finished.
 
-The script interacts with the virtual machine twice, '"${highlight_color}"'please do not interact'"${default_color}"'
-'"${highlight_color}"'with the virtual machine manually'"${default_color}"' before the script is finished.
+The script interacts with the virtual machine twice, ${highlight_color}please do not interact${default_color}
+${highlight_color}with the virtual machine manually${default_color} before the script is finished.
 
-Documentation about optional configuration, '"${highlight_color}"'iCloud and iMessage connectivity'"${default_color}"',
+Documentation about optional configuration, ${highlight_color}iCloud and iMessage connectivity${default_color},
 resuming the script by stages, and other topics can be viewed with the
 following command:
 
-'
+"
 would_you_like_to_know_less
-printf '
-'"${highlight_color}"'Press enter to review the script configuration.'"${default_color}"
+echo -ne "
+${highlight_color}Press enter to review the script configuration.${default_color}"
 clear_input_buffer_then_read
 
 function pad_to_33_chars() {
@@ -186,20 +186,20 @@ if [[ -n "$(sw_vers 2>/dev/null)" ]]; then
     fi
     # if csplit isn't GNU variant, exit
     if [[ -z "$(csplit --help 2>/dev/null)" ]]; then
-        printf $'\n''macOS detected.'$'\n''Please use a package manager such as '"${highlight_color}"'homebrew'"${default_color}"', '"${highlight_color}"'pkgsrc'"${default_color}"', '"${highlight_color}"'nix'"${default_color}"', or '"${highlight_color}"'MacPorts'"${default_color}"'.'$'\n'
+        echo -e "\nmacOS detected.\nPlease use a package manager such as ${highlight_color}homebrew${default_color}, ${highlight_color}pkgsrc${default_color}, ${highlight_color}nix${default_color}, or ${highlight_color}MacPorts${default_color}"
         echo "Please make sure the following packages are installed and that"
         echo "their path is in the PATH variable:"
-        printf "${highlight_color}"'bash  coreutils  dmg2img  gzip  unzip  wget  xxd'"${default_color}"$'\n'
+        echo -e "${highlight_color}bash  coreutils  dmg2img  gzip  unzip  wget  xxd${default_color}"
         echo "Please make sure Bash and coreutils are the GNU variant."
         exit
     fi
 fi
 
 # check for xxd, gzip, unzip, coreutils, wget
-if [[ -z "$(echo "xxd" | xxd -p 2>/dev/null)" || \
-      -z "$(gzip --help 2>/dev/null)" || \
-      -z "$(unzip -hh 2>/dev/null)" || \
-      -z "$(csplit --help 2>/dev/null)" || \
+if [[ -z "$(echo "xxd" | xxd -p 2>/dev/null)" ||
+      -z "$(gzip --help 2>/dev/null)" ||
+      -z "$(unzip -hh 2>/dev/null)" ||
+      -z "$(csplit --help 2>/dev/null)" ||
       -z "$(wget --version 2>/dev/null)" ]]; then
     echo "Please make sure the following packages are installed:"
     echo "coreutils    gzip    unzip    xxd    wget"
@@ -235,7 +235,7 @@ if [[ -n "$(cygcheck -V 2>/dev/null)" ]]; then
             echo "Please make sure VirtualBox version 6.0 or higher is installed, and that"
             echo "the path to the VBoxManage.exe executable is in the PATH variable, or assign"
             echo "in the script the full path including the name of the executable to"
-            printf 'the variable '"${highlight_color}"'cmd_path_VBoxManage'"${default_color}"
+            echo -e "the variable ${highlight_color}cmd_path_VBoxManage${default_color}"
             exit
         fi
     fi
@@ -306,7 +306,7 @@ fi
 
 # Oracle VM VirtualBox Extension Pack
 extpacks="$(VBoxManage list extpacks 2>/dev/null)"
-if [[ "$(expr match "${extpacks}" '.*Oracle VM VirtualBox Extension Pack')" -le "0" || \
+if [[ "$(expr match "${extpacks}" '.*Oracle VM VirtualBox Extension Pack')" -le "0" ||
       "$(expr match "${extpacks}" '.*Usable:[[:blank:]]*false')" -gt "0" ]]; then
     echo "Please make sure Oracle VM VirtualBox Extension Pack is installed, and that"
     echo "all installed VirtualBox extensions are listed as usable when"
@@ -319,7 +319,7 @@ if [[ -z "$(dmg2img -d 2>/dev/null)" ]]; then
     if [[ -z "$(cygcheck -V 2>/dev/null)" ]]; then
         echo "Please install the package dmg2img."
         exit
-    elif [[ -z "$(${PWD}/dmg2img -d 2>/dev/null)" ]]; then
+    elif [[ -z "$("${PWD}/dmg2img.exe" -d 2>/dev/null)" ]]; then
         echo "Locally installing dmg2img"
         wget "http://vu1tur.eu.org/tools/dmg2img-1.6.6-win32.zip" \
              ${wgetargs} \
@@ -525,13 +525,16 @@ generate_nvram_bin_file MLB "${MLB_b16}" "4D1EDE05-38C7-4A6A-9CC6-4BCCA8B38C14"
 # ROM
 # Convert the mixed-ASCII-and-base16 ROM value
 # into an ASCII string that represents a base16 number.
-ROM_b16="$(for (( i=0; i<${#ROM}; )); do let j=i+1;
+ROM_b16="$(for (( i=0; i<${#ROM}; )); do
                if [[ "${ROM:${i}:1}" == "%" ]]; then
-                   echo -n "${ROM:${j}:2}"; let i=i+3;
+                   let j=i+1
+                   echo -n "${ROM:${j}:2}"
+                   let i=i+3
                else
-                   x="$(echo -n "${ROM:${i}:1}" | od -t x1 -An | tr -d ' ')";
-                   echo -n "${x}"; let i=i+1;
-               fi;
+                   x="$(echo -n "${ROM:${i}:1}" | od -t x1 -An | tr -d ' ')"
+                   echo -n "${x}"
+                   let i=i+1
+               fi
             done)"
 generate_nvram_bin_file ROM "${ROM_b16}" "4D1EDE05-38C7-4A6A-9CC6-4BCCA8B38C14"
 
@@ -582,7 +585,7 @@ echo $'\n'"Creating VirtualBox 6 virtual ISO containing the"
 echo "installation files from swcdn.apple.com"$'\n'
 pseudouuid="$(od -tx -N16 /dev/urandom | xxd -r | xxd -p)"
 pseudouuid="${pseudouuid:0:8}-${pseudouuid:8:4}-${pseudouuid:12:4}-${pseudouuid:16:4}-${pseudouuid:20:12}"
-echo "--iprt-iso-maker-file-marker-bourne-sh "${pseudouuid}"
+echo "--iprt-iso-maker-file-marker-bourne-sh ${pseudouuid}
 --volume-id=${macOS_release_name:0:5}-files" > "${macOS_release_name}_Installation_files.viso"
 
 # Apple macOS installation files
@@ -676,7 +679,7 @@ if [[ -w "Install ${macOS_release_name}.vdi" ]]; then
     printf "${warning_color}"'Delete "'"Install ${macOS_release_name}.vdi"'"?'"${default_color}"
     prompt_delete_y_n
     if [[ "${delete}" == "y" ]]; then
-        if [[ "$( VBoxManage list runningvms )" =~ \""${vm_name}"\" ]];
+        if [[ "$( VBoxManage list runningvms )" =~ \""${vm_name}"\" ]]
         then
             echo '"'"Install ${macOS_release_name}.vdi"'" may be deleted'
             echo "only when the virtual machine is powered off."
@@ -818,7 +821,7 @@ detached from the VM and released from VirtualBox.
 print_dimly "If the partitioning fails, exit the script by pressing CTRL-C.
 Otherwise, please wait."
 # Detach the original 2GB BaseSystem.vdi
-while [[ "$( VBoxManage list runningvms )" =~ \""${vm_name}"\" ]]; do sleep 2 >/dev/null 2>&1; done;
+while [[ "$( VBoxManage list runningvms )" =~ \""${vm_name}"\" ]]; do sleep 2 >/dev/null 2>&1; done
 # Release basesystem vdi from VirtualBox configuration
 VBoxManage storageattach "${vm_name}" --storagectl SATA --port 2 --medium none >/dev/null 2>&1
 VBoxManage closemedium "${macOS_release_name}_BaseSystem.vdi" >/dev/null 2>&1
@@ -917,7 +920,7 @@ printf $'\n'"${highlight_color}"'That'"'"'s it! Enjoy your virtual machine.'"${d
 
 function delete_temporary_files() {
 print_dimly "stage: delete_temporary_files"
-if [[ ! "$(VBoxManage showvminfo "${vm_name}")" =~ State:[\ \t]*powered\ off ]];
+if [[ ! "$(VBoxManage showvminfo "${vm_name}")" =~ State:[\ \t]*powered\ off ]]
 then
     printf 'Temporary files may be deleted when the virtual machine is powered off
 and without a suspended state by running the following command at the script'"'"'s
@@ -1426,7 +1429,7 @@ stages='
 '
 [[ -z "${1}" ]] && for stage in ${stages}; do ${stage}; done && exit
 check_shell
-[[ "${1}" == "documentation" ]] && documentation && exit
+[[ "${1}" = "documentation" ]] && documentation && exit
 valid_arguments=(${stages//$'[\r\n]'/ } troubleshoot documentation)
 for specified_arg in "$@"; do
     there_is_a_match=""
