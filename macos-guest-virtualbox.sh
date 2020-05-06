@@ -2,7 +2,7 @@
 # Push-button installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-guest-virtualbox
-# version 0.90.8
+# version 0.90.9
 
 # Dependencies: bash  coreutils  gzip  unzip  wget  xxd  dmg2img
 # Supported versions:
@@ -765,7 +765,10 @@ if [[ -n $(
 ) ]]; then
     echo "Could not attach \"${macOS_release_name}_Installation_files.viso\". Exiting."; exit
 fi
-echo "Starting virtual machine ${vm_name}. This should take a couple of minutes."
+echo "Starting virtual machine \"${vm_name}\".
+This should take a couple of minutes. If booting fails, check that VirtualBox
+uses the VT-x/AMD-V paravirtualization interface, or see the documentation for
+information on applying different CPU profiles."
 ( VBoxManage startvm "${vm_name}" >/dev/null 2>&1 )
 echo "While the script is running, please do not interact with the virtual machine."
 [[ -z "${kscd}" ]] && declare_scancode_dict
@@ -1030,18 +1033,18 @@ apps that authenticate the device with Apple.
 
 These are the variables that are required for iMessage connectivity:
 
-${low_contrast_color}DmiSystemFamily    # Model name${default_color}
-${low_contrast_color}DmiSystemProduct   # Model identifier${default_color}
-${low_contrast_color}DmiSystemSerial    # System serial number${default_color}
-${low_contrast_color}DmiSystemUuid      # Hardware UUID${default_color}
-${low_contrast_color}DmiOEMVBoxVer      # Apple ROM info (major version)${default_color}
-${low_contrast_color}DmiOEMVBoxRev      # Apple ROM info (revision)${default_color}
-${low_contrast_color}DmiBIOSVersion     # Boot ROM version${default_color}
-${low_contrast_color}DmiBoardProduct    # Main Logic Board identifier${default_color}
-${low_contrast_color}DmiBoardSerial     # Main Logic Board serial (EFI)${default_color}
-${low_contrast_color}MLB                # Main Logic Board serial (NVRAM)${default_color}
-${low_contrast_color}ROM                # ROM identifier (NVRAM)${default_color}
-${low_contrast_color}SYSTEM_UUID        # System identifier (NVRAM)${default_color}
+    ${low_contrast_color}DmiSystemFamily    # Model name${default_color}
+    ${low_contrast_color}DmiSystemProduct   # Model identifier${default_color}
+    ${low_contrast_color}DmiSystemSerial    # System serial number${default_color}
+    ${low_contrast_color}DmiSystemUuid      # Hardware UUID${default_color}
+    ${low_contrast_color}DmiOEMVBoxVer      # Apple ROM info (major version)${default_color}
+    ${low_contrast_color}DmiOEMVBoxRev      # Apple ROM info (revision)${default_color}
+    ${low_contrast_color}DmiBIOSVersion     # Boot ROM version${default_color}
+    ${low_contrast_color}DmiBoardProduct    # Main Logic Board identifier${default_color}
+    ${low_contrast_color}DmiBoardSerial     # Main Logic Board serial (EFI)${default_color}
+    ${low_contrast_color}MLB                # Main Logic Board serial (NVRAM)${default_color}
+    ${low_contrast_color}ROM                # ROM identifier (NVRAM)${default_color}
+    ${low_contrast_color}SYSTEM_UUID        # System identifier (NVRAM)${default_color}
 
 The comments at the top of the script specify how to view these variables
 on a genuine Mac.
@@ -1069,10 +1072,10 @@ machine's storage through VirtualBox Manager or VBoxManage. Power up the VM
 and boot macOS, then start Terminal and execute the following commands, making
 sure to replace \"/Volumes/path/to/VISO/\" with the correct path:
 
-${low_contrast_color}mkdir ESP${default_color}
-${low_contrast_color}sudo su # this will prompt for a password${default_color}
-${low_contrast_color}diskutil mount -mountPoint ESP disk0s1${default_color}
-${low_contrast_color}cp -r /Volumes/path/to/VISO/ESP/* ESP/${default_color}
+    ${low_contrast_color}mkdir ESP${default_color}
+    ${low_contrast_color}sudo su # this will prompt for a password${default_color}
+    ${low_contrast_color}diskutil mount -mountPoint ESP disk0s1${default_color}
+    ${low_contrast_color}cp -r /Volumes/path/to/VISO/ESP/* ESP/${default_color}
 
 After copying the files, boot into the EFI Internal Shell as desribed in the
 section \"Applying the EFI and NVRAM parameters\".
@@ -1089,12 +1092,21 @@ the system APFS container to take up the available space.
 
         ${highlight_color}Primary display resolution${default_color}
 The following command assigns the virtual machine primary display resolution:
-${low_contrast_color}VBoxManage setextradata \"\${vm_name}\" \\${default_color}
-  ${low_contrast_color}\"VBoxInternal2/EfiGraphicsResolution\" \"\${resolution}\"${default_color}
+    ${low_contrast_color}VBoxManage setextradata \"\${vm_name}\" \\${default_color}
+${low_contrast_color}\"VBoxInternal2/EfiGraphicsResolution\" \"\${resolution}\"${default_color}
 The following primary display resolutions are supported by macOS on VirtualBox:
-${low_contrast_color}5120x2880  2880x1800  2560x1600  2560x1440  1920x1200  1600x1200  1680x1050${default_color}
-${low_contrast_color}1440x900   1280x800   1024x768   640x480${default_color}
+  ${low_contrast_color}5120x2880  2880x1800  2560x1600  2560x1440  1920x1200  1600x1200  1680x1050${default_color}
+  ${low_contrast_color}1440x900   1280x800   1024x768   640x480${default_color}
 Secondary displays can have an arbitrary resolution.
+
+        ${highlight_color}CPU profiles${default_color}
+macOS does not supprort every CPU supported by VirtualBox. If the macOS Base
+System does not boot, try applying different CPU profiles to the virtual
+machine with the following command:
+    ${low_contrast_color}VBoxManage modifyvm \"\${vm_name} --cpu-profile \"\${cpu_profile}\"${default_color}
+Available CPU profiles:
+  ${low_contrast_color}\"Intel Xeon X5482 3.20GHz\"  \"Intel Core i7-2635QM\"  \"Intel Core i7-3960X\"${default_color}
+  ${low_contrast_color}\"Intel Core i5-3570\"  \"Intel Core i7-5600U\"  \"Intel Core i7-6700K\"${default_color}
 
         ${highlight_color}Unsupported features${default_color}
 Developing and maintaining VirtualBox or macOS features is beyond the scope of
