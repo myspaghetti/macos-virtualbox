@@ -2,7 +2,7 @@
 # Push-button installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-guest-virtualbox
-# version 0.90.9
+# version 0.91.0
 
 # Dependencies: bash  coreutils  gzip  unzip  wget  xxd  dmg2img
 # Supported versions:
@@ -874,7 +874,7 @@ kbstring='disks="$(diskutil list | grep -o "[0-9][^ ]* GB *disk[0-9]$" | sort -g
 'mkdir -p "/Volumes/'"${vm_name}"'/tmp/mount_efi" && '\
 'mount_msdos /dev/${disks[0]}s1 "/Volumes/'"${vm_name}"'/tmp/mount_efi" && '\
 'cp -r "/Volumes/'"${macOS_release_name:0:5}-files"'/ESP/"* "/Volumes/'"${vm_name}"'/tmp/mount_efi/" && '\
-'installer_pid=$(ps | grep startosinstall | cut -d '"'"' '"'"' -f 3) && '\
+'installer_pid=$(ps | grep startosinstall | grep -v grep | cut -d '"'"' '"'"' -f 3) && '\
 'kill -SIGUSR1 ${installer_pid}'
 send_keys
 send_enter
@@ -891,7 +891,8 @@ kbstring='background_pid="$(ps | grep '"'"' sh$'"'"' | cut -d '"'"' '"'"' -f 3)"
 './startosinstall --agreetolicense --pidtosignal ${background_pid} --rebootdelay 500 --volume "/Volumes/'"${vm_name}"'"'
 send_keys
 send_enter
-if [[ ( "${vbox_version:0:1}" -lt 6 ) || ( "${vbox_version:0:1}" = 6 && "${vbox_version:2:1}" = 0 ) ]]; then
+if [[ ! ( "${vbox_version:0:1}" -gt 6
+        || ( "${vbox_version:0:1}" = 6 && "${vbox_version:2:1}" -ge 1 ) ) ]]; then
     printf "${highlight_color}"'When the installer finishes preparing and reboots the VM, press enter'"${default_color}"' so the script
 powers off the virtual machine and detaches the device "'"Install ${macOS_release_name}.vdi"'" to avoid
 booting into the initial installer environment again.'
