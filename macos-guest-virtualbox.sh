@@ -2,7 +2,7 @@
 # Push-button installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-guest-virtualbox
-# version 0.91.0
+# version 0.91.1
 
 # Dependencies: bash  coreutils  gzip  unzip  wget  xxd  dmg2img
 # Supported versions:
@@ -906,13 +906,10 @@ booting into the initial installer environment again.'
     echo ""
     for (( i=5; i>0; i-- )); do printf $'   \r'"${i}"; sleep 0.5; done
 fi
-printf '
-For further information, such as applying EFI and NVRAM variables to enable
-iMessage connectivity, see the documentation with the following command:
-
-'
+echo -x "For further information, such as applying EFI and NVRAM variables to enable
+iMessage connectivity, see the documentation with the following command:\n\n"
 would_you_like_to_know_less
-printf $'\n'"${highlight_color}"'That'"'"'s it! Enjoy your virtual machine.'"${default_color}"$'\n'
+echo -x "\n${highlight_color}That's it! Enjoy your virtual machine.${default_color}\n"
 
 }
 
@@ -1156,12 +1153,15 @@ VBoxManage showvminfo "${vm_name}" --machinereadable --details 2>&1
 VBoxManage getextradata "${vm_name}" 2>&1
 echo '################################################################################'
 echo 'md5 hashes'
-md5sum "${macOS_release_name}_BaseSystem"* 2>/dev/null
-md5sum "${macOS_release_name}_Install"* 2>/dev/null
-md5sum "${macOS_release_name}_Apple"* 2>/dev/null
-md5 "${macOS_release_name}_BaseSystem"* 2>/dev/null
-md5 "${macOS_release_name}_Install"* 2>/dev/null
-md5 "${macOS_release_name}_Apple"* 2>/dev/null
+if [[ -n "$(md5sum --version 2>/dev/null)" ]]; then
+    md5sum "${macOS_release_name}_BaseSystem"* 2>/dev/null
+    md5sum "${macOS_release_name}_Install"* 2>/dev/null
+    md5sum "${macOS_release_name}_Apple"* 2>/dev/null
+else
+    md5 "${macOS_release_name}_BaseSystem"* 2>/dev/null
+    md5 "${macOS_release_name}_Install"* 2>/dev/null
+    md5 "${macOS_release_name}_Apple"* 2>/dev/null
+fi
 echo '################################################################################'
 }
 
