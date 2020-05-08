@@ -767,8 +767,8 @@ if [[ -n $(
 fi
 echo "Starting virtual machine \"${vm_name}\".
 This should take a couple of minutes. If booting fails, check that VirtualBox
-uses the VT-x/AMD-V paravirtualization interface, or see the documentation for
-information on applying different CPU profiles."
+successfully uses the VT-x/AMD-V paravirtualization interface, or see the
+documentation for information about applying different CPU profiles."
 ( VBoxManage startvm "${vm_name}" >/dev/null 2>&1 )
 echo "While the script is running, please do not interact with the virtual machine."
 [[ -z "${kscd}" ]] && declare_scancode_dict
