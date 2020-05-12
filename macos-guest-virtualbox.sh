@@ -2,7 +2,7 @@
 # Push-button installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-guest-virtualbox
-# version 0.91.1
+# version 0.92.0
 
 # Dependencies: bash  coreutils  gzip  unzip  wget  xxd  dmg2img
 # Supported versions:
@@ -208,7 +208,7 @@ if [[ -z "$(echo "xxd" | xxd -p 2>/dev/null)" ||
 fi
 
 # wget supports --show-progress from version 1.16
-regex='1\.1[6-9]|1\.[2-9][0-9]'
+regex='1\.1[6-9]|1\.[2-9][0-9]'  # for zsh compatibility
 if [[ "$(wget --version 2>/dev/null | head -n 1)" =~ ${regex} ]]; then
     wgetargs="--quiet --continue --show-progress"  # pretty
 else
@@ -378,6 +378,30 @@ if [[ -n "$( VBoxManage createvm --name "${vm_name}" --ostype "MacOS1013_64" --r
 Error message:
 '
     VBoxManage createvm --name "${vm_name}" --ostype "MacOS1013_64" --register 2>/dev/tty
+    exit
+fi
+}
+
+function check_default_virtual_machine() {
+print_dimly "stage: check_default_virtual_machine"
+echo -e "\nChecking that VirtualBox starts the virtual machine without errors."
+if [[ -n $(VBoxManage startvm "${vm_name}" 2>&1 1>/dev/null) ]]; then
+    echo -e "Error while starting the virtual machine.\nExiting."
+    exit
+fi
+VBoxManage controlvm "${vm_name}" poweroff 2>/dev/null
+echo -e "\nChecking that VirtualBox runs with hardware-supported virtualization."
+vbox_log="$(VBoxManage showvminfo "${vm_name}" --log 0)"
+# if [[ "${vbox_log}" =~ '.*Attempting fall back to NEM.*' ]]; then
+regex='.*Attempting fall back to NEM.*'  # for zsh compatibility
+if [[ "${vbox_log}" =~ ${regex} ]]; then
+    echo -e "\nVirtualbox is running without hardware-supported virtualization features."
+    if [[ -n "$(cygcheck -V 2>/dev/null)" ||
+          "$(cat /proc/sys/kernel/osrelease 2>/dev/null)" =~ [Mm]icrosoft ]]; then
+        echo "Check that software such as Hyper-V, Windows Sandbox, WSL2, memory integrity"
+        echo "protection, and other Windows features that lock virtualization are turned off."
+    fi
+    echo "Exiting."
     exit
 fi
 }
@@ -906,10 +930,10 @@ booting into the initial installer environment again.'
     echo ""
     for (( i=5; i>0; i-- )); do printf $'   \r'"${i}"; sleep 0.5; done
 fi
-echo -x "For further information, such as applying EFI and NVRAM variables to enable
+echo -e "For further information, such as applying EFI and NVRAM variables to enable
 iMessage connectivity, see the documentation with the following command:\n\n"
 would_you_like_to_know_less
-echo -x "\n${highlight_color}That's it! Enjoy your virtual machine.${default_color}\n"
+echo -e "\n${highlight_color}That's it! Enjoy your virtual machine.${default_color}\n"
 
 }
 
@@ -938,6 +962,7 @@ else
                      "${macOS_release_name}_Install"*
                      "Install ${macOS_release_name}.vdi"
                      "${vm_name}_"*".bin"
+                     "${vm_name}_"*".txt"
                      "${vm_name}_startup.nsh"
                      "ApfsDriverLoader.efi"
                      "Apple"*".efi"
@@ -1134,35 +1159,50 @@ Further information is available at the following URL:
 }
 
 function troubleshoot() {
-echo '################################################################################'
-head -n 5 "${0}"
-echo '################################################################################'
-echo 'BASH_VERSION '"${BASH_VERSION}"
-vbox_ver="$(VBoxManage -v)"
-echo 'VBOX_VERSION '"${vbox_ver//[$'\r\n']/}"
-macos_ver="$(sw_vers 2>/dev/null)"
-wsl_ver="$(cat /proc/sys/kernel/osrelease 2>/dev/null)"
-win_ver="$(cmd.exe /d /s /c call ver 2>/dev/null)"
-echo 'OS VERSION '"${macos_ver}${wsl_ver}${win_ver//[$'\r\n']/}"
-echo '################################################################################'
-echo 'vbox.log'
-VBoxManage showvminfo "${vm_name}" --log 0 2>&1
-echo '################################################################################'
-echo 'vminfo'
-VBoxManage showvminfo "${vm_name}" --machinereadable --details 2>&1
-VBoxManage getextradata "${vm_name}" 2>&1
-echo '################################################################################'
-echo 'md5 hashes'
-if [[ -n "$(md5sum --version 2>/dev/null)" ]]; then
-    md5sum "${macOS_release_name}_BaseSystem"* 2>/dev/null
-    md5sum "${macOS_release_name}_Install"* 2>/dev/null
-    md5sum "${macOS_release_name}_Apple"* 2>/dev/null
-else
-    md5 "${macOS_release_name}_BaseSystem"* 2>/dev/null
-    md5 "${macOS_release_name}_Install"* 2>/dev/null
-    md5 "${macOS_release_name}_Apple"* 2>/dev/null
+echo -ne "\nWriting troubleshooting information to \"${highlight_color}${vm_name}_troubleshoot.txt${default_color}\"\n\n"
+echo "The file will contain system information, VirtualBox paths, logs, configuration,"
+echo "macOS virtual machine details including ${highlight_color}serials entered in the script${default_color},"
+echo "and macOS installation file md5 checksums."
+echo "When sharing this file, mind that it contains the above information."
+echo ""
+for wrapper in 1; do
+    echo '################################################################################'
+    head -n 5 "${0}"
+    echo '################################################################################'
+    echo 'BASH_VERSION '"${BASH_VERSION}"
+    vbox_ver="$(VBoxManage -v)"
+    echo 'VBOX_VERSION '"${vbox_ver//[$'\r\n']/}"
+    macos_ver="$(sw_vers 2>/dev/null)"
+    wsl_ver="$(cat /proc/sys/kernel/osrelease 2>/dev/null)"
+    win_ver="$(cmd.exe /d /s /c call ver 2>/dev/null)"
+    echo 'OS VERSION '"${macos_ver}${wsl_ver}${win_ver//[$'\r\n']/}"
+    echo '################################################################################'
+    echo 'vbox.log'
+    VBoxManage showvminfo "${vm_name}" --log 0 2>&1
+    echo '################################################################################'
+    echo 'vminfo'
+    VBoxManage showvminfo "${vm_name}" --machinereadable --details 2>&1
+    VBoxManage getextradata "${vm_name}" 2>&1
+done > "${vm_name}_troubleshoot.txt"
+echo "Written configuration and logs to \"${highlight_color}${vm_name}_troubleshoot.txt${default_color}\""
+echo "Press CTRL-C to cancel checksums, or wait for checksumming to complete."
+for wrapper in 1; do
+    echo '################################################################################'
+    echo 'md5 hashes'
+    if [[ -n "$(md5sum --version 2>/dev/null)" ]]; then
+        md5sum "${macOS_release_name}_BaseSystem"* 2>/dev/null
+        md5sum "${macOS_release_name}_Install"* 2>/dev/null
+        md5sum "${macOS_release_name}_Apple"* 2>/dev/null
+    else
+        md5 "${macOS_release_name}_BaseSystem"* 2>/dev/null
+        md5 "${macOS_release_name}_Install"* 2>/dev/null
+        md5 "${macOS_release_name}_Apple"* 2>/dev/null
+    fi
+    echo '################################################################################'
+done >> "${vm_name}_troubleshoot.txt"
+if [ -s "${vm_name}_troubleshoot.txt" ]; then
+echo -ne "\nFinished writing to \"${highlight_color}${vm_name}_troubleshoot.txt${default_color}\"\n"
 fi
-echo '################################################################################'
 }
 
 # GLOBAL VARIABLES AND FUNCTIONS THAT MIGHT BE CALLED MORE THAN ONCE
@@ -1417,6 +1457,7 @@ function prompt_delete_y_n() {
 }
 
 # command-line argument processing
+check_shell
 stages='
     check_shell
     check_gnu_coreutils_prefix
@@ -1425,6 +1466,7 @@ stages='
     check_dependencies
     prompt_delete_existing_vm
     create_vm
+    check_default_virtual_machine
     prepare_macos_installation_files
     create_nvram_files
     create_macos_installation_files_viso
@@ -1437,7 +1479,6 @@ stages='
     delete_temporary_files
 '
 [[ -z "${1}" ]] && for stage in ${stages}; do ${stage}; done && exit
-check_shell
 [[ "${1}" = "documentation" ]] && documentation && exit
 valid_arguments=(${stages//$'[\r\n]'/ } troubleshoot documentation)
 for specified_arg in "$@"; do
