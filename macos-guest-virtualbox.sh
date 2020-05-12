@@ -838,7 +838,6 @@ shut down the virtual machine. After shutdown, the initial base system will be
 detached from the VM and released from VirtualBox.
 '
 print_dimly "If the partitioning fails, exit the script by pressing CTRL-C
-and check that VirtualBox uses the VT-x/AMD-V paravirtualization interface.
 Otherwise, please wait."
 # Detach the original 2GB BaseSystem.vdi
 while [[ "$( VBoxManage list runningvms )" =~ \""${vm_name}"\" ]]; do sleep 2 >/dev/null 2>&1; done
