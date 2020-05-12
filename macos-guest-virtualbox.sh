@@ -790,11 +790,10 @@ if [[ -n $(
     echo "Could not attach \"${macOS_release_name}_Installation_files.viso\". Exiting."; exit
 fi
 echo "Starting virtual machine \"${vm_name}\".
-This should take a couple of minutes. If booting fails, check that VirtualBox
-successfully uses the VT-x/AMD-V paravirtualization interface, or see the
-documentation for information about applying different CPU profiles."
+This should take a couple of minutes. If booting fails, see the documentation
+for information about applying different CPU profiles."
 ( VBoxManage startvm "${vm_name}" >/dev/null 2>&1 )
-echo "While the script is running, please do not interact with the virtual machine."
+echo -e "\nWhile the script is running, please do not interact with the virtual machine."
 [[ -z "${kscd}" ]] && declare_scancode_dict
 prompt_lang_utils
 prompt_terminal_ready
