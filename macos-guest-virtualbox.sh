@@ -97,10 +97,8 @@ echo "# VM RAM in MB, minimum 2048"
 pad_to_33_chars "gpu_vram=${gpu_vram}"
 echo "# VM video RAM in MB, minimum 34, maximum 128"
 pad_to_33_chars "resolution=\"${resolution}\""
-echo -ne "# VM display resolution
-
-These values may be customized as described in the documentation.
-
+echo "# VM display resolution"
+echo -ne "\nThese values may be customized as described in the documentation.\n
 ${highlight_color}Press enter to continue, CTRL-C to exit.${default_color}"
 clear_input_buffer_then_read
 }
@@ -280,12 +278,10 @@ elif [[ ! ( "${vbox_version:0:1}" -gt 5
     echo "Exiting."
     exit
 elif [[ "${vbox_version:0:1}" = 5 ]]; then
-    echo -ne "\n${highlight_color}VirtualBox version ${vbox_version} detected.${default_color} Please see the following
-URL for issues with the VISO filesystem on VirtualBox 5.2 to 5.2.40:
-
-  https://github.com/myspaghetti/macos-guest-virtualbox/issues/86
-
-${highlight_color}Press enter to continue, CTRL-C to exit.${default_color}"
+    echo -e "\n${highlight_color}VirtualBox version ${vbox_version} detected.${default_color} Please see the following"
+    echo -ne "URL for issues with the VISO filesystem on VirtualBox 5.2 to 5.2.40:\n\n"
+    echo "  https://github.com/myspaghetti/macos-guest-virtualbox/issues/86"
+    echo -ne "\n${highlight_color}Press enter to continue, CTRL-C to exit.${default_color}"
     clear_input_buffer_then_read
 fi
 
@@ -370,11 +366,9 @@ fi
 function create_vm() {
 print_dimly "stage: create_vm"
 if [[ -n "$( VBoxManage createvm --name "${vm_name}" --ostype "MacOS1013_64" --register 2>&1 >/dev/null )" ]]; then
-    echo -e "\nError: Could not create virtual machine \"${vm_name}\".
-${highlight_color}Please delete exising \"${vm_name}\" VirtualBox configuration files ${warning_color}manually${default_color}.
-
-Error message:
-"
+    echo -e "\nError: Could not create virtual machine \"${vm_name}\"."
+    echo -e "${highlight_color}Please delete exising \"${vm_name}\" VirtualBox configuration files ${warning_color}manually${default_color}.\n"
+    echo -e "Error message:\n"
     VBoxManage createvm --name "${vm_name}" --ostype "MacOS1013_64" --register 2>/dev/tty
     exit
 fi
@@ -415,12 +409,11 @@ wget "${sucatalog}" \
 # if file was not downloaded correctly
 if [[ ! -s "${macOS_release_name}_sucatalog" ]]; then
     wget --debug -O /dev/null -o "${macOS_release_name}_wget.log" "${sucatalog}"
-    echo $'\n'"Couldn't download the Apple software update catalog."
+    echo -e "\nCouldn't download the Apple software update catalog."
     if [[ "$(expr match "$(cat "${macOS_release_name}_wget.log")" '.*ERROR[[:print:]]*is not trusted')" -gt "0" ]]; then
-        echo -e "
-Make sure certificates from a certificate authority are installed.
-Certificates are often installed through the package manager with
-a package named ${highlight_color}ca-certificates${default_color}"
+        echo -e "\nMake sure certificates from a certificate authority are installed."
+        echo "Certificates are often installed through the package manager with"
+        echo "a package named  ${highlight_color}ca-certificates${default_color}"
     fi
     echo "Exiting."
     exit
