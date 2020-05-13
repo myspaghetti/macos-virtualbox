@@ -2,7 +2,7 @@
 # Push-button installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-guest-virtualbox
-# version 0.92.0
+# version 0.92.1
 
 # Dependencies: bash  coreutils  gzip  unzip  wget  xxd  dmg2img
 # Supported versions:
@@ -81,28 +81,27 @@ clear_input_buffer_then_read
 
 function pad_to_33_chars() {
     local padded="${1}                                 "
-    printf "${padded:0:33}"
+    echo -n "${padded:0:33}"
 }
 
 # custom settings prompt
-echo ''
-echo 'vm_name="'"${vm_name}"'"'
-pad_to_33_chars 'macOS_release_name="'"${macOS_release_name}"'"'
-echo '# install "HighSierra" "Mojave" or "Catalina"'
-pad_to_33_chars 'storage_size='"${storage_size}"
-echo '# VM disk image size in MB. minimum 22000'
-pad_to_33_chars 'cpu_count='"${cpu_count}"
-echo '# VM CPU cores, minimum 2'
-pad_to_33_chars 'memory_size='"${memory_size}"
-echo '# VM RAM in MB, minimum 2048'
-pad_to_33_chars 'gpu_vram='"${gpu_vram}"
-echo '# VM video RAM in MB, minimum 34, maximum 128'
-pad_to_33_chars 'resolution="'"${resolution}"'"'
-printf '# VM display resolution
+echo -e "\nvm_name=\"${vm_name}\""
+pad_to_33_chars "macOS_release_name=\"${macOS_release_name}\""
+echo "# install \"HighSierra\" \"Mojave\" or \"Catalina\""
+pad_to_33_chars "storage_size=${storage_size}"
+echo "# VM disk image size in MB. minimum 22000"
+pad_to_33_chars "cpu_count=${cpu_count}"
+echo "# VM CPU cores, minimum 2"
+pad_to_33_chars "memory_size=${memory_size}"
+echo "# VM RAM in MB, minimum 2048"
+pad_to_33_chars "gpu_vram=${gpu_vram}"
+echo "# VM video RAM in MB, minimum 34, maximum 128"
+pad_to_33_chars "resolution=\"${resolution}\""
+echo -ne "# VM display resolution
 
 These values may be customized as described in the documentation.
 
-'"${highlight_color}"'Press enter to continue, CTRL-C to exit.'"${default_color}"
+${highlight_color}Press enter to continue, CTRL-C to exit.${default_color}"
 clear_input_buffer_then_read
 }
 
@@ -258,7 +257,7 @@ elif [[ "$(cat /proc/sys/kernel/osrelease 2>/dev/null)" =~ [Mm]icrosoft ]]; then
         else
             echo "Please make sure VirtualBox is installed on Windows, and that the path to the"
             echo "VBoxManage.exe executable is in the PATH variable, or assigned in the script"
-            printf 'to the variable '"${highlight_color}"'wsl_path_VBoxManage'"${default_color}"' including the name of the executable.'
+            echo -e "to the variable \"${highlight_color}wsl_path_VBoxManage${default_color}\" including the name of the executable."
             exit
         fi
     fi
@@ -281,12 +280,12 @@ elif [[ ! ( "${vbox_version:0:1}" -gt 5
     echo "Exiting."
     exit
 elif [[ "${vbox_version:0:1}" = 5 ]]; then
-    printf $'\n'"${highlight_color}"'VirtualBox version '"${vbox_version}"' detected.'"${default_color}"' Please see the following
+    echo -ne "\n${highlight_color}VirtualBox version ${vbox_version} detected.${default_color} Please see the following
 URL for issues with the VISO filesystem on VirtualBox 5.2 to 5.2.40:
 
   https://github.com/myspaghetti/macos-guest-virtualbox/issues/86
 
-'"${highlight_color}"'Press enter to continue, CTRL-C to exit.'"${default_color}"
+${highlight_color}Press enter to continue, CTRL-C to exit.${default_color}"
     clear_input_buffer_then_read
 fi
 
@@ -352,15 +351,14 @@ print_dimly "${macOS_release_name} selected to be downloaded and installed"
 function prompt_delete_existing_vm() {
 print_dimly "stage: prompt_delete_existing_vm"
 if [[ -n "$(VBoxManage showvminfo "${vm_name}" 2>/dev/null)" ]]; then
-    echo ''
-    echo 'A virtual machine named "'"${vm_name}"'" already exists.'
-    printf "${warning_color}"'Delete existing virtual machine "'"${vm_name}"'"?'"${default_color}"
+    echo -e "\nA virtual machine named \"${vm_name}\" already exists."
+    echo -ne "${warning_color}Delete existing virtual machine \"${vm_name}\"?${default_color}"
     prompt_delete_y_n
     if [[ "${delete}" == "y" ]]; then
         echo "Deleting ${vm_name} virtual machine."
         VBoxManage unregistervm "${vm_name}" --delete
     else
-        printf $'\n'"${highlight_color}"'Please assign a different VM name to variable "vm_name" by editing the script,'"${default_color}"$'\n'
+        echo -e "\n${highlight_color}Please assign a different VM name to variable \"vm_name\" by editing the script,${default_color}"
         echo "or skip this check manually as described when running the following command:"
         would_you_like_to_know_less
         exit
@@ -372,11 +370,11 @@ fi
 function create_vm() {
 print_dimly "stage: create_vm"
 if [[ -n "$( VBoxManage createvm --name "${vm_name}" --ostype "MacOS1013_64" --register 2>&1 >/dev/null )" ]]; then
-    printf $'\n''Error: Could not create virtual machine "'"${vm_name}"'".
-'"${highlight_color}"'Please delete exising "'"${vm_name}"'" VirtualBox configuration files '"${warning_color}"'manually'"${default_color}"'.
+    echo -e "\nError: Could not create virtual machine \"${vm_name}\".
+${highlight_color}Please delete exising \"${vm_name}\" VirtualBox configuration files ${warning_color}manually${default_color}.
 
 Error message:
-'
+"
     VBoxManage createvm --name "${vm_name}" --ostype "MacOS1013_64" --register 2>/dev/tty
     exit
 fi
@@ -419,10 +417,10 @@ if [[ ! -s "${macOS_release_name}_sucatalog" ]]; then
     wget --debug -O /dev/null -o "${macOS_release_name}_wget.log" "${sucatalog}"
     echo $'\n'"Couldn't download the Apple software update catalog."
     if [[ "$(expr match "$(cat "${macOS_release_name}_wget.log")" '.*ERROR[[:print:]]*is not trusted')" -gt "0" ]]; then
-        printf '
+        echo -e "
 Make sure certificates from a certificate authority are installed.
 Certificates are often installed through the package manager with
-a package named '"${highlight_color}"'ca-certificates'"${default_color}"
+a package named ${highlight_color}ca-certificates${default_color}"
     fi
     echo "Exiting."
     exit
@@ -433,7 +431,7 @@ tac "${macOS_release_name}_sucatalog" | csplit - '/InstallAssistantAuto.smd/+1' 
 for catalog in "${macOS_release_name}_sucatalog_"* "error"; do
     if [[ "${catalog}" == error ]]; then
         rm "${macOS_release_name}_sucatalog"*
-        printf "Couldn't find the requested download URL in the Apple catalog. Exiting."
+        echo "Couldn't find the requested download URL in the Apple catalog. Exiting."
        exit
     fi
     urlbase="$(tail -n 1 "${catalog}" 2>/dev/null)"
@@ -692,13 +690,13 @@ fi
 function create_install_vdi() {
 print_dimly "stage: create_install_vdi"
 if [[ -w "Install ${macOS_release_name}.vdi" ]]; then
-    echo '"'"Install ${macOS_release_name}.vdi"'" virtual disk image exists.'
-    printf "${warning_color}"'Delete "'"Install ${macOS_release_name}.vdi"'"?'"${default_color}"
+    echo "\"Install ${macOS_release_name}.vdi\" virtual disk image exists."
+    echo -ne "${warning_color}Delete \"Install ${macOS_release_name}.vdi\"?${default_color}"
     prompt_delete_y_n
     if [[ "${delete}" == "y" ]]; then
         if [[ "$( VBoxManage list runningvms )" =~ \""${vm_name}"\" ]]
         then
-            echo '"'"Install ${macOS_release_name}.vdi"'" may be deleted'
+            echo "\"Install ${macOS_release_name}.vdi\" may be deleted"
             echo "only when the virtual machine is powered off."
             echo "Exiting."
             exit
@@ -826,7 +824,7 @@ send_keys
 kbstring='shutdown -h now'
 send_keys
 send_enter
-printf 'Partitioning the target virtual disk and the installer virtual disk.
+echo "Partitioning the target virtual disk and the installer virtual disk.
 Loading base system onto the installer virtual disk. Moving installation
 files to installer virtual disk, updating InstallInfo.plist, and rebooting the
 virtual machine.
@@ -835,8 +833,7 @@ The virtual machine may report that disk space is critically low; this is fine.
 
 When the installer virtual disk is finished being populated, the script will
 shut down the virtual machine. After shutdown, the initial base system will be
-detached from the VM and released from VirtualBox.
-'
+detached from the VM and released from VirtualBox."
 print_dimly "If the partitioning fails, exit the script by pressing CTRL-C
 Otherwise, please wait."
 # Detach the original 2GB BaseSystem.vdi
@@ -852,7 +849,7 @@ sleep 3
 function populate_macos_target() {
 print_dimly "stage: populate_macos_target"
 if [[ "$( VBoxManage list runningvms )" =~ \""${vm_name}"\" ]]; then
-    printf "${highlight_color}"'Please '"${warning_color}"'manually'"${highlight_color}"' shut down the virtual machine and press enter to continue.'"${default_color}"
+    echo -e "${highlight_color}Please ${warning_color}manually${highlight_color} shut down the virtual machine and press enter to continue.${default_color}"
     clear_input_buffer_then_read
 fi
 VBoxManage storagectl "${vm_name}" --remove --name SATA >/dev/null 2>&1
@@ -915,18 +912,18 @@ send_keys
 send_enter
 if [[ ! ( "${vbox_version:0:1}" -gt 6
         || ( "${vbox_version:0:1}" = 6 && "${vbox_version:2:1}" -ge 1 ) ) ]]; then
-    printf "${highlight_color}"'When the installer finishes preparing and reboots the VM, press enter'"${default_color}"' so the script
-powers off the virtual machine and detaches the device "'"Install ${macOS_release_name}.vdi"'" to avoid
-booting into the initial installer environment again.'
+    echo -e "${highlight_color}When the installer finishes preparing and reboots the VM, press enter${default_color} so the script
+powers off the virtual machine and detaches the device \"Install ${macOS_release_name}.vdi\" to avoid
+booting into the initial installer environment again."
     clear_input_buffer_then_read
     VBoxManage controlvm "${vm_name}" poweroff >/dev/null 2>&1
-    for (( i=10; i>5; i-- )); do printf $'   \r'"${i}"; sleep 0.5; done
+    for (( i=10; i>5; i-- )); do echo -e "   \r${i}"; sleep 0.5; done
     VBoxManage storagectl "${vm_name}" --remove --name SATA >/dev/null 2>&1
     VBoxManage storagectl "${vm_name}" --add sata --name SATA --hostiocache on >/dev/null 2>&1
     VBoxManage storageattach "${vm_name}" --storagectl SATA --port 0 \
                --type hdd --nonrotational on --medium "${vm_name}.vdi"
     echo ""
-    for (( i=5; i>0; i-- )); do printf $'   \r'"${i}"; sleep 0.5; done
+    for (( i=5; i>0; i-- )); do echo -e "   \r${i}"; sleep 0.5; done
 fi
 echo -e "For further information, such as applying EFI and NVRAM variables to enable
 iMessage connectivity, see the documentation with the following command:\n\n"
@@ -939,11 +936,11 @@ function delete_temporary_files() {
 print_dimly "stage: delete_temporary_files"
 if [[ ! "$(VBoxManage showvminfo "${vm_name}")" =~ State:[\ \t]*powered\ off ]]
 then
-    printf 'Temporary files may be deleted when the virtual machine is powered off
-and without a suspended state by running the following command at the script'"'"'s
+    echo -e "Temporary files may be deleted when the virtual machine is powered off
+and without a suspended state by running the following command at the script's
 working directory:
 
-  '"${highlight_color}${0} delete_temporary_files${default_color}"$'\n'
+  ${highlight_color}${0} delete_temporary_files${default_color}"
 else
     # detach temporary VDIs and attach the macOS target disk
     VBoxManage storagectl "${vm_name}" --remove --name SATA >/dev/null 2>&1
@@ -954,7 +951,7 @@ else
     fi
     VBoxManage closemedium "Install ${macOS_release_name}.vdi" >/dev/null 2>&1
     VBoxManage closemedium "${macOS_release_name}_BaseSystem.vdi" >/dev/null 2>&1
-    echo 'The following temporary files are safe to delete:'$'\n'
+    echo -e "The following temporary files are safe to delete:\n"
     temporary_files=("${macOS_release_name}_Apple"*
                      "${macOS_release_name}_BaseSystem"*
                      "${macOS_release_name}_Install"*
@@ -967,7 +964,7 @@ else
                      "AppleSupport-v2.0.4-RELEASE.zip"
                      "dmg2img.exe")
     ls -d "${temporary_files[@]}" 2>/dev/null
-    printf $'\n'"${warning_color}"'Delete temporary files listed above?'"${default_color}"
+    echo -e "\n${warning_color}Delete temporary files listed above?${default_color}"
     prompt_delete_y_n
     if [[ "${delete}" == "y" ]]; then
         rm -f "${temporary_files[@]}" 2>/dev/null
@@ -981,7 +978,7 @@ low_contrast_stages=""
 for stage in ${stages}; do
     low_contrast_stages="${low_contrast_stages}"'    '"${low_contrast_color}${stage}${default_color}"$'\n'
 done
-printf "
+echo -ne "
         ${highlight_color}NAME${default_color}
 Push-button installer of macOS on VirtualBox
 
@@ -1164,29 +1161,29 @@ echo "and macOS installation file md5 checksums."
 echo "When sharing this file, mind that it contains the above information."
 echo ""
 for wrapper in 1; do
-    echo '################################################################################'
+    echo "################################################################################"
     head -n 5 "${0}"
-    echo '################################################################################'
-    echo 'BASH_VERSION '"${BASH_VERSION}"
+    echo "################################################################################"
+    echo "BASH_VERSION ${BASH_VERSION}"
     vbox_ver="$(VBoxManage -v)"
-    echo 'VBOX_VERSION '"${vbox_ver//[$'\r\n']/}"
+    echo "VBOX_VERSION ${vbox_ver//[$'\r\n']/}"
     macos_ver="$(sw_vers 2>/dev/null)"
     wsl_ver="$(cat /proc/sys/kernel/osrelease 2>/dev/null)"
     win_ver="$(cmd.exe /d /s /c call ver 2>/dev/null)"
-    echo 'OS VERSION '"${macos_ver}${wsl_ver}${win_ver//[$'\r\n']/}"
-    echo '################################################################################'
-    echo 'vbox.log'
+    echo "OS VERSION ${macos_ver}${wsl_ver}${win_ver//[$'\r\n']/}"
+    echo "################################################################################"
+    echo "vbox.log"
     VBoxManage showvminfo "${vm_name}" --log 0 2>&1
-    echo '################################################################################'
-    echo 'vminfo'
+    echo "################################################################################"
+    echo "vminfo"
     VBoxManage showvminfo "${vm_name}" --machinereadable --details 2>&1
     VBoxManage getextradata "${vm_name}" 2>&1
 done > "${vm_name}_troubleshoot.txt"
 echo "Written configuration and logs to \"${highlight_color}${vm_name}_troubleshoot.txt${default_color}\""
 echo "Press CTRL-C to cancel checksums, or wait for checksumming to complete."
 for wrapper in 1; do
-    echo '################################################################################'
-    echo 'md5 hashes'
+    echo "################################################################################"
+    echo "md5 hashes"
     if [[ -n "$(md5sum --version 2>/dev/null)" ]]; then
         md5sum "${macOS_release_name}_BaseSystem"* 2>/dev/null
         md5sum "${macOS_release_name}_Install"* 2>/dev/null
@@ -1196,7 +1193,7 @@ for wrapper in 1; do
         md5 "${macOS_release_name}_Install"* 2>/dev/null
         md5 "${macOS_release_name}_Apple"* 2>/dev/null
     fi
-    echo '################################################################################'
+    echo "################################################################################"
 done >> "${vm_name}_troubleshoot.txt"
 if [ -s "${vm_name}_troubleshoot.txt" ]; then
 echo -ne "\nFinished writing to \"${highlight_color}${vm_name}_troubleshoot.txt${default_color}\"\n"
@@ -1213,7 +1210,7 @@ default_color=$'\033[0m'
 
 # prints positional parameters in low contrast preceded and followed by newline
 function print_dimly() {
-printf $'\n'"${low_contrast_color}$@${default_color}"$'\n'
+echo -e "\n${low_contrast_color}$@${default_color}"
 }
 
 # don't need sleep when we can read!
@@ -1393,10 +1390,10 @@ function send_enter() {
 
 function prompt_lang_utils() {
     # called after the virtual machine boots up
-    printf $'\n'"${highlight_color}"'Press enter when the Language window is ready.'"${default_color}"
+    echo -ne "\n${highlight_color}Press enter when the Language window is ready.${default_color}"
     clear_input_buffer_then_read
     send_enter
-    printf $'\n'"${highlight_color}"'Press enter when the macOS Utilities window is ready.'"${default_color}"
+    echo -ne "\n${highlight_color}Press enter when the macOS Utilities window is ready.${default_color}"
     clear_input_buffer_then_read
     kbspecial='CTRLprs F2 CTRLrls u ENTER t ENTER'
     send_special
@@ -1404,7 +1401,7 @@ function prompt_lang_utils() {
 
 function prompt_terminal_ready() {
     # called after the Utilities window is ready
-    printf $'\n'"${highlight_color}"'Press enter when the Terminal command prompt is ready.'"${default_color}"
+    echo -ne  "\n${highlight_color}Press enter when the Terminal command prompt is ready.${default_color}"
     clear_input_buffer_then_read
 }
 
@@ -1434,9 +1431,9 @@ function cycle_through_terminal_windows() {
 
 function would_you_like_to_know_less() {
     if [[ -z "$(less --version 2>/dev/null)" ]]; then
-        printf '  '"${highlight_color}${0} documentation${default_color}"$'\n'
+        echo -e "  ${highlight_color}${0} documentation${default_color}"
     else
-        printf '  '"${highlight_color}${0} documentation | less -R${default_color}"$'\n'
+        echo -e "  ${highlight_color}${0} documentation | less -R${default_color}"
     fi
 }
 
