@@ -59,8 +59,7 @@ SYSTEM_INTEGRITY_PROTECTION='10'  # '10' - enabled, '77' - disabled
 
 # welcome message
 function welcome() {
-echo -ne "
-${highlight_color}Push-button installer of macOS on VirtualBox${default_color}
+echo -ne "\n${highlight_color}Push-button installer of macOS on VirtualBox${default_color}
 
 This script installs only open-source software and unmodified Apple binaries,
 and requires about ${highlight_color}40GB${default_color} of available storage, of which 20GB are for temporary
@@ -75,8 +74,7 @@ following command:
 
 "
 would_you_like_to_know_less
-echo -ne "
-${highlight_color}Press enter to review the script configuration.${default_color}"
+echo -ne "\n${highlight_color}Press enter to review the script configuration.${default_color}"
 clear_input_buffer_then_read
 
 function pad_to_33_chars() {
@@ -971,8 +969,7 @@ low_contrast_stages=""
 for stage in ${stages}; do
     low_contrast_stages="${low_contrast_stages}"'    '"${low_contrast_color}${stage}${default_color}"$'\n'
 done
-echo -ne "
-        ${highlight_color}NAME${default_color}
+echo -ne "\n        ${highlight_color}NAME${default_color}
 Push-button installer of macOS on VirtualBox
 
         ${highlight_color}DESCRIPTION${default_color}
@@ -1476,10 +1473,10 @@ for specified_arg in "$@"; do
         [[ "${valid_arg}" = "${specified_arg}" ]] && there_is_a_match="true" && break
     done
     if [[ -z "${there_is_a_match}" ]]; then
-        echo $'\n'"One or more specified arguments is not recognized."
-        echo $'\nRecognized stages:\n'"${stages}"
-        echo $'Other recognized arguments:\n\n    documentation\n    troubleshoot'
-        echo $'\n'"View documentation by entering the following command:"
+        echo -e "\nOne or more specified arguments is not recognized."
+        echo -e "\nRecognized stages:\n${stages}"
+        echo -e "Other recognized arguments:\n\n    documentation\n    troubleshoot"
+        echo -e "\nView documentation by entering the following command:"
         would_you_like_to_know_less
         exit
     fi
