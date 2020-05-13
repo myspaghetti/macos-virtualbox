@@ -2,7 +2,7 @@
 # Push-button installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-guest-virtualbox
-# version 0.92.1
+# version 0.92.2
 
 # Dependencies: bash  coreutils  gzip  unzip  wget  xxd  dmg2img
 # Supported versions:
@@ -432,7 +432,7 @@ for catalog in "${macOS_release_name}_sucatalog_"* "error"; do
     --output-document="${catalog}_InstallAssistantAuto.smd"
     found_version="$(head -n 6 "${catalog}_InstallAssistantAuto.smd" | tail -n 1)"
     if [[ "${found_version}" == *${CFBundleShortVersionString}* ]]; then
-        echo "Found download URL: ${urlbase}"$'\n'
+        echo -e "Found download URL: ${urlbase}\n"
         rm "${macOS_release_name}_sucatalog"*
         break
     fi
@@ -874,9 +874,9 @@ prompt_lang_utils
 prompt_terminal_ready
 add_another_terminal
 echo -e "\nThe second open Terminal in the virtual machine copies EFI and NVRAM files"
-echo "to the target EFI system partition when the installer finishes preparing."
+echo -e "to the target EFI system partition when the installer finishes preparing."
 echo -e "\nAfter the installer finishes preparing and the EFI and NVRAM files are copied,"
-echo "macOS will install and run when booting the target disk."$'\n'
+echo -ne "macOS will install and run when booting the target disk.\n\n"
 # run script concurrently, catch SIGUSR1 when installer finishes preparing
 kbstring='disks="$(diskutil list | grep -o "[0-9][^ ]* GB *disk[0-9]$" | sort -gr | grep -o disk[0-9])" && '\
 'disks=(${disks[@]}) && '\
@@ -1391,7 +1391,7 @@ function prompt_lang_utils() {
 
 function prompt_terminal_ready() {
     # called after the Utilities window is ready
-    echo -ne  "\n${highlight_color}Press enter when the Terminal command prompt is ready.${default_color}"
+    echo -ne "\n${highlight_color}Press enter when the Terminal command prompt is ready.${default_color}"
     clear_input_buffer_then_read
 }
 
