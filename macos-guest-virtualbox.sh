@@ -272,7 +272,7 @@ if [[ -z "${vbox_version}" || -z "${vbox_version:2:1}" ]]; then
     exit
 elif [[ ! ( "${vbox_version:0:1}" -gt 5
          || "${vbox_version:0:3}" =~ 5\.2 ) ]]; then
-    echo $'\n'"Please make sure VirtualBox version 5.2 or higher is installed."
+    echo -e "\nPlease make sure VirtualBox version 5.2 or higher is installed."
     echo "Exiting."
     exit
 elif [[ "${vbox_version:0:1}" = 5 ]]; then
@@ -325,7 +325,7 @@ if [[ "${macOS_release_name:0:1}" =~ [Cc] ]]; then
               "${vbox_version}" =~ ^6\.1\.[4-9] ||
               "${vbox_version}" =~ ^6\.1\.[123][0-9] ||
               "${vbox_version}" =~ ^6\.[2-9] ) ]]; then
-        echo $'\n'"macOS Catalina requires VirtualBox version 6.1.4 or higher."
+        echo -e "\nmacOS Catalina requires VirtualBox version 6.1.4 or higher."
         echo "Exiting."
         exit
     fi
@@ -399,7 +399,7 @@ fi
 function prepare_macos_installation_files() {
 print_dimly "stage: prepare_macos_installation_files"
 # Find the correct download URL in the Apple catalog
-echo $'\n'"Downloading Apple macOS ${macOS_release_name} software update catalog"
+echo -e "\nDownloading Apple macOS ${macOS_release_name} software update catalog"
 wget "${sucatalog}" \
      ${wgetargs} \
      --output-document="${macOS_release_name}_sucatalog"
@@ -449,13 +449,13 @@ for filename in "BaseSystem.chunklist" \
             --output-document "${macOS_release_name}_${filename}"
 done
 
-echo $'\n'"Splitting the several-GB InstallESDDmg.pkg into 1GB parts because"
+echo -e "\nSplitting the several-GB InstallESDDmg.pkg into 1GB parts because"
 echo "VirtualBox hasn't implemented UDF/HFS VISO support yet and macOS"
 echo "doesn't support ISO 9660 Level 3 with files larger than 2GB."
 split --verbose -a 2 -d -b 1000000000 "${macOS_release_name}_InstallESDDmg.pkg" "${macOS_release_name}_InstallESD.part"
 
 if [[ ! -s "ApfsDriverLoader.efi" ]]; then
-    echo $'\n'"Downloading open-source APFS EFI drivers used for VirtualBox 6.0 and 5.2"
+    echo -e "\nDownloading open-source APFS EFI drivers used for VirtualBox 6.0 and 5.2"
     [[ "${vbox_version:0:1}" -gt 6 || ( "${vbox_version:0:1}" = 6 && "${vbox_version:2:1}" -ge 1 ) ]] && echo "...even though VirtualBox version 6.1 or higher is detected."
     wget 'https://github.com/acidanthera/AppleSupportPkg/releases/download/2.0.4/AppleSupport-v2.0.4-RELEASE.zip' \
         ${wgetargs} \
@@ -580,8 +580,8 @@ for %a run (1 5)
   endif
 endfor' >> "${vm_name}_startup.nsh"
 
-echo $'\n'"Creating VirtualBox 6 virtual ISO containing the"
-echo "installation files from swcdn.apple.com"$'\n'
+echo -e "\nCreating VirtualBox 6 virtual ISO containing the"
+echo -e "installation files from swcdn.apple.com\n"
 pseudouuid="$(od -tx -N16 /dev/urandom | xxd -r | xxd -p)"
 pseudouuid="${pseudouuid:0:8}-${pseudouuid:8:4}-${pseudouuid:12:4}-${pseudouuid:16:4}-${pseudouuid:20:12}"
 echo "--iprt-iso-maker-file-marker-bourne-sh ${pseudouuid}
@@ -629,7 +629,7 @@ print_dimly "stage: create_basesystem_vdi"
 if [[ -s "${macOS_release_name}_BaseSystem.vdi" ]]; then
     echo "${macOS_release_name}_BaseSystem.vdi bootstrap virtual disk image exists."
 elif [[ ! -s "${macOS_release_name}_BaseSystem.dmg" ]]; then
-    echo $'\n'"Could not find ${macOS_release_name}_BaseSystem.dmg; exiting."
+    echo -e "\nCould not find ${macOS_release_name}_BaseSystem.dmg; exiting."
     exit
 else
     local failed=''
@@ -873,9 +873,9 @@ echo "The VM will boot from the populated installer base system virtual disk."
 prompt_lang_utils
 prompt_terminal_ready
 add_another_terminal
-echo $'\n'"The second open Terminal in the virtual machine copies EFI and NVRAM files"
+echo -e "\nThe second open Terminal in the virtual machine copies EFI and NVRAM files"
 echo "to the target EFI system partition when the installer finishes preparing."
-echo $'\n'"After the installer finishes preparing and the EFI and NVRAM files are copied,"
+echo -e "\nAfter the installer finishes preparing and the EFI and NVRAM files are copied,"
 echo "macOS will install and run when booting the target disk."$'\n'
 # run script concurrently, catch SIGUSR1 when installer finishes preparing
 kbstring='disks="$(diskutil list | grep -o "[0-9][^ ]* GB *disk[0-9]$" | sort -gr | grep -o disk[0-9])" && '\
