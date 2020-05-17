@@ -2,7 +2,7 @@
 # Push-button installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-virtualbox
-# version 0.93.0
+# version 0.93.1
 
 # Dependencies: bash  coreutils  gzip  unzip  wget  xxd  dmg2img
 # Supported versions:
@@ -698,7 +698,7 @@ if [[ ! -e "${vm_name}.${storage_format}" ]]; then
     VBoxManage storagectl "${vm_name}" --remove --name SATA >/dev/null 2>&1
     VBoxManage closemedium "${vm_name}.${storage_format}" >/dev/null 2>&1
     VBoxManage createmedium --size="${storage_size}" \
-                            --format "${storage_format}"
+                            --format "${storage_format}" \
                             --filename "${vm_name}.${storage_format}" \
                             --variant standard 2>/dev/tty
 fi
@@ -733,7 +733,7 @@ if [[ ! -e "${macOS_release_name} bootable installer.${storage_format}" ]]; then
     VBoxManage storagectl "${vm_name}" --remove --name SATA >/dev/null 2>&1
     VBoxManage closemedium "${macOS_release_name} bootable installer.${storage_format}" >/dev/null 2>&1
     VBoxManage createmedium --size=12000 \
-                            --format "${storage_format}"
+                            --format "${storage_format}" \
                             --filename "${macOS_release_name} bootable installer.${storage_format}" \
                             --variant standard 2>/dev/tty
 fi
