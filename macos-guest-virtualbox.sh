@@ -505,8 +505,8 @@ function generate_nvram_bin_file() {
     local datasize="$(printf "${datasize}" | xxd -r -p | od -tx4 -N4 -An --endian=little)"
     # guid string-of-hex-bytes is five fields, 8+4+4+4+12 nibbles long
     # first three are little-endian, last two big-endian
-    # for example, 00112233-4455-6677-8899-AABBCCDDEEFF
-    # is stored as 33221100-5544-7766-8899-AABBCCDDEEFF
+    # for example, 0F1A2B3C-4D5E-6A7B-8C9D-A1B2C3D4E5F6
+    # is stored as 3C2B1A0F-5E4D-7B6A-8C9D-A1B2C3D4E5F6
     local g="$( printf -- "${3}" | xxd -r -p | xxd -p )" # strip spaces etc
     local guid="${g:6:2} ${g:4:2} ${g:2:2} ${g:0:2} ${g:10:2} ${g:8:2} ${g:14:2} ${g:12:2} ${g:16:16}"
     # attributes in four bytes little-endian
