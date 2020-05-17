@@ -503,7 +503,7 @@ function generate_nvram_bin_file() {
     local datasize="$(printf "%08x" $(( ${#data} / 2 )) )"
     # flip four big-endian bytes byte-order to little-endian
     local datasize="$(printf "${datasize}" | xxd -r -p | od -tx4 -N4 -An --endian=little)"
-    # guid string-of-hex-bytes is five fields, 8+4+4+4+12 bytes long
+    # guid string-of-hex-bytes is five fields, 8+4+4+4+12 nibbles long
     # first three are little-endian, last two big-endian
     # for example, 00112233-4455-6677-8899-AABBCCDDEEFF
     # is stored as 33221100-5544-7766-8899-AABBCCDDEEFF
