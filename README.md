@@ -22,7 +22,7 @@ The following primary display resolutions are supported by macOS on VirtualBox: 
 Developing and maintaining VirtualBox or macOS features is beyond the scope of this script. Some features may behave unexpectedly, such as USB device support, audio support, FileVault boot password prompt support, and other features.
 
 #### Performance
-After successfully creating a working macOS virtual machine, consider importing it into QEMU/KVM so it can run with hardware passthrough at near-native performance. QEMU/KVM requires additional configuration that is beyond the scope of  the script.
+After successfully creating a working macOS virtual machine, consider importing it into QEMU with KVM so it can use hardware passthrough for near-native performance. To use the same virtual machine disk image on VirtualBox and QEMU, choose the `VMDK` virtual disk image storage format before executing the script, or after macOS is installed convert the `VDI` file to a `VMDK` file. See `documentation` for further information. QEMU and KVM require additional configuration that is beyond the scope of  the script.
 
 #### Bootloaders
 The macOS VirtualBox guest is loaded without extra bootloaders, but it is compatible with [OpenCore](https://github.com/acidanthera/OpenCorePkg/releases). OpenCore requires additional configuration that is beyond the scope of  the script.
