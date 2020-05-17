@@ -2,7 +2,7 @@
 # Push-button installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-virtualbox
-# version 0.92.3
+# version 0.92.4
 
 # Dependencies: bash  coreutils  gzip  unzip  wget  xxd  dmg2img
 # Supported versions:
@@ -641,6 +641,8 @@ else
     else
         dmg2img "${macOS_release_name}_BaseSystem.dmg" "${macOS_release_name}_BaseSystem.img" || local failed='failed'
     fi
+    VBoxManage storagectl "${vm_name}" --remove --name SATA >/dev/null 2>&1
+    VBoxManage closemedium "${macOS_release_name}_BaseSystem.${storage_format}" >/dev/null 2>&1
     VBoxManage convertfromraw --format "${storage_format}" "${macOS_release_name}_BaseSystem.img" "${macOS_release_name}_BaseSystem.${storage_format}" || local failed='failed'
     if [[ -n "${failed}" ]]; then
         echo "Failed to create \"${macOS_release_name}_BaseSystem.${storage_format}\"."
@@ -677,6 +679,9 @@ if [[ -w "${vm_name}.${storage_format}" ]]; then
             VBoxManage closemedium "${vm_name}.${storage_format}" >/dev/null 2>&1
             rm "${vm_name}.${storage_format}"
         fi
+    else
+        echo "Exiting."
+        exit
     fi
 fi
 if [[ "${macOS_release_name}" = "Catalina" && "${storage_size}" -lt 25000 ]]; then
@@ -690,6 +695,8 @@ elif [[ "${storage_size}" -lt 22000 ]]; then
 fi
 if [[ ! -e "${vm_name}.${storage_format}" ]]; then
     echo "Creating target system virtual disk image for \"${vm_name}\""
+    VBoxManage storagectl "${vm_name}" --remove --name SATA >/dev/null 2>&1
+    VBoxManage closemedium "${vm_name}.${storage_format}" >/dev/null 2>&1
     VBoxManage createmedium --size="${storage_size}" \
                             --filename "${vm_name}.${storage_format}" \
                             --variant standard 2>/dev/tty
@@ -715,10 +722,15 @@ if [[ -w "${macOS_release_name} bootable installer.${storage_format}" ]]; then
             VBoxManage closemedium "${macOS_release_name} bootable installer.${storage_format}" >/dev/null 2>&1
             rm "${macOS_release_name} bootable installer.${storage_format}"
         fi
+    else
+        echo "Exiting."
+        exit
     fi
 fi
 if [[ ! -e "${macOS_release_name} bootable installer.${storage_format}" ]]; then
     echo "Creating ${macOS_release_name} installation media virtual disk image."
+    VBoxManage storagectl "${vm_name}" --remove --name SATA >/dev/null 2>&1
+    VBoxManage closemedium "${macOS_release_name} bootable installer.${storage_format}" >/dev/null 2>&1
     VBoxManage createmedium --size=12000 \
                             --filename "${macOS_release_name} bootable installer.${storage_format}" \
                             --variant standard 2>/dev/tty
