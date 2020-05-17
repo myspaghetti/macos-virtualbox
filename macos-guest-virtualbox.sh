@@ -1,8 +1,8 @@
 #!/bin/bash
 # Push-button installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
-# url: https://github.com/myspaghetti/macos-guest-virtualbox
-# version 0.92.2
+# url: https://github.com/myspaghetti/macos-virtualbox
+# version 0.92.3
 
 # Dependencies: bash  coreutils  gzip  unzip  wget  xxd  dmg2img
 # Supported versions:
@@ -17,6 +17,7 @@ function set_variables() {
 vm_name="macOS"                  # name of the VirtualBox virtual machine
 macOS_release_name="Catalina"    # install "HighSierra" "Mojave" or "Catalina"
 storage_size=80000               # VM disk image size in MB, minimum 22000
+storage_format="VDI"             # VM disk image file format, "VDI" or "VMDK"
 cpu_count=2                      # VM CPU cores, minimum 2
 memory_size=4096                 # VM RAM in MB, minimum 2048
 gpu_vram=128                     # VM video RAM in MB, minimum 34, maximum 128
@@ -88,6 +89,8 @@ pad_to_33_chars "macOS_release_name=\"${macOS_release_name}\""
 echo "# install \"HighSierra\" \"Mojave\" or \"Catalina\""
 pad_to_33_chars "storage_size=${storage_size}"
 echo "# VM disk image size in MB. minimum 22000"
+pad_to_33_chars "storage_format=\"${storage_format}\""
+echo "# VM disk image file format, \"VDI\" or \"VMDK\""
 pad_to_33_chars "cpu_count=${cpu_count}"
 echo "# VM CPU cores, minimum 2"
 pad_to_33_chars "memory_size=${memory_size}"
@@ -382,7 +385,6 @@ fi
 VBoxManage controlvm "${vm_name}" poweroff 2>/dev/null
 echo -e "\nChecking that VirtualBox runs with hardware-supported virtualization."
 vbox_log="$(VBoxManage showvminfo "${vm_name}" --log 0)"
-# if [[ "${vbox_log}" =~ '.*Attempting fall back to NEM.*' ]]; then
 regex='.*Attempting fall back to NEM.*'  # for zsh compatibility
 if [[ "${vbox_log}" =~ ${regex} ]]; then
     echo -e "\nVirtualbox is running without hardware-supported virtualization features."
@@ -624,10 +626,10 @@ echo "/ESP/startup.nsh=\"${vm_name}_startup.nsh\"" >> "${macOS_release_name}_Ins
 }
 
 # Create the macOS base system virtual disk image
-function create_basesystem_vdi() {
-print_dimly "stage: create_basesystem_vdi"
-if [[ -s "${macOS_release_name}_BaseSystem.vdi" ]]; then
-    echo "${macOS_release_name}_BaseSystem.vdi bootstrap virtual disk image exists."
+function create_basesystem_virtual_disk() {
+print_dimly "stage: create_basesystem_virtual_disk"
+if [[ -s "${macOS_release_name}_BaseSystem.${storage_format}" ]]; then
+    echo "${macOS_release_name}_BaseSystem.${storage_format} bootstrap virtual disk image exists."
 elif [[ ! -s "${macOS_release_name}_BaseSystem.dmg" ]]; then
     echo -e "\nCould not find ${macOS_release_name}_BaseSystem.dmg; exiting."
     exit
@@ -639,9 +641,9 @@ else
     else
         dmg2img "${macOS_release_name}_BaseSystem.dmg" "${macOS_release_name}_BaseSystem.img" || local failed='failed'
     fi
-    VBoxManage convertfromraw --format VDI "${macOS_release_name}_BaseSystem.img" "${macOS_release_name}_BaseSystem.vdi" || local failed='failed'
+    VBoxManage convertfromraw --format "${storage_format}" "${macOS_release_name}_BaseSystem.img" "${macOS_release_name}_BaseSystem.${storage_format}" || local failed='failed'
     if [[ -n "${failed}" ]]; then
-        echo "Failed to create \"${macOS_release_name}_BaseSystem.vdi\"."
+        echo "Failed to create \"${macOS_release_name}_BaseSystem.${storage_format}\"."
         if [[ "$(cat /proc/sys/kernel/osrelease 2>/dev/null)" =~ [Mm]icrosoft ]]; then
             echo -e "\nSome versions of WSL require the script to run on a Windows filesystem path,"
             echo -e "for example   ${highlight_color}/mnt/c/Users/Public/Documents${default_color}"
@@ -657,11 +659,27 @@ fi
 }
 
 # Create the target virtual disk image
-function create_target_vdi() {
-print_dimly "stage: create_target_vdi"
-if [[ -w "${vm_name}.vdi" ]]; then
-    echo "${vm_name}.vdi target system virtual disk image exists."
-elif [[ "${macOS_release_name}" = "Catalina" && "${storage_size}" -lt 25000 ]]; then
+function create_target_virtual_disk() {
+print_dimly "stage: create_target_virtual_disk"
+if [[ -w "${vm_name}.${storage_format}" ]]; then
+    echo "${vm_name}.${storage_format} target system virtual disk image exists."
+    echo -ne "${warning_color}Delete \"${vm_name}.${storage_format}\"?${default_color}"
+    prompt_delete_y_n
+    if [[ "${delete}" == "y" ]]; then
+        if [[ "$( VBoxManage list runningvms )" =~ \""${vm_name}"\" ]]
+        then
+            echo "\"${vm_name}.${storage_format}\" may be deleted"
+            echo "only when the virtual machine is powered off."
+            echo "Exiting."
+            exit
+        else
+            VBoxManage storagectl "${vm_name}" --remove --name SATA >/dev/null 2>&1
+            VBoxManage closemedium "${vm_name}.${storage_format}" >/dev/null 2>&1
+            rm "${vm_name}.${storage_format}"
+        fi
+    fi
+fi
+if [[ "${macOS_release_name}" = "Catalina" && "${storage_size}" -lt 25000 ]]; then
     echo "Attempting to install macOS Catalina on a disk smaller than 25000MB will fail."
     echo "Please assign a larger virtual disk image size. Exiting."
     exit
@@ -669,39 +687,40 @@ elif [[ "${storage_size}" -lt 22000 ]]; then
     echo "Attempting to install macOS on a disk smaller than 22000MB will fail."
     echo "Please assign a larger virtual disk image size. Exiting."
     exit
-else
-    echo "Creating ${vm_name} target system virtual disk image."
+fi
+if [[ ! -e "${vm_name}.${storage_format}" ]]; then
+    echo "Creating target system virtual disk image for \"${vm_name}\""
     VBoxManage createmedium --size="${storage_size}" \
-                            --filename "${vm_name}.vdi" \
+                            --filename "${vm_name}.${storage_format}" \
                             --variant standard 2>/dev/tty
 fi
 }
 
 # Create the installation media virtual disk image
-function create_install_vdi() {
-print_dimly "stage: create_install_vdi"
-if [[ -w "Install ${macOS_release_name}.vdi" ]]; then
-    echo "\"Install ${macOS_release_name}.vdi\" virtual disk image exists."
-    echo -ne "${warning_color}Delete \"Install ${macOS_release_name}.vdi\"?${default_color}"
+function create_install_virtual_disk() {
+print_dimly "stage: create_install_virtual_disk"
+if [[ -w "${macOS_release_name} installer.${storage_format}" ]]; then
+    echo "\"${macOS_release_name} installer.${storage_format}\" virtual disk image exists."
+    echo -ne "${warning_color}Delete \"${macOS_release_name} installer.${storage_format}\"?${default_color}"
     prompt_delete_y_n
     if [[ "${delete}" == "y" ]]; then
         if [[ "$( VBoxManage list runningvms )" =~ \""${vm_name}"\" ]]
         then
-            echo "\"Install ${macOS_release_name}.vdi\" may be deleted"
+            echo "\"${macOS_release_name} installer.${storage_format}\" may be deleted"
             echo "only when the virtual machine is powered off."
             echo "Exiting."
             exit
         else
             VBoxManage storagectl "${vm_name}" --remove --name SATA >/dev/null 2>&1
-            VBoxManage closemedium "Install ${macOS_release_name}.vdi" >/dev/null 2>&1
-            rm "Install ${macOS_release_name}.vdi"
+            VBoxManage closemedium "${macOS_release_name} installer.${storage_format}" >/dev/null 2>&1
+            rm "${macOS_release_name} installer.${storage_format}"
         fi
     fi
 fi
-if [[ ! -e "Install ${macOS_release_name}.vdi" ]]; then
+if [[ ! -e "${macOS_release_name} installer.${storage_format}" ]]; then
     echo "Creating ${macOS_release_name} installation media virtual disk image."
     VBoxManage createmedium --size=12000 \
-                            --filename "Install ${macOS_release_name}.vdi" \
+                            --filename "${macOS_release_name} installer.${storage_format}" \
                             --variant standard 2>/dev/tty
 fi
 }
@@ -756,21 +775,21 @@ if [[ -n $(
 fi
 if [[ -n $(
     2>&1 VBoxManage storageattach "${vm_name}" --storagectl SATA --port 0 \
-                --type hdd --nonrotational on --medium "${vm_name}.vdi" >/dev/null
+                --type hdd --nonrotational on --medium "${vm_name}.${storage_format}" >/dev/null
 ) ]]; then
-    echo "Could not attach \"${vm_name}.vdi\". Exiting."; exit
+    echo "Could not attach \"${vm_name}.${storage_format}\". Exiting."; exit
 fi
 if [[ -n $(
     2>&1 VBoxManage storageattach "${vm_name}" --storagectl SATA --port 1 --hotpluggable on \
-                --type hdd --nonrotational on --medium "Install ${macOS_release_name}.vdi" >/dev/null
+                --type hdd --nonrotational on --medium "${macOS_release_name} installer.${storage_format}" >/dev/null
 ) ]]; then
-    echo "Could not attach \"Install ${macOS_release_name}.vdi\". Exiting."; exit
+    echo "Could not attach \"${macOS_release_name} installer.${storage_format}\". Exiting."; exit
 fi
 if [[ -n $(
     2>&1 VBoxManage storageattach "${vm_name}" --storagectl SATA --port 2 --hotpluggable on \
-                --type hdd --nonrotational on --medium "${macOS_release_name}_BaseSystem.vdi" >/dev/null
+                --type hdd --nonrotational on --medium "${macOS_release_name}_BaseSystem.${storage_format}" >/dev/null
 ) ]]; then
-    echo "Could not attach \"${macOS_release_name}_BaseSystem.vdi\". Exiting."; exit
+    echo "Could not attach \"${macOS_release_name}_BaseSystem.${storage_format}\". Exiting."; exit
 fi
 if [[ -n $(
     2>&1 VBoxManage storageattach "${vm_name}" --storagectl SATA --port 3 \
@@ -827,12 +846,12 @@ shut down the virtual machine. After shutdown, the initial base system will be
 detached from the VM and released from VirtualBox."
 print_dimly "If the partitioning fails, exit the script by pressing CTRL-C
 Otherwise, please wait."
-# Detach the original 2GB BaseSystem.vdi
+# Detach the original 2GB BaseSystem virtual disk image
 while [[ "$( VBoxManage list runningvms )" =~ \""${vm_name}"\" ]]; do sleep 2 >/dev/null 2>&1; done
-# Release basesystem vdi from VirtualBox configuration
+# Release basesystem VDI from VirtualBox configuration
 VBoxManage storageattach "${vm_name}" --storagectl SATA --port 2 --medium none >/dev/null 2>&1
-VBoxManage closemedium "${macOS_release_name}_BaseSystem.vdi" >/dev/null 2>&1
-echo " ${macOS_release_name}_BaseSystem.vdi successfully detached from"
+VBoxManage closemedium "${macOS_release_name}_BaseSystem.${storage_format}" >/dev/null 2>&1
+echo " ${macOS_release_name}_BaseSystem.${storage_format} successfully detached from"
 echo "the virtual machine and released from VirtualBox Manager."
 sleep 3
 }
@@ -851,15 +870,15 @@ if [[ -n $(
 fi
 if [[ -n $(
     2>&1 VBoxManage storageattach "${vm_name}" --storagectl SATA --port 0 \
-                --type hdd --nonrotational on --medium "${vm_name}.vdi" >/dev/null
+                --type hdd --nonrotational on --medium "${vm_name}.${storage_format}" >/dev/null
 ) ]]; then
-    echo "Could not attach \"${vm_name}.vdi\". Exiting."; exit
+    echo "Could not attach \"${vm_name}.${storage_format}\". Exiting."; exit
 fi
 if [[ -n $(
     2>&1 VBoxManage storageattach "${vm_name}" --storagectl SATA --port 1 --hotpluggable on \
-                --type hdd --nonrotational on --medium "Install ${macOS_release_name}.vdi" >/dev/null
+                --type hdd --nonrotational on --medium "${macOS_release_name} installer.${storage_format}" >/dev/null
 ) ]]; then
-    echo "Could not attach \"Install ${macOS_release_name}.vdi\". Exiting."; exit
+    echo "Could not attach \"${macOS_release_name} installer.${storage_format}\". Exiting."; exit
 fi
 if [[ -n $(
     2>&1 VBoxManage storageattach "${vm_name}" --storagectl SATA --port 2 \
@@ -904,7 +923,7 @@ send_enter
 if [[ ! ( "${vbox_version:0:1}" -gt 6
         || ( "${vbox_version:0:1}" = 6 && "${vbox_version:2:1}" -ge 1 ) ) ]]; then
     echo -e "${highlight_color}When the installer finishes preparing and reboots the VM, press enter${default_color} so the script
-powers off the virtual machine and detaches the device \"Install ${macOS_release_name}.vdi\" to avoid
+powers off the virtual machine and detaches the device \"${macOS_release_name} installer.${storage_format}\" to avoid
 booting into the initial installer environment again."
     clear_input_buffer_then_read
     VBoxManage controlvm "${vm_name}" poweroff >/dev/null 2>&1
@@ -912,7 +931,7 @@ booting into the initial installer environment again."
     VBoxManage storagectl "${vm_name}" --remove --name SATA >/dev/null 2>&1
     VBoxManage storagectl "${vm_name}" --add sata --name SATA --hostiocache on >/dev/null 2>&1
     VBoxManage storageattach "${vm_name}" --storagectl SATA --port 0 \
-               --type hdd --nonrotational on --medium "${vm_name}.vdi"
+               --type hdd --nonrotational on --medium "${vm_name}.${storage_format}"
     echo ""
     for (( i=5; i>0; i-- )); do echo -e "   \r${i}"; sleep 0.5; done
 fi
@@ -936,17 +955,17 @@ else
     # detach temporary VDIs and attach the macOS target disk
     VBoxManage storagectl "${vm_name}" --remove --name SATA >/dev/null 2>&1
     VBoxManage storagectl "${vm_name}" --add sata --name SATA --hostiocache on >/dev/null 2>&1
-    if [[ -s "${vm_name}.vdi" ]]; then
+    if [[ -s "${vm_name}.${storage_format}" ]]; then
         VBoxManage storageattach "${vm_name}" --storagectl SATA --port 0 \
-                   --type hdd --nonrotational on --medium "${vm_name}.vdi"
+                   --type hdd --nonrotational on --medium "${vm_name}.${storage_format}"
     fi
-    VBoxManage closemedium "Install ${macOS_release_name}.vdi" >/dev/null 2>&1
-    VBoxManage closemedium "${macOS_release_name}_BaseSystem.vdi" >/dev/null 2>&1
+    VBoxManage closemedium "${macOS_release_name} installer.${storage_format}" >/dev/null 2>&1
+    VBoxManage closemedium "${macOS_release_name}_BaseSystem.${storage_format}" >/dev/null 2>&1
     echo -e "The following temporary files are safe to delete:\n"
     temporary_files=("${macOS_release_name}_Apple"*
                      "${macOS_release_name}_BaseSystem"*
                      "${macOS_release_name}_Install"*
-                     "Install ${macOS_release_name}.vdi"
+                     "${macOS_release_name} installer"*
                      "${vm_name}_"*".bin"
                      "${vm_name}_"*".txt"
                      "${vm_name}_startup.nsh"
@@ -1000,10 +1019,11 @@ The stages \"${low_contrast_color}check_gnu_coreutils_prefix${default_color}\", 
 specified stages are performed only after the checks pass.
 
         ${highlight_color}EXAMPLES${default_color}
-    ${low_contrast_color}${0} configure_vm${default_color}
+    ${low_contrast_color}${0} create_vm configure_vm${default_color}
 
-The above stage might be used after copying an existing VM VDI to a different
-VirtualBox installation and having the script automatically configure the VM.
+The above stage might be used to create and configure a virtual machine on a
+new VirtualBox installation, then manually attach to the new virtual machine
+an existing macOS disk image that was previously created by the script.
 
     ${low_contrast_color}${0} delete_temporary_files${default_color}
 
@@ -1087,6 +1107,12 @@ sure to replace \"/Volumes/path/to/VISO/\" with the correct path:
 
 After copying the files, boot into the EFI Internal Shell as desribed in the
 section \"Applying the EFI and NVRAM parameters\".
+
+        ${highlight_color}Storage format${default_color}
+The script by default assigns a target virtual disk storage format of VDI. This
+format can be resized by VirtualBox as explained in the next section. The other
+available format, VMDK, cannot be resized by VirtualBox but can be attached to
+a QEMU virtual machine for running on Linux KVM.
 
         ${highlight_color}Storage size${default_color}
 The script by default assigns a target virtual disk storage size of 80GB, which
@@ -1455,9 +1481,9 @@ stages='
     prepare_macos_installation_files
     create_nvram_files
     create_macos_installation_files_viso
-    create_basesystem_vdi
-    create_target_vdi
-    create_install_vdi
+    create_basesystem_virtual_disk
+    create_target_virtual_disk
+    create_install_virtual_disk
     configure_vm
     populate_virtual_disks
     populate_macos_target
