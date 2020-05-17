@@ -17,13 +17,13 @@ function set_variables() {
 vm_name="macOS"                  # name of the VirtualBox virtual machine
 macOS_release_name="Catalina"    # install "HighSierra" "Mojave" or "Catalina"
 storage_size=80000               # VM disk image size in MB, minimum 22000
-storage_format="VDI"             # VM disk image file format, "VDI" or "VMDK"
+storage_format="vdi"             # VM disk image file format, "vdi" or "vmdk"
 cpu_count=2                      # VM CPU cores, minimum 2
 memory_size=4096                 # VM RAM in MB, minimum 2048
 gpu_vram=128                     # VM video RAM in MB, minimum 34, maximum 128
 resolution="1280x800"            # VM display resolution
 
-# The following commented commands, when run on a genuine Mac,
+# The following commented commands, when executed on a genuine Mac,
 # may provide the values for NVRAM and other parameters required by iCloud,
 # iMessage, and other connected Apple applications.
 # Parameters taken from a genuine Mac may result in a "Call customer support"
@@ -51,7 +51,7 @@ SYSTEM_UUID="aabbccddeeff00112233445566778899"
 SYSTEM_INTEGRITY_PROTECTION='10'  # '10' - enabled, '77' - disabled
 
 # Additional configurations may be saved in external files and loaded with the
-# following command prior to running the script:
+# following command prior to executing the script:
 #   export macos_vm_vars_file=/path/to/variable_assignment_file
 # "variable_assignment_file" is a plain text file that contains zero or more
 # lines with a variable assignment for any variable specified above.
@@ -112,23 +112,23 @@ if [[ "${SHELL}" =~ /bash ]]; then
         echo "Can't determine BASH_VERSION. Exiting."
         exit
     elif [[ ! ( "${BASH_VERSION:0:1}" -ge 4 ) ]]; then
-        echo "Please run this script on Bash 4.3 or higher."
+        echo "Please execute this script with Bash 4.3 or higher."
         if [[ -n "$(sw_vers 2>/dev/null)" ]]; then
-            echo "macOS detected. Make sure the script is not running on"
+            echo "macOS detected. Make sure the script is not executed with"
             echo "the default /bin/bash which is version 3."
         fi
         exit
     elif [[ ! ( "${BASH_VERSION:0:1}" -ge 5
              || "${BASH_VERSION:0:3}" =~ 4\.[3-9]
              || "${BASH_VERSION:0:4}" =~ 4\.[12][0-9] ) ]]; then
-        echo "Please run this script on Bash 4.3 or higher."
+        echo "Please execute this script with Bash 4.3 or higher."
         exit
     fi
 elif [[ "${SHELL}" =~ /zsh ]]; then
     if [[ -z "${ZSH_VERSION}" ]]; then
         echo "Can't determine ZSH_VERSION."
         if [[ -n "${BASH_VERSION}" ]]; then
-            echo "The script appears to be running on bash inside zsh."
+            echo "The script appears to be executed on bash inside zsh."
             echo "Please explicitly execute the script with zsh or edit the #! at the top of the"
             echo "script so it points to the zsh executable."
         fi
@@ -137,7 +137,7 @@ elif [[ "${SHELL}" =~ /zsh ]]; then
     elif [[ ! ( "${ZSH_VERSION:0:1}" -ge 6 
              || "${ZSH_VERSION:0:3}" =~ 5\.[5-9]
              || "${ZSH_VERSION:0:4}" =~ 5\.[1-4][0-9] ) ]]; then
-        echo "Please run this script on zsh version 5.5 or higher."
+        echo "Please execute this script with zsh version 5.5 or higher."
         exit
     fi
     setopt extendedglob sh_word_split ksh_arrays posix_argzero nullglob
@@ -175,7 +175,7 @@ fi
 
 function check_dependencies() {
 
-# check if running on macOS and non-GNU coreutils
+# check environment for macOS and non-GNU coreutils
 if [[ -n "$(sw_vers 2>/dev/null)" ]]; then
     # Add Homebrew GNU coreutils to PATH if path exists
     homebrew_gnubin="/usr/local/opt/coreutils/libexec/gnubin"
@@ -292,7 +292,7 @@ if [[ "$(expr match "${extpacks}" '.*Oracle VM VirtualBox Extension Pack')" -le 
       "$(expr match "${extpacks}" '.*Usable:[[:blank:]]*false')" -gt "0" ]]; then
     echo "Please make sure Oracle VM VirtualBox Extension Pack is installed, and that"
     echo "all installed VirtualBox extensions are listed as usable when"
-    echo "running the command \"VBoxManage list extpacks\""
+    echo "executing the command \"VBoxManage list extpacks\""
     exit
 fi
 
@@ -356,7 +356,7 @@ if [[ -n "$(VBoxManage showvminfo "${vm_name}" 2>/dev/null)" ]]; then
         VBoxManage unregistervm "${vm_name}" --delete
     else
         echo -e "\n${highlight_color}Please assign a different VM name to variable \"vm_name\" by editing the script,${default_color}"
-        echo "or skip this check manually as described when running the following command:"
+        echo "or skip this check manually as described when executing the following command:"
         would_you_like_to_know_less
         exit
     fi
@@ -383,11 +383,11 @@ if [[ -n $(VBoxManage startvm "${vm_name}" 2>&1 1>/dev/null) ]]; then
     exit
 fi
 VBoxManage controlvm "${vm_name}" poweroff 2>/dev/null
-echo -e "\nChecking that VirtualBox runs with hardware-supported virtualization."
+echo -e "\nChecking that VirtualBox uses hardware-supported virtualization."
 vbox_log="$(VBoxManage showvminfo "${vm_name}" --log 0)"
 regex='.*Attempting fall back to NEM.*'  # for zsh compatibility
 if [[ "${vbox_log}" =~ ${regex} ]]; then
-    echo -e "\nVirtualbox is running without hardware-supported virtualization features."
+    echo -e "\nVirtualbox is not using hardware-supported virtualization features."
     if [[ -n "$(cygcheck -V 2>/dev/null)" ||
           "$(cat /proc/sys/kernel/osrelease 2>/dev/null)" =~ [Mm]icrosoft ]]; then
         echo "Check that software such as Hyper-V, Windows Sandbox, WSL2, memory integrity"
@@ -645,7 +645,7 @@ else
     if [[ -n "${failed}" ]]; then
         echo "Failed to create \"${macOS_release_name}_BaseSystem.${storage_format}\"."
         if [[ "$(cat /proc/sys/kernel/osrelease 2>/dev/null)" =~ [Mm]icrosoft ]]; then
-            echo -e "\nSome versions of WSL require the script to run on a Windows filesystem path,"
+            echo -e "\nSome versions of WSL require the script to execute on a Windows filesystem path,"
             echo -e "for example   ${highlight_color}/mnt/c/Users/Public/Documents${default_color}"
             echo -e "Switch to a path on the Windows filesystem if VBoxManage.exe fails to"
             echo -e "create or open a file.\n"
@@ -697,30 +697,30 @@ fi
 }
 
 # Create the installation media virtual disk image
-function create_install_virtual_disk() {
-print_dimly "stage: create_install_virtual_disk"
-if [[ -w "${macOS_release_name} installer.${storage_format}" ]]; then
-    echo "\"${macOS_release_name} installer.${storage_format}\" virtual disk image exists."
-    echo -ne "${warning_color}Delete \"${macOS_release_name} installer.${storage_format}\"?${default_color}"
+function create_installer_virtual_disk() {
+print_dimly "stage: create_installer_virtual_disk"
+if [[ -w "${macOS_release_name} bootable installer.${storage_format}" ]]; then
+    echo "\"${macOS_release_name} bootable installer.${storage_format}\" virtual disk image exists."
+    echo -ne "${warning_color}Delete \"${macOS_release_name} bootable installer.${storage_format}\"?${default_color}"
     prompt_delete_y_n
     if [[ "${delete}" == "y" ]]; then
         if [[ "$( VBoxManage list runningvms )" =~ \""${vm_name}"\" ]]
         then
-            echo "\"${macOS_release_name} installer.${storage_format}\" may be deleted"
+            echo "\"${macOS_release_name} bootable installer.${storage_format}\" may be deleted"
             echo "only when the virtual machine is powered off."
             echo "Exiting."
             exit
         else
             VBoxManage storagectl "${vm_name}" --remove --name SATA >/dev/null 2>&1
-            VBoxManage closemedium "${macOS_release_name} installer.${storage_format}" >/dev/null 2>&1
-            rm "${macOS_release_name} installer.${storage_format}"
+            VBoxManage closemedium "${macOS_release_name} bootable installer.${storage_format}" >/dev/null 2>&1
+            rm "${macOS_release_name} bootable installer.${storage_format}"
         fi
     fi
 fi
-if [[ ! -e "${macOS_release_name} installer.${storage_format}" ]]; then
+if [[ ! -e "${macOS_release_name} bootable installer.${storage_format}" ]]; then
     echo "Creating ${macOS_release_name} installation media virtual disk image."
     VBoxManage createmedium --size=12000 \
-                            --filename "${macOS_release_name} installer.${storage_format}" \
+                            --filename "${macOS_release_name} bootable installer.${storage_format}" \
                             --variant standard 2>/dev/tty
 fi
 }
@@ -781,9 +781,9 @@ if [[ -n $(
 fi
 if [[ -n $(
     2>&1 VBoxManage storageattach "${vm_name}" --storagectl SATA --port 1 --hotpluggable on \
-                --type hdd --nonrotational on --medium "${macOS_release_name} installer.${storage_format}" >/dev/null
+                --type hdd --nonrotational on --medium "${macOS_release_name} bootable installer.${storage_format}" >/dev/null
 ) ]]; then
-    echo "Could not attach \"${macOS_release_name} installer.${storage_format}\". Exiting."; exit
+    echo "Could not attach \"${macOS_release_name} bootable installer.${storage_format}\". Exiting."; exit
 fi
 if [[ -n $(
     2>&1 VBoxManage storageattach "${vm_name}" --storagectl SATA --port 2 --hotpluggable on \
@@ -801,7 +801,7 @@ echo "Starting virtual machine \"${vm_name}\".
 This should take a couple of minutes. If booting fails, see the documentation
 for information about applying different CPU profiles."
 ( VBoxManage startvm "${vm_name}" >/dev/null 2>&1 )
-echo -e "\nWhile the script is running, please do not interact with the virtual machine."
+echo -e "\nUntil the script completes, please do not interact with the virtual machine."
 [[ -z "${kscd}" ]] && declare_scancode_dict
 prompt_lang_utils
 prompt_terminal_ready
@@ -856,8 +856,8 @@ echo "the virtual machine and released from VirtualBox Manager."
 sleep 3
 }
 
-function populate_macos_target() {
-print_dimly "stage: populate_macos_target"
+function populate_macos_target_disk() {
+print_dimly "stage: populate_macos_target_disk"
 if [[ "$( VBoxManage list runningvms )" =~ \""${vm_name}"\" ]]; then
     echo -e "${highlight_color}Please ${warning_color}manually${highlight_color} shut down the virtual machine and press enter to continue.${default_color}"
     clear_input_buffer_then_read
@@ -876,9 +876,9 @@ if [[ -n $(
 fi
 if [[ -n $(
     2>&1 VBoxManage storageattach "${vm_name}" --storagectl SATA --port 1 --hotpluggable on \
-                --type hdd --nonrotational on --medium "${macOS_release_name} installer.${storage_format}" >/dev/null
+                --type hdd --nonrotational on --medium "${macOS_release_name} bootable installer.${storage_format}" >/dev/null
 ) ]]; then
-    echo "Could not attach \"${macOS_release_name} installer.${storage_format}\". Exiting."; exit
+    echo "Could not attach \"${macOS_release_name} bootable installer.${storage_format}\". Exiting."; exit
 fi
 if [[ -n $(
     2>&1 VBoxManage storageattach "${vm_name}" --storagectl SATA --port 2 \
@@ -895,8 +895,8 @@ add_another_terminal
 echo -e "\nThe second open Terminal in the virtual machine copies EFI and NVRAM files"
 echo -e "to the target EFI system partition when the installer finishes preparing."
 echo -e "\nAfter the installer finishes preparing and the EFI and NVRAM files are copied,"
-echo -ne "macOS will install and run when booting the target disk.\n\n"
-# run script concurrently, catch SIGUSR1 when installer finishes preparing
+echo -ne "macOS will install and boot up when booting the target disk.\n\n"
+# execute script concurrently, catch SIGUSR1 when installer finishes preparing
 kbstring='disks="$(diskutil list | grep -o "[0-9][^ ]* GB *disk[0-9]$" | sort -gr | grep -o disk[0-9])" && '\
 'disks=(${disks[@]}) && '\
 'printf '"'"'trap "exit 0" SIGUSR1; while true; do sleep 10; done;'"'"' | sh && '\
@@ -923,7 +923,7 @@ send_enter
 if [[ ! ( "${vbox_version:0:1}" -gt 6
         || ( "${vbox_version:0:1}" = 6 && "${vbox_version:2:1}" -ge 1 ) ) ]]; then
     echo -e "${highlight_color}When the installer finishes preparing and reboots the VM, press enter${default_color} so the script
-powers off the virtual machine and detaches the device \"${macOS_release_name} installer.${storage_format}\" to avoid
+powers off the virtual machine and detaches the device \"${macOS_release_name} bootable installer.${storage_format}\" to avoid
 booting into the initial installer environment again."
     clear_input_buffer_then_read
     VBoxManage controlvm "${vm_name}" poweroff >/dev/null 2>&1
@@ -947,7 +947,7 @@ print_dimly "stage: delete_temporary_files"
 if [[ ! "$(VBoxManage showvminfo "${vm_name}")" =~ State:[\ \t]*powered\ off ]]
 then
     echo -e "Temporary files may be deleted when the virtual machine is powered off
-and without a suspended state by running the following command at the script's
+and without a suspended state by executing the following command at the script's
 working directory:
 
   ${highlight_color}${0} delete_temporary_files${default_color}"
@@ -959,13 +959,13 @@ else
         VBoxManage storageattach "${vm_name}" --storagectl SATA --port 0 \
                    --type hdd --nonrotational on --medium "${vm_name}.${storage_format}"
     fi
-    VBoxManage closemedium "${macOS_release_name} installer.${storage_format}" >/dev/null 2>&1
+    VBoxManage closemedium "${macOS_release_name} bootable installer.${storage_format}" >/dev/null 2>&1
     VBoxManage closemedium "${macOS_release_name}_BaseSystem.${storage_format}" >/dev/null 2>&1
     echo -e "The following temporary files are safe to delete:\n"
     temporary_files=("${macOS_release_name}_Apple"*
                      "${macOS_release_name}_BaseSystem"*
                      "${macOS_release_name}_Install"*
-                     "${macOS_release_name} installer"*
+                     "${macOS_release_name} bootable installer"*
                      "${vm_name}_"*".bin"
                      "${vm_name}_"*".txt"
                      "${vm_name}_startup.nsh"
@@ -1001,7 +1001,7 @@ press enter when prompted, less than ten times, to complete the installation.
     ${low_contrast_color}${0} [STAGE]... ${default_color}
 
 The installation is divided into stages. Stage titles may be given as command-
-line arguments for the script. When the script is run with no command-line
+line arguments for the script. When the script is executed with no command-line
 arguments, each of the stages is performed in succession in the order listed:
 
 ${low_contrast_stages}
@@ -1038,11 +1038,10 @@ for iCloud and iMessage connectivity and other Apple-connected apps.
 
         ${highlight_color}Configuration${default_color}
 The script's default configuration is stored in the ${low_contrast_color}set_variables()${default_color} function at
-the top of the script. No manual configuration is required to run the script.
+the top of the script. No manual configuration is required to use the script.
 
 The configuration may be manually edited either by editing the variable
-assignment in ${low_contrast_color}set_variables()${default_color} or by running the following
-command prior to running the script:
+assignment in ${low_contrast_color}set_variables()${default_color} or by executing the following command:
 
     ${low_contrast_color}export macos_vm_vars_file=/path/to/variable_assignment_file${default_color}
 
@@ -1056,7 +1055,7 @@ name and serial number, board ID and serial number, and other genuine
 (or genuine-like) Apple parameters. These parameters may be edited at the top
 of the script or loaded through a configuration file as described in the
 section above. Assigning these parameters is not required when installing or
-running macOS, only when connecting to the iCould app, iMessage, and other
+using macOS, only when connecting to the iCould app, iMessage, and other
 apps that authenticate the device with Apple.
 
 These are the variables that are required for iMessage connectivity:
@@ -1084,7 +1083,7 @@ installation by resetting the virtual machine and booting into the
 EFI Internal Shell. When resetting or powering up the VM, immediately press
 Esc when the VirtualBox logo appears. This boots into the EFI Internal Shell or
 the boot menu. If the boot menu appears, select \"Boot Manager\" and then
-\"EFI Internal Shell\" and then allow the startup.nsh script to run
+\"EFI Internal Shell\" and then allow the startup.nsh script to execute
 automatically, applying the EFI and NVRAM variables before booting macOS.
 
         ${highlight_color}Changing the EFI and NVRAM parameters after installation${default_color}
@@ -1095,7 +1094,7 @@ files to the macOS EFI partition:
     ${low_contrast_color}${0} "'\\'"${default_color}
 ${low_contrast_color}configure_vm create_nvram_files create_macos_installation_files_viso${default_color}
 
-After running the command, attach the resulting VISO file to the virtual
+After executing the command, attach the resulting VISO file to the virtual
 machine's storage through VirtualBox Manager or VBoxManage. Power up the VM
 and boot macOS, then start Terminal and execute the following commands, making
 sure to replace \"/Volumes/path/to/VISO/\" with the correct path:
@@ -1112,17 +1111,21 @@ section \"Applying the EFI and NVRAM parameters\".
 The script by default assigns a target virtual disk storage format of VDI. This
 format can be resized by VirtualBox as explained in the next section. The other
 available format, VMDK, cannot be resized by VirtualBox but can be attached to
-a QEMU virtual machine for running on Linux KVM.
+a QEMU virtual machine for use with Linux KVM.
 
         ${highlight_color}Storage size${default_color}
 The script by default assigns a target virtual disk storage size of 80GB, which
 is populated to about 20GB on the host on initial installation. After the
 installation is complete, the storage size may be increased. First increase the
 virtual disk image size through VirtualBox Manager or VBoxManage, then in
-Terminal in the virtual machine run ${low_contrast_color}sudo diskutil repairDisk disk0${default_color}, and then
-${low_contrast_color}sudo diskutil apfs resizeContainer disk1 0${default_color} or from Disk Utility, after
-repairing the disk from Terminal, delete the \"Free space\" partition so it allows
-the system APFS container to take up the available space.
+Terminal in the virtual machine execute the following command:
+    ${low_contrast_color}sudo diskutil repairDisk disk0${default_color}
+After it completes, open Disk Utility and delete the \"Free space\" partition so
+it allows the system APFS container to take up the available space, or if that
+fails, execute the following command:
+    ${low_contrast_color}sudo diskutil apfs resizeContainer disk1 0${default_color}
+Both Disk Utility and ${low_contrast_color}diskutil${default_color} may fail and require successive resize attempts
+separated by virtual machine reboots.
 
         ${highlight_color}Primary display resolution${default_color}
 The following command assigns the virtual machine primary display resolution:
@@ -1149,9 +1152,13 @@ audio support, FileVault boot password prompt support, and other features.
 
         ${highlight_color}Performance${default_color}
 After successfully creating a working macOS virtual machine, consider importing
-it into QEMU/KVM so it can run with hardware passthrough at near-native
-performance. QEMU/KVM requires additional configuration that is beyond the scope
-of the script.
+it into QEMU with KVM so it can use hardware passthrough for near-native
+performance. To use the same virtual machine disk image on VirtualBox and QEMU,
+choose the VMDK virtual disk image storage format or convert the VDI file to a
+VMDK file with the following command:
+    ${low_contrast_color}VBoxManage clonehd --format VMDK source.VDI target.VMDK${default_color}
+QEMU and KVM require additional configuration that is beyond the scope of the
+script.
 
         ${highlight_color}Audio${default_color}
 macOS may not support any built-in VirtualBox audio controllers. The bootloader
@@ -1483,10 +1490,10 @@ stages='
     create_macos_installation_files_viso
     create_basesystem_virtual_disk
     create_target_virtual_disk
-    create_install_virtual_disk
+    create_installer_virtual_disk
     configure_vm
     populate_virtual_disks
-    populate_macos_target
+    populate_macos_target_disk
     delete_temporary_files
 '
 [[ -z "${1}" ]] && for stage in ${stages}; do ${stage}; done && exit
