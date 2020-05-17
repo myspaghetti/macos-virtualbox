@@ -90,7 +90,7 @@ echo "# install \"HighSierra\" \"Mojave\" or \"Catalina\""
 pad_to_33_chars "storage_size=${storage_size}"
 echo "# VM disk image size in MB. minimum 22000"
 pad_to_33_chars "storage_format=\"${storage_format}\""
-echo "# VM disk image file format, \"VDI\" or \"VMDK\""
+echo "# VM disk image file format, \"vdi\" or \"vmdk\""
 pad_to_33_chars "cpu_count=${cpu_count}"
 echo "# VM CPU cores, minimum 2"
 pad_to_33_chars "memory_size=${memory_size}"
@@ -281,7 +281,7 @@ elif [[ ! ( "${vbox_version:0:1}" -gt 5
 elif [[ "${vbox_version:0:1}" = 5 ]]; then
     echo -e "\n${highlight_color}VirtualBox version ${vbox_version} detected.${default_color} Please see the following"
     echo -ne "URL for issues with the VISO filesystem on VirtualBox 5.2 to 5.2.40:\n\n"
-    echo "  https://github.com/myspaghetti/macos-guest-virtualbox/issues/86"
+    echo "  https://github.com/myspaghetti/macos-virtualbox/issues/86"
     echo -ne "\n${highlight_color}Press enter to continue, CTRL-C to exit.${default_color}"
     clear_input_buffer_then_read
 fi
@@ -1168,7 +1168,7 @@ it into QEMU with KVM so it can use hardware passthrough for near-native
 performance. To use the same virtual machine disk image on VirtualBox and QEMU,
 choose the VMDK virtual disk image storage format or convert the VDI file to a
 VMDK file with the following command:
-    ${low_contrast_color}VBoxManage clonehd --format VMDK source.VDI target.VMDK${default_color}
+    ${low_contrast_color}VBoxManage clonehd --format vmdk source.vdi target.vmdk${default_color}
 QEMU and KVM require additional configuration that is beyond the scope of the
 script.
 
@@ -1183,7 +1183,7 @@ load the password prompt with the parameter \"ProvideConsoleGop\" set to \"true\
 
         ${highlight_color}Further information${default_color}
 Further information is available at the following URL:
-        ${highlight_color}https://github.com/myspaghetti/macos-guest-virtualbox${default_color}
+        ${highlight_color}https://github.com/myspaghetti/macos-virtualbox${default_color}
 
 "
 }
