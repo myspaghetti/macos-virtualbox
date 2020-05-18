@@ -1158,6 +1158,9 @@ machine with the following command:
 Available CPU profiles:
   ${low_contrast_color}\"Intel Xeon X5482 3.20GHz\"  \"Intel Core i7-2635QM\"  \"Intel Core i7-3960X\"${default_color}
   ${low_contrast_color}\"Intel Core i5-3570\"  \"Intel Core i7-5600U\"  \"Intel Core i7-6700K\"${default_color}
+Remove existing CPU profiles with the following commands:
+    ${low_contrast_color}VBoxManage modifyvm \"${vm_name}\" --cpu-profile host${default_color}
+    ${low_contrast_color}VBoxManage modifyvm \"${vm_name}\" --cpuidremoveall${default_color}
 
         ${highlight_color}Unsupported features${default_color}
 Developing and maintaining VirtualBox or macOS features is beyond the scope of
