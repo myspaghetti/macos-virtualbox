@@ -34,7 +34,7 @@ macOS may not support any built-in VirtualBox audio controllers. The bootloader 
 VirtualBox does not supply an EDID for its virtual display, and macOS does not enable display scaling (high PPI) without an EDID. The bootloader OpenCore can [inject an EDID](https://github.com/acidanthera/WhateverGreen/blob/master/Manual/FAQ.IntelHD.en.md#edid) which enables display scaling.
 
 #### FileVault
-The VirtualBox EFI implementation does not properly load the FileVault full disk encryption password prompt upon boot. The bootloader [OpenCore](https://github.com/acidanthera/OpenCorePkg/releases/tag/0.5.7) is able to load the password prompt with the parameter `ProvideConsoleGop` set to `true`. See sample [config.plist](https://github.com/myspaghetti/macos-virtualbox/files/4640669/config.plist.txt).
+The VirtualBox EFI implementation does not properly load the FileVault full disk encryption password prompt upon boot. The bootloader [OpenCore](https://github.com/acidanthera/OpenCorePkg/releases/tag/0.5.8) is able to load the password prompt with the parameter `ProvideConsoleGop` set to `true`. See sample [config.plist](https://github.com/myspaghetti/macos-virtualbox/files/4640669/config.plist.txt).
 
 ## Dependencies
 All the dependencies should be available through a package manager:  
