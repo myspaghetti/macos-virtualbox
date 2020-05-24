@@ -30,7 +30,7 @@ The macOS VirtualBox guest is loaded without extra bootloaders, but it is compat
 #### Audio
 macOS may not support any built-in VirtualBox audio controllers. The bootloader [OpenCore](https://github.com/acidanthera/OpenCorePkg/releases) may be able to load open-source or built-in audio drivers in VirtualBox, providing the configuration for STAC9221 (Intel HD Audio) or SigmaTel STAC9700,83,84 (ICH AC97) is available.
 
-### Display scaling
+#### Display scaling
 VirtualBox does not supply an EDID for its virtual display, and macOS does not enable display scaling (high PPI) without an EDID. The bootloader OpenCore can [inject an EDID](https://github.com/acidanthera/WhateverGreen/blob/master/Manual/FAQ.IntelHD.en.md#edid) which enables display scaling.
 
 #### FileVault
