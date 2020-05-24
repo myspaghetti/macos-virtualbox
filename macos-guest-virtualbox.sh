@@ -2,7 +2,7 @@
 # Push-button installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-virtualbox
-# version 0.93.1
+# version 0.93.2
 
 # Dependencies: bash  coreutils  gzip  unzip  wget  xxd  dmg2img
 # Supported versions:
@@ -1159,8 +1159,8 @@ Available CPU profiles:
   ${low_contrast_color}\"Intel Xeon X5482 3.20GHz\"  \"Intel Core i7-2635QM\"  \"Intel Core i7-3960X\"${default_color}
   ${low_contrast_color}\"Intel Core i5-3570\"  \"Intel Core i7-5600U\"  \"Intel Core i7-6700K\"${default_color}
 Remove existing CPU profiles with the following commands:
-    ${low_contrast_color}VBoxManage modifyvm \"${vm_name}\" --cpu-profile host${default_color}
-    ${low_contrast_color}VBoxManage modifyvm \"${vm_name}\" --cpuidremoveall${default_color}
+    ${low_contrast_color}VBoxManage modifyvm \"\${vm_name}\" --cpu-profile host${default_color}
+    ${low_contrast_color}VBoxManage modifyvm \"\${vm_name}\" --cpuidremoveall${default_color}
 
         ${highlight_color}Unsupported features${default_color}
 Developing and maintaining VirtualBox or macOS features is beyond the scope of
@@ -1176,6 +1176,11 @@ VMDK file with the following command:
     ${low_contrast_color}VBoxManage clonehd --format vmdk source.vdi target.vmdk${default_color}
 QEMU and KVM require additional configuration that is beyond the scope of the
 script.
+
+        ${highlight_color}Display scaling${default_color}
+VirtualBox does not supply an EDID for its virtual display, and macOS does not
+enable display scaling (high PPI) without an EDID. The bootloader OpenCore can
+inject an EDID which enables display scaling.
 
         ${highlight_color}Audio${default_color}
 macOS may not support any built-in VirtualBox audio controllers. The bootloader
@@ -1203,6 +1208,11 @@ echo ""
 for wrapper in 1; do
     echo "################################################################################"
     head -n 5 "${0}"
+    if [[ -n "$(md5sum --version 2>/dev/null)" ]]; then
+        tail -n +60 "${0}" | md5sum 2>/dev/null
+    else
+        tail -n +60 "${0}" | md5sum 2>/dev/null
+    fi
     echo "################################################################################"
     echo "BASH_VERSION ${BASH_VERSION}"
     vbox_ver="$(VBoxManage -v)"
