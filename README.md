@@ -9,6 +9,9 @@ A default install only requires the user to sit patiently and, less than ten tim
 ## Documentation
 Documentation can be viewed by executing the command `./macos-guest-virtualbox.sh documentation`
 
+## How does it work?
+The script bootstraps a configuration for use with Vagrant, QEMU, VMWare, and similar solutions. That said, it does not rely on any third-party distribution of Apple software. More details are explained in the built-in documentation (as mentioned above).
+
 ## iCloud and iMessage connectivity and NVRAM
 iCloud, iMessage, and other connected Apple services require a valid device name and serial number, board ID and serial number, and other genuine (or genuine-like) Apple parameters. These can be set in NVRAM by editing the script. See `documentation` for further information.
 
