@@ -16,7 +16,7 @@ iCloud, iMessage, and other connected Apple services require a valid device name
 The script by default assigns a target virtual disk storage size of 80GB, which is populated to about 20GB on the host on initial installation. After the installation is complete, the storage size may be increased. See `documentation` for further information.
 
 ## Primary display resolution
-The following primary display resolutions are supported by macOS on VirtualBox: `5120x2880` `2880x1800` `2560x1440` `1920x1200` `1600x1200` `1680x1050` `1440x900` `1280x800` `1024x768` `640x480`. See `documentation` for further information.
+The following primary display resolutions are supported by macOS on VirtualBox: `5120x2880` `2880x1800` `2560x1600` `2560x1440` `1920x1200` `1600x1200` `1680x1050` `1440x900` `1280x800` `1024x768` `640x480`. See `documentation` for further information.
 
 ## Unsupported features
 Developing and maintaining VirtualBox or macOS features is beyond the scope of this script. Some features may behave unexpectedly, such as USB device support, audio support, FileVault boot password prompt support, and other features.
