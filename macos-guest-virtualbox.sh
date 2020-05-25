@@ -1146,7 +1146,7 @@ The following command assigns the virtual machine primary display resolution:
     ${low_contrast_color}VBoxManage setextradata \"\${vm_name}\" \\${default_color}
 ${low_contrast_color}\"VBoxInternal2/EfiGraphicsResolution\" \"\${resolution}\"${default_color}
 The following primary display resolutions are supported by macOS on VirtualBox:
-  ${low_contrast_color}5120x2880  2880x1800  2560x1600  2560x1440  1920x1200  1600x1200  1680x1050${default_color}
+  ${low_contrast_color}5120x2880  2880x1800  2560x1440  1920x1200  1600x1200  1680x1050${default_color}
   ${low_contrast_color}1440x900   1280x800   1024x768   640x480${default_color}
 Secondary displays can have an arbitrary resolution.
 
