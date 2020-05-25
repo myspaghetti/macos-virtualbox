@@ -2,7 +2,7 @@
 # Push-button installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-virtualbox
-# version 0.93.2
+# version 0.93.3
 
 # Dependencies: bash  coreutils  gzip  unzip  wget  xxd  dmg2img
 # Supported versions:
@@ -1125,7 +1125,7 @@ section \"Applying the EFI and NVRAM parameters\".
 The script by default assigns a target virtual disk storage format of VDI. This
 format can be resized by VirtualBox as explained in the next section. The other
 available format, VMDK, cannot be resized by VirtualBox but can be attached to
-a QEMU virtual machine for use with Linux KVM.
+a QEMU virtual machine for use with Linux KVM for better performance.
 
         ${highlight_color}Storage size${default_color}
 The script by default assigns a target virtual disk storage size of 80GB, which
@@ -1167,15 +1167,25 @@ Developing and maintaining VirtualBox or macOS features is beyond the scope of
 this script. Some features may behave unexpectedly, such as USB device support,
 audio support, FileVault boot password prompt support, and other features.
 
-        ${highlight_color}Performance${default_color}
+        ${highlight_color}Performance and deployment${default_color}
 After successfully creating a working macOS virtual machine, consider importing
-it into QEMU with KVM so it can use hardware passthrough for near-native
-performance. To use the same virtual machine disk image on VirtualBox and QEMU,
-choose the VMDK virtual disk image storage format or convert the VDI file to a
-VMDK file with the following command:
+the virtual machine into more performant virtualization software, or packaging
+it for configuration management platforms for automated deployment. These
+virtualization and deployment applications require additonal configuration that
+is beyond the scope of the script.
+
+QEMU with KVM is capable of providing virtual machine hardware passthrough
+for near-native performance. QEMU supports VMDK virtual disk image, which can
+be configured to be created by the script, or converted from the default
+VirtualBox VDI format into the VMDK format with the following command:
     ${low_contrast_color}VBoxManage clonehd --format vmdk source.vdi target.vmdk${default_color}
 QEMU and KVM require additional configuration that is beyond the scope of the
 script.
+
+        ${highlight_color}Bootloaders${default_color}
+The macOS VirtualBox guest is loaded without extra bootloaders, but it is
+compatible with OpenCore. OpenCore requires additonal configuration that is
+beyond the scope of the script.
 
         ${highlight_color}Display scaling${default_color}
 VirtualBox does not supply an EDID for its virtual display, and macOS does not
