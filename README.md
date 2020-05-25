@@ -9,8 +9,7 @@ A default install only requires the user to sit patiently and, less than ten tim
 ## Documentation
 Documentation can be viewed by executing the command `./macos-guest-virtualbox.sh documentation`
 
-## How does it work?
-The script bootstraps a configuration for use with Vagrant, QEMU, VMWare, and similar solutions. That said, it does not rely on any third-party distribution of Apple software. More details are explained in the built-in documentation (as mentioned above).
+The majority of the script is either documentation, comments, or actionable error messages, which should make the script straightforward to inspect and understand.
 
 ## iCloud and iMessage connectivity and NVRAM
 iCloud, iMessage, and other connected Apple services require a valid device name and serial number, board ID and serial number, and other genuine (or genuine-like) Apple parameters. These can be set in NVRAM by editing the script. See `documentation` for further information.
@@ -24,8 +23,10 @@ The following primary display resolutions are supported by macOS on VirtualBox: 
 ## Unsupported features
 Developing and maintaining VirtualBox or macOS features is beyond the scope of this script. Some features may behave unexpectedly, such as USB device support, audio support, FileVault boot password prompt support, and other features.
 
-#### Performance
-After successfully creating a working macOS virtual machine, consider importing it into QEMU with KVM so it can use hardware passthrough for near-native performance. To use the same virtual machine disk image on VirtualBox and QEMU, choose the `VMDK` virtual disk image storage format before executing the script, or after macOS is installed convert the `VDI` file to a `VMDK` file. See `documentation` for further information. QEMU and KVM require additional configuration that is beyond the scope of  the script.
+#### Performance and deployment
+After successfully creating a working macOS virtual machine, consider importing it into more performatnt virtualization software, or packaging it for configuration management platforms for automated deployment. These virtualization and deployment applications require additional configuration that is beyond the scope of the script.
+
+QEMU with KVM is capable of providing virtual machine hardware passthrough for near-native performance. QEMU supports the `VMDK` virtual disk image storage format, which can be configured to be created by the script. See `documentation` for further information. QEMU and KVM require additional configuration that is beyond the scope of the script.
 
 #### Bootloaders
 The macOS VirtualBox guest is loaded without extra bootloaders, but it is compatible with [OpenCore](https://github.com/acidanthera/OpenCorePkg/releases). OpenCore requires additional configuration that is beyond the scope of  the script.
@@ -37,7 +38,7 @@ macOS may not support any built-in VirtualBox audio controllers. The bootloader 
 VirtualBox does not supply an EDID for its virtual display, and macOS does not enable display scaling (high PPI) without an EDID. The bootloader OpenCore can [inject an EDID](https://github.com/acidanthera/WhateverGreen/blob/master/Manual/FAQ.IntelHD.en.md#edid) which enables display scaling.
 
 #### FileVault
-The VirtualBox EFI implementation does not properly load the FileVault full disk encryption password prompt upon boot. The bootloader [OpenCore](https://github.com/acidanthera/OpenCorePkg/releases/tag/0.5.8) is able to load the password prompt with the parameter `ProvideConsoleGop` set to `true`. See sample [config.plist](https://github.com/myspaghetti/macos-virtualbox/files/4640669/config.plist.txt).
+The VirtualBox EFI implementation does not properly load the FileVault full disk encryption password prompt upon boot. The bootloader [OpenCore](https://github.com/acidanthera/OpenCorePkg/releases/tag/0.5.8) is able to load the password prompt with the parameter `ProvideConsoleGop` set to `true`. See sample [config.plist](https://github.com/myspaghetti/macos-virtualbox/files/4640669/config.plist.txt). 
 
 ## Dependencies
 All the dependencies should be available through a package manager:  
