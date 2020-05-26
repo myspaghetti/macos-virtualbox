@@ -24,7 +24,7 @@ The following primary display resolutions are supported by macOS on VirtualBox: 
 Developing and maintaining VirtualBox or macOS features is beyond the scope of this script. Some features may behave unexpectedly, such as USB device support, audio support, FileVault boot password prompt support, and other features.
 
 #### Performance and deployment
-After successfully creating a working macOS virtual machine, consider importing it into more performatnt virtualization software, or packaging it for configuration management platforms for automated deployment. These virtualization and deployment applications require additional configuration that is beyond the scope of the script.
+After successfully creating a working macOS virtual machine, consider importing it into more performant virtualization software, or packaging it for configuration management platforms for automated deployment. These virtualization and deployment applications require additional configuration that is beyond the scope of the script.
 
 QEMU with KVM is capable of providing virtual machine hardware passthrough for near-native performance. QEMU supports the `VMDK` virtual disk image storage format, which can be configured to be created by the script. See `documentation` for further information. QEMU and KVM require additional configuration that is beyond the scope of the script.
 
