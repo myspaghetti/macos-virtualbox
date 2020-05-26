@@ -1175,9 +1175,9 @@ virtualization and deployment applications require additonal configuration that
 is beyond the scope of the script.
 
 QEMU with KVM is capable of providing virtual machine hardware passthrough
-for near-native performance. QEMU supports VMDK virtual disk image, which can
-be configured to be created by the script, or converted from the default
-VirtualBox VDI format into the VMDK format with the following command:
+for near-native performance. QEMU supports the VMDK virtual disk image format,
+which can be configured to be created by the script, or converted from the
+default VirtualBox VDI format into the VMDK format with the following command:
     ${low_contrast_color}VBoxManage clonehd --format vmdk source.vdi target.vmdk${default_color}
 QEMU and KVM require additional configuration that is beyond the scope of the
 script.
