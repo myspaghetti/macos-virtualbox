@@ -140,6 +140,7 @@ elif [[ "${SHELL}" =~ /zsh ]]; then
         echo "Please execute this script with zsh version 5.5 or higher."
         exit
     fi
+    # make zsh parse the script (almost) like bash
     setopt extendedglob sh_word_split ksh_arrays posix_argzero nullglob
 else
     echo "Can't determine SHELL. Exiting."
@@ -1498,6 +1499,7 @@ function would_you_like_to_know_less() {
 }
 
 function prompt_delete_y_n() {
+    # workaround for zsh-bash differences in read
     delete=""
     if [[ -t 1 ]]; then
         if [[ "${SHELL}" =~ /zsh ]]; then
