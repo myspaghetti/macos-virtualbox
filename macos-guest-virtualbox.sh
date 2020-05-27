@@ -813,10 +813,11 @@ if [[ -n $(
     echo "Could not attach \"${macOS_release_name}_Installation_files.viso\". Exiting."; exit
 fi
 echo "Starting virtual machine \"${vm_name}\".
-This should take a couple of minutes. If booting fails, see the documentation
-for information about applying different CPU profiles."
+This should take a couple of minutes. If booting fails, exit the script by
+pressing CTRL-C then see the documentation for information about applying
+different CPU profiles."
 ( VBoxManage startvm "${vm_name}" >/dev/null 2>&1 )
-echo -e "\nUntil the script completes, please do not interact with the virtual machine."
+echo -e "\nUntil the script completes, please do not manually interact with\nthe virtual machine."
 [[ -z "${kscd}" ]] && declare_scancode_dict
 prompt_lang_utils
 prompt_terminal_ready
@@ -1161,17 +1162,19 @@ Secondary displays can have an arbitrary resolution.
         ${highlight_color}CPU profiles and CPUID settings${default_color}
 macOS does not supprort every CPU supported by VirtualBox. If the macOS Base
 System does not boot, try applying different CPU profiles to the virtual
-machine. First, while the VM is powered off, set the guest's CPU profile to the
-host's CPU profile then try to boot the virtual machine:
+machine with the ${low_contrast_color}VBoxManage${default_color} commands described below. First, while the
+VM is powered off, set the guest's CPU profile to the host's CPU profile, then
+try to boot the virtual machine:
     ${low_contrast_color}VBoxManage modifyvm \"\${vm_name}\" --cpu-profile host${default_color}
     ${low_contrast_color}VBoxManage modifyvm \"\${vm_name}\" --cpuidremoveall${default_color}
-If booting fails, try assigning each of the preconfigured CPU profiles:
+If booting fails, try assigning each of the preconfigured CPU profiles while
+the VM is powered off with the following command:
     ${low_contrast_color}VBoxManage modifyvm \"\${vm_name}\" --cpu-profile \"\${cpu_profile}\"${default_color}
 Available CPU profiles:
   ${low_contrast_color}\"Intel Xeon X5482 3.20GHz\"  \"Intel Core i7-2635QM\"  \"Intel Core i7-3960X\"${default_color}
   ${low_contrast_color}\"Intel Core i5-3570\"  \"Intel Core i7-5600U\"  \"Intel Core i7-6700K\"${default_color}
 If booting fails after trying each preconfigured CPU profile, the host's CPU
-requires specific CPUID settings to boot macOS.
+requires specific ${highlight_color}macOS VirtualBox CPUID settings${default_color}.
 
         ${highlight_color}Unsupported features${default_color}
 Developing and maintaining VirtualBox or macOS features is beyond the scope of
