@@ -920,7 +920,7 @@ add_another_terminal
 echo -e "\nThe second open Terminal in the virtual machine copies EFI and NVRAM files"
 echo -e "to the target EFI system partition when the installer finishes preparing."
 echo -e "\nAfter the installer finishes preparing and the EFI and NVRAM files are copied,"
-echo -ne "macOS will install and boot up when booting the target disk.\n\n"
+echo -ne "macOS will install and boot up when booting the target disk.\n"
 print_dimly "Please wait"
 # execute script concurrently, catch SIGUSR1 when installer finishes preparing
 kbstring='disks="$(diskutil list | grep -o "[0-9][^ ]* GB *disk[0-9]$" | sort -gr | grep -o disk[0-9])" && '\
@@ -948,7 +948,7 @@ send_keys
 send_enter
 if [[ ! ( "${vbox_version:0:1}" -gt 6
         || ( "${vbox_version:0:1}" = 6 && "${vbox_version:2:1}" -ge 1 ) ) ]]; then
-    echo -e "${highlight_color}When the installer finishes preparing and reboots the VM, press enter${default_color} so the script
+    echo -e "\n${highlight_color}When the installer finishes preparing and reboots the VM, press enter${default_color} so the script
 powers off the virtual machine and detaches the device \"${macOS_release_name} bootable installer.${storage_format}\" to avoid
 booting into the initial installer environment again."
     clear_input_buffer_then_read
@@ -959,7 +959,7 @@ booting into the initial installer environment again."
     VBoxManage storageattach "${vm_name}" --storagectl SATA --port 0 \
                --type hdd --nonrotational on --medium "${vm_name}.${storage_format}"
 fi
-echo -e "For further information, such as applying EFI and NVRAM variables to enable
+echo -e "\nFor further information, such as applying EFI and NVRAM variables to enable
 iMessage connectivity, see the documentation with the following command:\n"
 would_you_like_to_know_less
 echo -e "\n${highlight_color}That's it! Enjoy your virtual machine.${default_color}\n"
