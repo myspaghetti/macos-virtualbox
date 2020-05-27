@@ -952,12 +952,11 @@ powers off the virtual machine and detaches the device \"${macOS_release_name} b
 booting into the initial installer environment again."
     clear_input_buffer_then_read
     VBoxManage controlvm "${vm_name}" poweroff >/dev/null 2>&1
-    for (( i=15; i>5; i-- )); do echo -ne "   \r${i} "; sleep 0.5; done; echo -n "   "
+    for (( i=10; i>0; i-- )); do echo -ne "   \r${i} "; sleep 0.5; done; echo -n "   "
     VBoxManage storagectl "${vm_name}" --remove --name SATA >/dev/null 2>&1
     VBoxManage storagectl "${vm_name}" --add sata --name SATA --hostiocache on >/dev/null 2>&1
     VBoxManage storageattach "${vm_name}" --storagectl SATA --port 0 \
                --type hdd --nonrotational on --medium "${vm_name}.${storage_format}"
-    for (( i=5; i>0; i-- )); do echo -ne "   \r${i} "; sleep 0.5; done; echo "   "
 fi
 echo -e "For further information, such as applying EFI and NVRAM variables to enable
 iMessage connectivity, see the documentation with the following command:\n"
