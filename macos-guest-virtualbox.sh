@@ -2,7 +2,7 @@
 # Push-button installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-virtualbox
-# version 0.93.4
+# version 0.93.5
 
 # Dependencies: bash  coreutils  gzip  unzip  wget  xxd  dmg2img
 # Supported versions:
@@ -63,7 +63,7 @@ function welcome() {
 echo -ne "\n${highlight_color}Push-button installer of macOS on VirtualBox${default_color}
 
 This script installs only open-source software and unmodified Apple binaries,
-and requires about ${highlight_color}40GB${default_color} of available storage, of which 20GB are for temporary
+and requires about ${highlight_color}45GB${default_color} of available storage, of which 25GB are for temporary
 installation files that may be deleted when the script is finished.
 
 The script interacts with the virtual machine twice, ${highlight_color}please do not interact${default_color}
@@ -861,14 +861,23 @@ shut down the virtual machine. After shutdown, the initial base system will be
 detached from the VM and released from VirtualBox."
 print_dimly "If the partitioning fails, exit the script by pressing CTRL-C
 Otherwise, please wait."
-# Detach the original 2GB BaseSystem virtual disk image
 while [[ "$( VBoxManage list runningvms )" =~ \""${vm_name}"\" ]]; do sleep 2 >/dev/null 2>&1; done
-# Release basesystem VDI from VirtualBox configuration
-VBoxManage storageattach "${vm_name}" --storagectl SATA --port 2 --medium none >/dev/null 2>&1
-VBoxManage closemedium "${macOS_release_name}_BaseSystem.${storage_format}" >/dev/null 2>&1
-echo " ${macOS_release_name}_BaseSystem.${storage_format} successfully detached from"
+echo "Waiting for the VirtualBox GUI to shut off."
+for (( i=10; i>0; i-- )); do echo -ne "   \r${i} "; sleep 0.5; done; echo "   "
+# Detach the original 2GB BaseSystem virtual disk image
+# and release basesystem VDI from VirtualBox configuration
+if [[ -n $(
+    2>&1 VBoxManage storageattach "${vm_name}" --storagectl SATA --port 2 --medium none >/dev/null
+    2>&1 VBoxManage closemedium "${macOS_release_name}_BaseSystem.${storage_format}" >/dev/null
+    ) ]]; then
+    echo "Could not detach ${macOS_release_name}_BaseSystem.${storage_format}"
+    echo "It's possible the VirtualBox GUI took longer than five seconds to shut off."
+    echo "The macOS installation may be resumed with the following command:"
+    echo "  ${highlight_color}${0} populate_macos_target_disk${default_color}"
+    exit
+fi
+echo "${macOS_release_name}_BaseSystem.${storage_format} successfully detached from"
 echo "the virtual machine and released from VirtualBox Manager."
-sleep 3
 }
 
 function populate_macos_target_disk() {
@@ -911,6 +920,7 @@ echo -e "\nThe second open Terminal in the virtual machine copies EFI and NVRAM 
 echo -e "to the target EFI system partition when the installer finishes preparing."
 echo -e "\nAfter the installer finishes preparing and the EFI and NVRAM files are copied,"
 echo -ne "macOS will install and boot up when booting the target disk.\n\n"
+print_dimly "Please wait"
 # execute script concurrently, catch SIGUSR1 when installer finishes preparing
 kbstring='disks="$(diskutil list | grep -o "[0-9][^ ]* GB *disk[0-9]$" | sort -gr | grep -o disk[0-9])" && '\
 'disks=(${disks[@]}) && '\
@@ -942,19 +952,17 @@ powers off the virtual machine and detaches the device \"${macOS_release_name} b
 booting into the initial installer environment again."
     clear_input_buffer_then_read
     VBoxManage controlvm "${vm_name}" poweroff >/dev/null 2>&1
-    for (( i=10; i>5; i-- )); do echo -e "   \r${i}"; sleep 0.5; done
+    for (( i=15; i>5; i-- )); do echo -ne "   \r${i} "; sleep 0.5; done; echo -n "   "
     VBoxManage storagectl "${vm_name}" --remove --name SATA >/dev/null 2>&1
     VBoxManage storagectl "${vm_name}" --add sata --name SATA --hostiocache on >/dev/null 2>&1
     VBoxManage storageattach "${vm_name}" --storagectl SATA --port 0 \
                --type hdd --nonrotational on --medium "${vm_name}.${storage_format}"
-    echo ""
-    for (( i=5; i>0; i-- )); do echo -e "   \r${i}"; sleep 0.5; done
+    for (( i=5; i>0; i-- )); do echo -ne "   \r${i} "; sleep 0.5; done; echo "   "
 fi
 echo -e "For further information, such as applying EFI and NVRAM variables to enable
-iMessage connectivity, see the documentation with the following command:\n\n"
+iMessage connectivity, see the documentation with the following command:\n"
 would_you_like_to_know_less
 echo -e "\n${highlight_color}That's it! Enjoy your virtual machine.${default_color}\n"
-
 }
 
 function delete_temporary_files() {
