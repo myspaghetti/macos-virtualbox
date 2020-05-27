@@ -864,7 +864,7 @@ print_dimly "If the partitioning fails, exit the script by pressing CTRL-C
 Otherwise, please wait."
 while [[ "$( VBoxManage list runningvms )" =~ \""${vm_name}"\" ]]; do sleep 2 >/dev/null 2>&1; done
 echo "Waiting for the VirtualBox GUI to shut off."
-for (( i=10; i>0; i-- )); do echo -ne "   \r${i} "; sleep 0.5; done; echo "   "
+for (( i=10; i>0; i-- )); do echo -ne "   \r${i} "; sleep 0.5; done; echo -e "\r   "
 # Detach the original 2GB BaseSystem virtual disk image
 # and release basesystem VDI from VirtualBox configuration
 if [[ -n $(
@@ -953,7 +953,7 @@ powers off the virtual machine and detaches the device \"${macOS_release_name} b
 booting into the initial installer environment again."
     clear_input_buffer_then_read
     VBoxManage controlvm "${vm_name}" poweroff >/dev/null 2>&1
-    for (( i=10; i>0; i-- )); do echo -ne "   \r${i} "; sleep 0.5; done; echo -n "   "
+    for (( i=10; i>0; i-- )); do echo -ne "   \r${i} "; sleep 0.5; done; echo -ne "\r   "
     VBoxManage storagectl "${vm_name}" --remove --name SATA >/dev/null 2>&1
     VBoxManage storagectl "${vm_name}" --add sata --name SATA --hostiocache on >/dev/null 2>&1
     VBoxManage storageattach "${vm_name}" --storagectl SATA --port 0 \
