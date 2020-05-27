@@ -2,7 +2,7 @@
 # Push-button installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-virtualbox
-# version 0.93.3
+# version 0.93.4
 
 # Dependencies: bash  coreutils  gzip  unzip  wget  xxd  dmg2img
 # Supported versions:
@@ -1222,7 +1222,7 @@ for wrapper in 1; do
     if [[ -n "$(md5sum --version 2>/dev/null)" ]]; then
         tail -n +60 "${0}" | md5sum 2>/dev/null
     else
-        tail -n +60 "${0}" | md5sum 2>/dev/null
+        tail -n +60 "${0}" | md5 2>/dev/null
     fi
     echo "################################################################################"
     echo "BASH_VERSION ${BASH_VERSION}"
