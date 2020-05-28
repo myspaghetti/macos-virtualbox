@@ -2,7 +2,7 @@
 # Push-button installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-virtualbox
-# version 0.93.5
+# version 0.93.6
 
 # Dependencies: bash  coreutils  gzip  unzip  wget  xxd  dmg2img
 # Supported versions:
@@ -433,6 +433,9 @@ for catalog in "${macOS_release_name}_sucatalog_"* "error"; do
     wget "${urlbase}InstallAssistantAuto.smd" \
     ${wgetargs} \
     --output-document="${catalog}_InstallAssistantAuto.smd"
+    if [[ "$(cat "${catalog}_InstallAssistantAuto.smd" )" =~ .*Beta.* ]]; then
+        continue
+    fi
     found_version="$(head -n 6 "${catalog}_InstallAssistantAuto.smd" | tail -n 1)"
     if [[ "${found_version}" == *${CFBundleShortVersionString}* ]]; then
         echo -e "Found download URL: ${urlbase}\n"
