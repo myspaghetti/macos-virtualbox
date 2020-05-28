@@ -867,7 +867,7 @@ print_dimly "If the partitioning fails, exit the script by pressing CTRL-C
 Otherwise, please wait."
 while [[ "$( VBoxManage list runningvms )" =~ \""${vm_name}"\" ]]; do sleep 2 >/dev/null 2>&1; done
 echo "Waiting for the VirtualBox GUI to shut off."
-for (( i=10; i>0; i-- )); do echo -ne "   \r${i} "; sleep 0.5; done; echo -e "\r   "
+prompt_vm_closed
 # Detach the original 2GB BaseSystem virtual disk image
 # and release basesystem VDI from VirtualBox configuration
 if [[ -n $(
@@ -1474,6 +1474,12 @@ function prompt_lang_utils() {
     clear_input_buffer_then_read
     kbspecial='CTRLprs F2 CTRLrls u ENTER t ENTER'
     send_special
+}
+
+function prompt_vm_closed() {
+    # called after the virtual machine shuts down
+    echo -ne "\n${highlight_color}Press enter when the Virtual Machine has completely shutdown.${default_color}"
+    clear_input_buffer_then_read
 }
 
 function prompt_terminal_ready() {
