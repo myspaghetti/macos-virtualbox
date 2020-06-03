@@ -63,7 +63,7 @@ function welcome() {
 echo -ne "\n${highlight_color}Push-button installer of macOS on VirtualBox${default_color}
 
 This script installs only open-source software and unmodified Apple binaries,
-and requires about ${highlight_color}45GB${default_color} of available storage, of which 25GB are for temporary
+and requires about ${highlight_color}50GB${default_color} of available storage, of which 25GB are for temporary
 installation files that may be deleted when the script is finished.
 
 The script interacts with the virtual machine twice, ${highlight_color}please do not interact${default_color}
