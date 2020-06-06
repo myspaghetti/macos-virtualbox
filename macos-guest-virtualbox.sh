@@ -1075,6 +1075,8 @@ assignment in ${low_contrast_color}set_variables()${default_color} or by executi
 lines with a variable assignment for any variable specified in ${low_contrast_color}set_variables()${default_color},
 for example ${low_contrast_color}macOS_release_name=\"HighSierra\"${default_color} or ${low_contrast_color}DmiSystemFamily=\"iMac\"${default_color}
 
+For Keyboard Mapping for MacOS visit this link --> https://support.microsoft.com/help/970299/
+
         ${highlight_color}iCloud and iMessage connectivity${default_color}
 iCloud, iMessage, and other connected Apple services require a valid device
 name and serial number, board ID and serial number, and other genuine
