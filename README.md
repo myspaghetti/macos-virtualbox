@@ -1,12 +1,12 @@
-# Push-button installer of macOS on VirtualBox
-
 ![macOS virtual machine showing apps on Launchpad](https://repository-images.githubusercontent.com/156108442/c04dcf80-8eae-11ea-9620-020f8a863fec "macos-guest-virtualbox.sh")
+
+## Push-button installer of macOS on VirtualBox
 
 [`macos-guest-virtualbox.sh`](https://raw.githubusercontent.com/myspaghetti/macos-guest-virtualbox/master/macos-guest-virtualbox.sh) is a Bash script that creates a macOS virtual machine guest on VirtualBox with unmodified macOS installation files downloaded directly from Apple servers. Tested on [Cygwin](https://cygwin.com/install.html). Works on macOS, Windows Subsystem for Linux, and CentOS 7. Should work on most modern Linux distros.
 
 A default install only requires the user to sit patiently and, less than ten times, press enter when prompted by the script, without interacting with the virtual machine.
 
-**macOS Catalina (10.15), Mojave (10.14), and High Sierra (10.13) currently supported.**
+macOS Catalina (10.15), Mojave (10.14), and High Sierra (10.13) currently supported.
 
 ## Documentation
 
@@ -16,15 +16,15 @@ The majority of the script is either documentation, comments, or actionable erro
 
 ## iCloud and iMessage connectivity and NVRAM
 
-iCloud, iMessage, and other connected Apple services require a valid device name and serial number, board ID and serial number, and other genuine (or genuine-like) Apple parameters. These can be set in NVRAM by editing the script. See [documentation](#documentation) for further information.
+iCloud, iMessage, and other connected Apple services require a valid device name and serial number, board ID and serial number, and other genuine (or genuine-like) Apple parameters. These can be set in NVRAM by editing the script. See the [documentation command](#documentation) for further information.
 
 ## Storage size
 
-The script by default assigns a target virtual disk storage size of 80GB, which is populated to about 25GB on the host on initial installation. After the installation is complete, the storage size may be increased. See [documentation](#documentation) for further information.
+The script by default assigns a target virtual disk storage size of 80GB, which is populated to about 25GB on the host on initial installation. After the installation is complete, the storage size may be increased. See the [documentation command](#documentation) for further information.
 
 ## Primary display resolution
 
-The following primary display resolutions are supported by macOS on VirtualBox: `5120x2880` `2880x1800` `2560x1600` `2560x1440` `1920x1200` `1600x1200` `1680x1050` `1440x900` `1280x800` `1024x768` `640x480`. See [documentation](#documentation) for further information.
+The following primary display resolutions are supported by macOS on VirtualBox: `5120x2880` `2880x1800` `2560x1600` `2560x1440` `1920x1200` `1600x1200` `1680x1050` `1440x900` `1280x800` `1024x768` `640x480`. See the [documentation command](#documentation) for further information.
 
 ## Unsupported features
 
@@ -34,7 +34,7 @@ Developing and maintaining VirtualBox or macOS features is beyond the scope of t
 
 After successfully creating a working macOS virtual machine, consider importing it into more performant virtualization software, or packaging it for configuration management platforms for automated deployment. These virtualization and deployment applications require additional configuration that is beyond the scope of the script.
 
-QEMU with KVM is capable of providing virtual machine hardware passthrough for near-native performance. QEMU supports the `VMDK` virtual disk image storage format, which can be configured to be created by the script. See [documentation](#documentation) for further information. QEMU and KVM require additional configuration that is beyond the scope of the script.
+QEMU with KVM is capable of providing virtual machine hardware passthrough for near-native performance. QEMU supports the `VMDK` virtual disk image storage format, which can be configured to be created by the script. See the [documentation command](#documentation) for further information. QEMU and KVM require additional configuration that is beyond the scope of the script.
 
 ### Bootloaders
 
