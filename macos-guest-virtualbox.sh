@@ -1029,7 +1029,7 @@ echo -ne "\n        ${highlight_color}NAME${default_color}
 Push-button installer of macOS on VirtualBox
 
         ${highlight_color}DESCRIPTION${default_color}
-The script downloads macOS High Sierra, Mojave, and Catalina from Apple servers
+The script downloads macOS El Capitan,Sierra,High Sierra, Mojave, and Catalina from Apple servers
 and installs them on VirtualBox 5.2, 6.0, and 6.1. The script doesn't install
 any closed-source additions or bootloaders. A default install requires the user
 press enter when prompted, less than ten times, to complete the installation.
