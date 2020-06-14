@@ -6,7 +6,7 @@
 
 A default install only requires the user to sit patiently and, less than ten times, press enter when prompted by the script, without interacting with the virtual machine.
 
-macOS Catalina (10.15), Mojave (10.14), and High Sierra (10.13) currently supported.
+macOS Catalina (10.15), Mojave (10.14),High Sierra (10.13),Sierra(10.12) and El Capitan(10.11) are  currently supported.
 
 ## Documentation
 

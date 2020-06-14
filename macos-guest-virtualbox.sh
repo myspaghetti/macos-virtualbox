@@ -15,7 +15,7 @@
 function set_variables() {
 # Customize the installation by setting these variables:
 vm_name="macOS"                  # name of the VirtualBox virtual machine
-macOS_release_name="Catalina"    # install "HighSierra" "Mojave" or "Catalina"
+macOS_release_name="Catalina"    # install "ElCapitan","Sierra", "HighSierra","Mojave" or "Catalina"
 storage_size=80000               # VM disk image size in MB, minimum 22000
 storage_format="vdi"             # VM disk image file format, "vdi" or "vmdk"
 cpu_count=2                      # VM CPU cores, minimum 2
@@ -318,6 +318,8 @@ if [[ -z "$(dmg2img -d 2>/dev/null)" ]]; then
 fi
 
 # set Apple software update catalog URL according to macOS version
+ElCapitan_sucatalog="https://swscan.apple.com/content/catalogs/others/index-10.11-10.10-10.9-mountainlion-lion-snowleopard-leopard.merged-1.sucatalog"
+Sierra_sucatalog="https://swscan.apple.com/content/catalogs/others/index-10.12-10.11-10.10-10.9-mountainlion-lion-snowleopard-leopard.merged-1.sucatalog"
 HighSierra_sucatalog='https://swscan.apple.com/content/catalogs/others/index-10.13-10.12-10.11-10.10-10.9-mountainlion-lion-snowleopard-leopard.merged-1.sucatalog'
 Mojave_sucatalog='https://swscan.apple.com/content/catalogs/others/index-10.14-10.13-10.12-10.11-10.10-10.9-mountainlion-lion-snowleopard-leopard.merged-1.sucatalog'
 Catalina_sucatalog='https://swscan.apple.com/content/catalogs/others/index-10.15-10.14-10.13-10.12-10.11-10.10-10.9-mountainlion-lion-snowleopard-leopard.merged-1.sucatalog'
@@ -337,6 +339,15 @@ elif [[ "${macOS_release_name:0:1}" =~ [Hh] ]]; then
     macOS_release_name="HighSierra"
     CFBundleShortVersionString="10.13"
     sucatalog="${HighSierra_sucatalog}"
+elif[["${macOS_release_name:0:1}" =~ [Ss] ]]; then
+    macOS_release_name="Sierra"
+    CFBundleShortVersionString="10.12"
+    sucatalog="${Sierra_sucatalog}"
+elif[["${macOS_release_name:0:1}" =~ [Ee] ]]; then
+    macOS_release_name="ElCapitan"
+    CFBundleShortVersionString="10.11"
+    sucatalog="${ElCapitan_sucatalog}"
+
 else
     macOS_release_name="Mojave"
     CFBundleShortVersionString="10.14"
