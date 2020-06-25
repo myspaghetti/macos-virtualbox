@@ -1,4 +1,4 @@
-![macOS virtual machine showing apps on Launchpad](https://repository-images.githubusercontent.com/156108442/c04dcf80-8eae-11ea-9620-020f8a863fec "macos-guest-virtualbox.sh")
+![macOS inside a VirtualBox window with the dock positioned on the left](https://repository-images.githubusercontent.com/156108442/5fbf5f80-b6b3-11ea-8823-ecc0df47a79b "macos-guest-virtualbox.sh")
 
 ## Push-button installer of macOS on VirtualBox
 
