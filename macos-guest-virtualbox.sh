@@ -2,7 +2,7 @@
 # Push-button installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-virtualbox
-# version 0.93.6
+# version 0.93.7
 
 # Dependencies: bash  coreutils  gzip  unzip  wget  xxd  dmg2img
 # Supported versions:
@@ -75,32 +75,25 @@ following command:
 
 "
 would_you_like_to_know_less
-echo -ne "\n${highlight_color}Press enter to review the script configuration.${default_color}"
+echo -ne "\n${highlight_color}Press enter to review the script configuration${default_color}"
 clear_input_buffer_then_read
 
 function pad_to_33_chars() {
     local padded="${1}                                 "
-    echo -n "${padded:0:33}"
+    echo "${padded:0:33}${2}"
 }
 
 # custom settings prompt
 echo -e "\nvm_name=\"${vm_name}\""
-pad_to_33_chars "macOS_release_name=\"${macOS_release_name}\""
-echo "# install \"HighSierra\" \"Mojave\" or \"Catalina\""
-pad_to_33_chars "storage_size=${storage_size}"
-echo "# VM disk image size in MB. minimum 22000"
-pad_to_33_chars "storage_format=\"${storage_format}\""
-echo "# VM disk image file format, \"vdi\" or \"vmdk\""
-pad_to_33_chars "cpu_count=${cpu_count}"
-echo "# VM CPU cores, minimum 2"
-pad_to_33_chars "memory_size=${memory_size}"
-echo "# VM RAM in MB, minimum 2048"
-pad_to_33_chars "gpu_vram=${gpu_vram}"
-echo "# VM video RAM in MB, minimum 34, maximum 128"
-pad_to_33_chars "resolution=\"${resolution}\""
-echo "# VM display resolution"
+pad_to_33_chars "macOS_release_name=\"${macOS_release_name}\"" "# install \"HighSierra\" \"Mojave\" \"Catalina\""
+pad_to_33_chars "storage_size=${storage_size}"                 "# VM disk image size in MB. minimum 22000"
+pad_to_33_chars "storage_format=\"${storage_format}\""         "# VM disk image file format, \"vdi\" or \"vmdk\""
+pad_to_33_chars "cpu_count=${cpu_count}"                       "# VM CPU cores, minimum 2"
+pad_to_33_chars "memory_size=${memory_size}"                   "# VM RAM in MB, minimum 2048"
+pad_to_33_chars "gpu_vram=${gpu_vram}"                         "# VM video RAM in MB, minimum 34, maximum 128"
+pad_to_33_chars "resolution=\"${resolution}\""                 "# VM display resolution"
 echo -ne "\nThese values may be customized as described in the documentation.\n
-${highlight_color}Press enter to continue, CTRL-C to exit.${default_color}"
+${highlight_color}Press enter to continue, CTRL-C to exit${default_color}"
 clear_input_buffer_then_read
 }
 
@@ -283,7 +276,7 @@ elif [[ "${vbox_version:0:1}" = 5 ]]; then
     echo -e "\n${highlight_color}VirtualBox version ${vbox_version} detected.${default_color} Please see the following"
     echo -ne "URL for issues with the VISO filesystem on VirtualBox 5.2 to 5.2.40:\n\n"
     echo "  https://github.com/myspaghetti/macos-virtualbox/issues/86"
-    echo -ne "\n${highlight_color}Press enter to continue, CTRL-C to exit.${default_color}"
+    echo -ne "\n${highlight_color}Press enter to continue, CTRL-C to exit${default_color}"
     clear_input_buffer_then_read
 fi
 
@@ -322,9 +315,6 @@ HighSierra_sucatalog='https://swscan.apple.com/content/catalogs/others/index-10.
 Mojave_sucatalog='https://swscan.apple.com/content/catalogs/others/index-10.14-10.13-10.12-10.11-10.10-10.9-mountainlion-lion-snowleopard-leopard.merged-1.sucatalog'
 Catalina_sucatalog='https://swscan.apple.com/content/catalogs/others/index-10.15-10.14-10.13-10.12-10.11-10.10-10.9-mountainlion-lion-snowleopard-leopard.merged-1.sucatalog'
 if [[ "${macOS_release_name:0:1}" =~ [Cc] ]]; then
-    macOS_release_name="Catalina"
-    CFBundleShortVersionString="10.15"
-    sucatalog="${Catalina_sucatalog}"
     if [[ ! ( "${vbox_version:0:1}" -gt 6 ||
               "${vbox_version}" =~ ^6\.1\.[4-9] ||
               "${vbox_version}" =~ ^6\.1\.[123][0-9] ||
@@ -333,14 +323,22 @@ if [[ "${macOS_release_name:0:1}" =~ [Cc] ]]; then
         echo "Exiting."
         exit
     fi
+fi
+if [[ "${macOS_release_name:0:1}" =~ [Cc] ]]; then
+    macOS_release_name="Catalina"
+    CFBundleShortVersionString="10.15"
+    sucatalog="${Catalina_sucatalog}"
 elif [[ "${macOS_release_name:0:1}" =~ [Hh] ]]; then
     macOS_release_name="HighSierra"
     CFBundleShortVersionString="10.13"
     sucatalog="${HighSierra_sucatalog}"
-else
+elif [[ "${macOS_release_name:0:1}" =~ [Mm] ]]; then
     macOS_release_name="Mojave"
     CFBundleShortVersionString="10.14"
     sucatalog="${Mojave_sucatalog}"
+else
+    echo "Can't parse macOS_release_name. Exiting."
+    exit
 fi
 print_dimly "${macOS_release_name} selected to be downloaded and installed"
 }
