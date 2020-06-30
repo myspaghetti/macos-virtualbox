@@ -41,8 +41,8 @@ DmiBIOSVersion="string:MBP7.89"      # Boot ROM Version
 #   ioreg -l | grep -m 1 board-id
 DmiBoardProduct="Mac-3CBD00234E554E41"
 #   nvram 4D1EDE05-38C7-4A6A-9CC6-4BCCA8B38C14:MLB
-DmiBoardSerial="NO_LOGIC_BOARD_SN"
-MLB="${DmiBoardSerial}"
+DmiBoardSerial="NO_LOGIC_BOARD_SN"    # stored in EFI
+MLB="${DmiBoardSerial}"               # stored in NVRAM
 #   nvram 4D1EDE05-38C7-4A6A-9CC6-4BCCA8B38C14:ROM
 ROM='%aa*%bbg%cc%dd'
 #   ioreg -l -p IODeviceTree | grep \"system-id
@@ -1087,15 +1087,15 @@ These are the variables that are required for iMessage connectivity:
     ${low_contrast_color}DmiSystemFamily    # Model name${default_color}
     ${low_contrast_color}DmiSystemProduct   # Model identifier${default_color}
     ${low_contrast_color}DmiSystemSerial    # System serial number${default_color}
-    ${low_contrast_color}DmiSystemUuid      # Hardware UUID${default_color}
+    ${low_contrast_color}DmiSystemUuid      # Hardware unique identifier${default_color}
     ${low_contrast_color}DmiOEMVBoxVer      # Apple ROM info (major version)${default_color}
     ${low_contrast_color}DmiOEMVBoxRev      # Apple ROM info (revision)${default_color}
     ${low_contrast_color}DmiBIOSVersion     # Boot ROM version${default_color}
     ${low_contrast_color}DmiBoardProduct    # Main Logic Board identifier${default_color}
-    ${low_contrast_color}DmiBoardSerial     # Main Logic Board serial (EFI)${default_color}
-    ${low_contrast_color}MLB                # Main Logic Board serial (NVRAM)${default_color}
-    ${low_contrast_color}ROM                # ROM identifier (NVRAM)${default_color}
-    ${low_contrast_color}SYSTEM_UUID        # System identifier (NVRAM)${default_color}
+    ${low_contrast_color}DmiBoardSerial     # Main Logic Board serial (stored in EFI)${default_color}
+    ${low_contrast_color}MLB                # Main Logic Board serial (stored in NVRAM)${default_color}
+    ${low_contrast_color}ROM                # ROM identifier (stored in NVRAM)${default_color}
+    ${low_contrast_color}SYSTEM_UUID        # System unique identifier (stored in NVRAM)${default_color}
 
 The comments at the top of the script specify how to view these variables
 on a genuine Mac.
