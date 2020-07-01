@@ -2,7 +2,7 @@
 # Push-button installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-virtualbox
-# version 0.93.7
+# version 0.93.8
 
 # Dependencies: bash  coreutils  gzip  unzip  wget  xxd  dmg2img
 # Supported versions:
@@ -202,7 +202,7 @@ fi
 # wget supports --show-progress from version 1.16
 regex='1\.1[6-9]|1\.[2-9][0-9]'  # for zsh compatibility
 if [[ "$(wget --version 2>/dev/null | head -n 1)" =~ ${regex} ]]; then
-    wgetargs="--quiet --continue --show-progress"  # pretty
+    wgetargs="--quiet --continue --show-progress --timeout=60"  # pretty
 else
     wgetargs="--continue"  # ugly
 fi
@@ -407,7 +407,7 @@ wget "${sucatalog}" \
 
 # if file was not downloaded correctly
 if [[ ! -s "${macOS_release_name}_sucatalog" ]]; then
-    wget --debug -O /dev/null -o "${macOS_release_name}_wget.log" "${sucatalog}"
+    wget --debug --timeout=60 -O /dev/null -o "${macOS_release_name}_wget.log" "${sucatalog}"
     echo -e "\nCouldn't download the Apple software update catalog."
     if [[ "$(expr match "$(cat "${macOS_release_name}_wget.log")" '.*ERROR[[:print:]]*is not trusted')" -gt "0" ]]; then
         echo -e "\nMake sure certificates from a certificate authority are installed."
