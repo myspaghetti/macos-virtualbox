@@ -36,6 +36,16 @@ After successfully creating a working macOS virtual machine, consider importing 
 
 QEMU with KVM is capable of providing virtual machine hardware passthrough for near-native performance. QEMU supports the `VMDK` virtual disk image storage format, which can be configured to be created by the script. See the [documentation command](#documentation) for further information. QEMU and KVM require additional configuration that is beyond the scope of the script.
 
+#### VirtualBox Native Execution Manager (NEM)
+
+
+
+The VirtualBox Native Execution Manager (NEM) is an experimental VirtualBox feature. VirtualBox uses NEM when access to VT-x and AMD-V is blocked by virtualization software or execution protection features such as Hyper-V, Windows Sandbox, WSL2, memory integrity protection, and other software. macOS and the macOS installer have memory corruption issues under NEM virtualization. The script checks for NEM and gives an error message if it is detected.
+
+
+
+
+
 ### Bootloaders
 
 The macOS VirtualBox guest is loaded without extra bootloaders, but it is compatible with [OpenCore](https://github.com/acidanthera/OpenCorePkg/releases). OpenCore requires additional configuration that is beyond the scope of  the script.
@@ -51,10 +61,6 @@ VirtualBox does not supply an EDID for its virtual display, and macOS does not e
 ### FileVault
 
 The VirtualBox EFI implementation does not properly load the FileVault full disk encryption password prompt upon boot. The bootloader [OpenCore](https://github.com/acidanthera/OpenCorePkg/releases/tag/0.5.8) is able to load the password prompt with the parameter `ProvideConsoleGop` set to `true`. See sample [config.plist](https://github.com/myspaghetti/macos-virtualbox/files/4640669/config.plist.txt).
-
-### VirtualBox Native Execution Manager (NEM)
-
-The VirtualBox Native Execution Manager (NEM) is an experimental VirtualBox feature. VirtualBox uses NEM when access to VT-x and AMD-V is blocked by virtualization software or execution protection features such as Hyper-V, Windows Sandbox, WSL2, memory integrity protection, and other software. macOS and the macOS installer have memory corruption issues under NEM virtualization. The script checks for NEM and gives an error message if it is detected.
 
 ## Dependencies
 
