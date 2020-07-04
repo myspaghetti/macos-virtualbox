@@ -1222,8 +1222,8 @@ feature. VirtualBox uses NEM when access to VT-x and AMD-V is blocked by
 virtualization software or execution protection features such as Hyper-V,
 Windows Sandbox, WSL2, memory integrity protection, and other software.
 macOS and the macOS installer have memory corruption issues under NEM
-virtualization. The script checks for NEM and gives an error message if it is
-detected.
+virtualization. The script checks for NEM and exits with an error message if
+NEM is detected.
 
         ${highlight_color}Further information${default_color}
 Further information is available at the following URL:
