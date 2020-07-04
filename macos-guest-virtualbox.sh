@@ -1216,6 +1216,15 @@ The VirtualBox EFI implementation does not properly load the FileVault full disk
 encryption password prompt upon boot. The bootloader OpenCore is be able to
 load the password prompt with the parameter \"ProvideConsoleGop\" set to \"true\".
 
+        ${highlight_color}VirtualBox Native Execution Manager${default_color}
+The VirtualBox Native Execution Manager (NEM) is an experimental VirtualBox
+feature. VirtualBox uses NEM when access to VT-x and AMD-V is blocked by
+virtualization software or execution protection features such as Hyper-V,
+Windows Sandbox, WSL2, memory integrity protection, and other software.
+macOS and the macOS installer have memory corruption issues under NEM
+virtualization. The script checks for NEM and gives an error message if it is
+detected.
+
         ${highlight_color}Further information${default_color}
 Further information is available at the following URL:
         ${highlight_color}https://github.com/myspaghetti/macos-virtualbox${default_color}
