@@ -2,7 +2,7 @@
 # Push-button installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-virtualbox
-# version 0.94.0
+# version 0.94.1
 
 # Dependencies: bash  coreutils  gzip  unzip  wget  xxd  dmg2img
 # Supported versions:
@@ -191,7 +191,6 @@ fi
 if [[ -z "$(echo "xxd" | xxd -p 2>/dev/null)" ||
       -z "$(gzip --help 2>/dev/null)" ||
       -z "$(unzip -hh 2>/dev/null)" ||
-      -z "$(csplit --help 2>/dev/null)" ||
       -z "$(csplit --help 2>/dev/null)" ||
       -z "$(wget --version 2>/dev/null)" ]]; then
     echo "Please make sure the following packages are installed:"
