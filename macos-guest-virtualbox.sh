@@ -2,12 +2,12 @@
 # Push-button installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-virtualbox
-# version 0.93.8
+# version 0.94.0
 
 # Dependencies: bash  coreutils  gzip  unzip  wget  xxd  dmg2img
 # Supported versions:
 #               VirtualBox with Extension Pack >= 6.1.6
-#               GNU bash >= 4.3, GNU coreutils >= 8.22,
+#               GNU bash >= 4.3, GNU coreutils >= 8.23,
 #               GNU gzip >= 1.5, GNU wget >= 1.14,
 #               Info-ZIP unzip >= 6.0, xxd >= 1.7,
 #               dmg2img >= 1.6.5
@@ -191,6 +191,7 @@ fi
 if [[ -z "$(echo "xxd" | xxd -p 2>/dev/null)" ||
       -z "$(gzip --help 2>/dev/null)" ||
       -z "$(unzip -hh 2>/dev/null)" ||
+      -z "$(csplit --help 2>/dev/null)" ||
       -z "$(csplit --help 2>/dev/null)" ||
       -z "$(wget --version 2>/dev/null)" ]]; then
     echo "Please make sure the following packages are installed:"
@@ -470,6 +471,14 @@ fi
 
 function create_nvram_files() {
 print_dimly "stage: create_nvram_files"
+# check that od supports the --endian argument
+if [[ -n "$(printf '8.23' | od --endian=little 1>/dev/null)" ]]; then
+    echo "Can't generate NVRAM files because the coreutils version is not 8.23 or higher."
+    echo "NVRAM files are not required when installing or using macOS, but they are"
+    echo "required for iMessage connectivity and for apps that authenticate with Apple."
+    return
+fi
+
 # Each NVRAM file may contain multiple entries.
 # Each entry contains a namesize, datasize, name, guid, attributes, and data.
 # Each entry is immediately followed by a crc32 of the entry.
@@ -523,7 +532,7 @@ function generate_nvram_bin_file() {
 
 # MLB
 MLB_b16="$(printf -- "${MLB}" | xxd -p)"
-generate_nvram_bin_file MLB "${MLB_b16}" "4D1EDE05-38C7-4A6A-9CC6-4BCCA8B38C14"
+generate_nvram_bin_file "MLB" "${MLB_b16}" "4D1EDE05-38C7-4A6A-9CC6-4BCCA8B38C14"
 
 # ROM
 # Convert the mixed-ASCII-and-base16 ROM value
@@ -539,13 +548,13 @@ ROM_b16="$(for (( i=0; i<${#ROM}; )); do
                    let i=i+1
                fi
             done)"
-generate_nvram_bin_file ROM "${ROM_b16}" "4D1EDE05-38C7-4A6A-9CC6-4BCCA8B38C14"
+generate_nvram_bin_file "ROM" "${ROM_b16}" "4D1EDE05-38C7-4A6A-9CC6-4BCCA8B38C14"
 
 # system-id
-generate_nvram_bin_file system-id "${SYSTEM_UUID}" "7C436110-AB2A-4BBB-A880-FE41995C9F82"
+generate_nvram_bin_file "system-id" "${SYSTEM_UUID}" "7C436110-AB2A-4BBB-A880-FE41995C9F82"
 
 # SIP / csr-active-config
-generate_nvram_bin_file csr-active-config "${SYSTEM_INTEGRITY_PROTECTION}" "7C436110-AB2A-4BBB-A880-FE41995C9F82"
+generate_nvram_bin_file "csr-active-config" "${SYSTEM_INTEGRITY_PROTECTION}" "7C436110-AB2A-4BBB-A880-FE41995C9F82"
 }
 
 function create_macos_installation_files_viso() {
