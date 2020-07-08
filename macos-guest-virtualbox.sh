@@ -2,14 +2,14 @@
 # Push-button installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-virtualbox
-# version 0.94.2
+# version 0.94.3
 
 # Dependencies: bash  coreutils  gzip  unzip  wget  xxd  dmg2img
 # Supported versions:
 #               VirtualBox with Extension Pack >= 6.1.6
 #               GNU bash >= 4.3, GNU coreutils >= 8.22,
 #               GNU gzip >= 1.5, GNU wget >= 1.14,
-#               Info-ZIP unzip >= 6.0, xxd >= 1.10,
+#               Info-ZIP unzip >= 6.0, xxd >= 1.11,
 #               dmg2img >= 1.6.5
 
 function set_variables() {
@@ -185,14 +185,19 @@ if [[ -n "$(sw_vers 2>/dev/null)" ]]; then
 fi
 
 # check for xxd, gzip, unzip, coreutils, wget
-if [[ -z "$(echo "xxd" | xxd -p 2>/dev/null)" ||
+if [[ -z "$(echo -n "xxd" | xxd -e -p 2>/dev/null)" ||
       -z "$(gzip --help 2>/dev/null)" ||
       -z "$(unzip -hh 2>/dev/null)" ||
       -z "$(csplit --help 2>/dev/null)" ||
       -z "$(wget --version 2>/dev/null)" ]]; then
-    echo "Please make sure the following packages are installed:"
-    echo "coreutils    gzip    unzip    xxd    wget"
-    echo "Please make sure the coreutils and gzip packages are the GNU variant."
+    echo "Please make sure the following packages are installed"
+    echo -e "and that they are of the version specified or newer:\n"
+    echo "    coreutils 8.22   wget 1.14   gzip 1.5   unzip 6.0   xxd 1.11"
+    echo -e "\nPlease make sure the coreutils and gzip packages are the GNU variant."
+    if [[ -z "$(echo -n "xxd" | xxd -e -p 2>/dev/null))" ]]; then
+        echo -e "\nMost xxd V1.11 binaries print their version as V1.10 or V1.7."
+        echo "The package vim-common-8 and newer provides the correct version."
+    fi
     exit
 fi
 
