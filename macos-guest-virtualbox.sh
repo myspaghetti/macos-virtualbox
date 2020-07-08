@@ -9,7 +9,7 @@
 #               VirtualBox with Extension Pack >= 6.1.6
 #               GNU bash >= 4.3, GNU coreutils >= 8.22,
 #               GNU gzip >= 1.5, GNU wget >= 1.14,
-#               Info-ZIP unzip >= 6.0, xxd >= 1.7,
+#               Info-ZIP unzip >= 6.0, xxd >= 1.10,
 #               dmg2img >= 1.6.5
 
 function set_variables() {
