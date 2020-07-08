@@ -2,12 +2,12 @@
 # Push-button installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-virtualbox
-# version 0.94.1
+# version 0.94.2
 
 # Dependencies: bash  coreutils  gzip  unzip  wget  xxd  dmg2img
 # Supported versions:
 #               VirtualBox with Extension Pack >= 6.1.6
-#               GNU bash >= 4.3, GNU coreutils >= 8.23,
+#               GNU bash >= 4.3, GNU coreutils >= 8.22,
 #               GNU gzip >= 1.5, GNU wget >= 1.14,
 #               Info-ZIP unzip >= 6.0, xxd >= 1.7,
 #               dmg2img >= 1.6.5
@@ -154,9 +154,6 @@ if [[ -n "$(gcsplit --help 2>/dev/null)" ]]; then
     }
     function ls() {
         gls "$@"
-    }
-    function od() {
-        god "$@"
     }
     function split() {
         gsplit "$@"
@@ -470,13 +467,6 @@ fi
 
 function create_nvram_files() {
 print_dimly "stage: create_nvram_files"
-# check that od supports the --endian argument
-if [[ -n "$(printf '8.23' | od --endian=little 1>/dev/null)" ]]; then
-    echo "Can't generate NVRAM files because the coreutils version is not 8.23 or higher."
-    echo "NVRAM files are not required when installing or using macOS, but they are"
-    echo "required for iMessage connectivity and for apps that authenticate with Apple."
-    return
-fi
 
 # Each NVRAM file may contain multiple entries.
 # Each entry contains a namesize, datasize, name, guid, attributes, and data.
@@ -506,13 +496,13 @@ function generate_nvram_bin_file() {
     # size of string in bytes, represented by eight hex digits, big-endian
     local namesize="$(printf "%08x" $(( ${#name} / 2 )) )"
     # flip four big-endian bytes byte-order to little-endian
-    local namesize="$(printf "${namesize}" | xxd -r -p | od -tx4 -N4 -An --endian=little)"
+    local namesize="$(printf "${namesize}" | xxd -r -p | xxd -e -g 4 | xxd -r | xxd -p)"
     # strip string-of-hex-bytes representation of data of spaces, "x", "h", etc
     local data="$(printf -- "${2}" | xxd -r -p | xxd -p)"
     # size of data in bytes, represented by eight hex digits, big-endian
     local datasize="$(printf "%08x" $(( ${#data} / 2 )) )"
     # flip four big-endian bytes byte-order to little-endian
-    local datasize="$(printf "${datasize}" | xxd -r -p | od -tx4 -N4 -An --endian=little)"
+    local datasize="$(printf "${datasize}" | xxd -r -p | xxd -e -g 4 | xxd -r | xxd -p)"
     # guid string-of-hex-bytes is five fields, 8+4+4+4+12 nibbles long
     # first three are little-endian, last two big-endian
     # for example, 0F1A2B3C-4D5E-6A7B-8C9D-A1B2C3D4E5F6
@@ -524,7 +514,7 @@ function generate_nvram_bin_file() {
     # the data structure
     local entry="${namesize} ${datasize} ${name} ${guid} ${attributes} ${data}"
     # calculate crc32 using gzip, flip crc32 bytes into big-endian
-    local crc32="$(printf "${entry}" | xxd -r -p | gzip -c | tail -c8 | od -tx4 -N4 -An --endian=big)"
+    local crc32="$(printf "${entry}" | xxd -r -p | gzip -c | tail -c8 | xxd -p -l 4)"
     # save binary data
     printf -- "${entry} ${crc32}" | xxd -r -p - "${vm_name}_${filename}.bin"
 }
@@ -542,7 +532,7 @@ ROM_b16="$(for (( i=0; i<${#ROM}; )); do
                    echo -n "${ROM:${j}:2}"
                    let i=i+3
                else
-                   x="$(echo -n "${ROM:${i}:1}" | od -t x1 -An | tr -d ' ')"
+                   x="$(echo -n "${ROM:${i}:1}" | xxd -p | tr -d ' ')"
                    echo -n "${x}"
                    let i=i+1
                fi
@@ -594,7 +584,7 @@ endfor' >> "${vm_name}_startup.nsh"
 
 echo -e "\nCreating VirtualBox 6 virtual ISO containing the"
 echo -e "installation files from swcdn.apple.com\n"
-pseudouuid="$(od -tx -N16 /dev/urandom | xxd -r | xxd -p)"
+pseudouuid="$(xxd -p -l 16 /dev/urandom)"
 pseudouuid="${pseudouuid:0:8}-${pseudouuid:8:4}-${pseudouuid:12:4}-${pseudouuid:16:4}-${pseudouuid:20:12}"
 echo "--iprt-iso-maker-file-marker-bourne-sh ${pseudouuid}
 --volume-id=${macOS_release_name:0:5}-files" > "${macOS_release_name}_Installation_files.viso"
