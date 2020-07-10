@@ -2,7 +2,7 @@
 # Push-button installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-virtualbox
-# version 0.94.3
+# version 0.94.4
 
 # Dependencies: bash  coreutils  gzip  unzip  wget  xxd  dmg2img
 # Supported versions:
@@ -945,6 +945,7 @@ cycle_through_terminal_windows
 # the other script copies files to EFI system partition,
 # then sends SIGUSR1 to the installer which restarts the virtual machine
 kbstring='background_pid="$(ps | grep '"'"' sh$'"'"' | cut -d '"'"' '"'"' -f 3)" && '\
+'[[ "${background_pid}" =~ ^[0-9][0-9]*$ ]] && '\
 'app_path="$(ls -d /Install*.app)" && '\
 'cd "/${app_path}/Contents/Resources/" && '\
 './startosinstall --agreetolicense --pidtosignal ${background_pid} --rebootdelay 500 --volume "/Volumes/'"${vm_name}"'"'
