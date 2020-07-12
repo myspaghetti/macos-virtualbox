@@ -1086,7 +1086,7 @@ section above. Assigning these parameters is not required when installing or
 using macOS, only when connecting to the iCould app, iMessage, and other
 apps that authenticate the device with Apple.
 
-These are the variables that are required for iMessage connectivity:
+These are the variables that are usually required for iMessage connectivity:
 
     ${low_contrast_color}DmiSystemFamily    # Model name${default_color}
     ${low_contrast_color}DmiSystemProduct   # Model identifier${default_color}
