@@ -24,7 +24,7 @@ gpu_vram=128                     # VM video RAM in MB, minimum 34, maximum 128
 resolution="1280x800"            # VM display resolution
 
 # The following commented commands, when executed on a genuine Mac,
-# may provide the values for NVRAM and other parameters required by iCloud,
+# may provide the values for NVRAM and EFI parameters required by iCloud,
 # iMessage, and other connected Apple applications.
 # Parameters taken from a genuine Mac may result in a "Call customer support"
 # message if they do not match the genuine Mac exactly.
@@ -1116,8 +1116,9 @@ automatically, applying the EFI and NVRAM variables before booting macOS.
 
         ${highlight_color}Changing the EFI and NVRAM parameters after installation${default_color}
 The variables mentioned above may be edited and applied to an existing macOS
-virtual machine by executing the following command and copying the generated
-files to the macOS EFI System Partition:
+virtual machine by deleting the ${low_contrast_color}.nvram${default_color} file from the directory where the
+virtual machine ${low_contrast_color}.vbox${default_color} file is stored, then executing the following
+command and copying the generated files to the macOS EFI System Partition:
 
     ${low_contrast_color}${0} "'\\'"${default_color}
 ${low_contrast_color}configure_vm create_nvram_files create_macos_installation_files_viso${default_color}
@@ -1201,6 +1202,15 @@ default VirtualBox VDI format into the VMDK format with the following command:
 QEMU and KVM require additional configuration that is beyond the scope of the
 script.
 
+        ${highlight_color}VirtualBox Native Execution Manager${default_color}
+The VirtualBox Native Execution Manager (NEM) is an experimental VirtualBox
+feature. VirtualBox uses NEM when access to VT-x and AMD-V is blocked by
+virtualization software or execution protection features such as Hyper-V,
+Windows Sandbox, WSL2, memory integrity protection, and other software.
+macOS and the macOS installer have memory corruption issues under NEM
+virtualization. The script checks for NEM and exits with an error message if
+NEM is detected.
+
         ${highlight_color}Bootloaders${default_color}
 The macOS VirtualBox guest is loaded without extra bootloaders, but it is
 compatible with OpenCore. OpenCore requires additonal configuration that is
@@ -1219,15 +1229,6 @@ OpenCore may be able to load open-source audio drivers in VirtualBox.
 The VirtualBox EFI implementation does not properly load the FileVault full disk
 encryption password prompt upon boot. The bootloader OpenCore is be able to
 load the password prompt with the parameter \"ProvideConsoleGop\" set to \"true\".
-
-        ${highlight_color}VirtualBox Native Execution Manager${default_color}
-The VirtualBox Native Execution Manager (NEM) is an experimental VirtualBox
-feature. VirtualBox uses NEM when access to VT-x and AMD-V is blocked by
-virtualization software or execution protection features such as Hyper-V,
-Windows Sandbox, WSL2, memory integrity protection, and other software.
-macOS and the macOS installer have memory corruption issues under NEM
-virtualization. The script checks for NEM and exits with an error message if
-NEM is detected.
 
         ${highlight_color}Further information${default_color}
 Further information is available at the following URL:
