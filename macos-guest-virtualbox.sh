@@ -35,9 +35,9 @@ DmiSystemFamily="MacBook Pro"        # Model Name
 DmiSystemProduct="MacBookPro11,2"    # Model Identifier
 DmiSystemSerial="NO_DEVICE_SN"       # Serial Number (system)
 DmiSystemUuid="CAFECAFE-CAFE-CAFE-CAFE-DECAFFDECAFF" # Hardware UUID
-DmiOEMVBoxVer="string:1"             # Apple ROM Info
-DmiOEMVBoxRev="string:.23456"        # Apple ROM Info
 DmiBIOSVersion="string:MBP7.89"      # Boot ROM Version
+DmiOEMVBoxVer="string:1"             # Apple ROM Info - left of the first dot
+DmiOEMVBoxRev="string:.23.45.6"      # Apple ROM Info - first dot and onward
 #   ioreg -l | grep -m 1 board-id
 DmiBoardProduct="Mac-3CBD00234E554E41"
 #   nvram 4D1EDE05-38C7-4A6A-9CC6-4BCCA8B38C14:MLB
@@ -1102,7 +1102,8 @@ These are the variables that are usually required for iMessage connectivity:
     ${low_contrast_color}SYSTEM_UUID        # System unique identifier (stored in NVRAM)${default_color}
 
 The comments at the top of the script specify how to view these variables
-on a genuine Mac.
+on a genuine Mac. Some new Macs do not output the Apple ROM info which suggests
+the parameter is not always required.
 
         ${highlight_color}Applying the EFI and NVRAM parameters${default_color}
 The EFI and NVRAM parameters may be set in the script before installation by
