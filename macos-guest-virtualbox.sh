@@ -816,10 +816,10 @@ if [[ -n $(
 ) ]]; then
     echo "Could not attach \"${macOS_release_name}_Installation_files.viso\". Exiting."; exit
 fi
-echo "Starting virtual machine \"${vm_name}\".
+echo -e "Starting virtual machine \"${vm_name}\".
 This should take a couple of minutes. If booting fails, exit the script by
 pressing CTRL-C then see the documentation for information about applying
-different CPU profiles."
+different CPU profiles in the section ${highlight_color}CPU profiles and CPUID settings${default_color}.
 ( VBoxManage startvm "${vm_name}" >/dev/null 2>&1 )
 echo -e "\nUntil the script completes, please do not manually interact with\nthe virtual machine."
 [[ -z "${kscd}" ]] && declare_scancode_dict
