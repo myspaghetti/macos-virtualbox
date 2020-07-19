@@ -826,8 +826,6 @@ different CPU profiles in the section ${highlight_color}CPU profiles and CPUID s
 ( VBoxManage startvm "${vm_name}" >/dev/null 2>&1 )
 echo -e "\nUntil the script completes, please do not manually interact with\nthe virtual machine."
 [[ -z "${kscd}" ]] && declare_scancode_dict
-# check if xHCI (USB 3.0) support is enabled for faster scancode typing
-xhci="$(VBoxManage showvminfo "${vm_name}" --machinereadable)"
 prompt_lang_utils
 prompt_terminal_ready
 print_dimly "Please wait"
@@ -923,8 +921,6 @@ fi
 echo "The VM will boot from the populated installer base system virtual disk."
 ( VBoxManage startvm "${vm_name}" >/dev/null 2>&1 )
 [[ -z "${kscd}" ]] && declare_scancode_dict
-# check if xHCI (USB 3.0) support is enabled for faster scancode typing
-xhci="$(VBoxManage showvminfo "${vm_name}" --machinereadable)"
 prompt_lang_utils
 prompt_terminal_ready
 add_another_terminal
