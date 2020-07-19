@@ -2,7 +2,7 @@
 # Push-button installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-virtualbox
-# version 0.95.0
+# version 0.95.1
 
 # Dependencies: bash  coreutils  gzip  unzip  wget  xxd  dmg2img
 # Supported versions:
@@ -953,8 +953,6 @@ kbstring='disks="$(diskutil list | grep -o "[0-9][^ ]* GB *disk[0-9]$" | sort -g
 'cp -r "/Volumes/'"${macOS_release_name:0:5}-files"'/ESP/"* "/Volumes/'"${vm_name}"'/tmp/mount_efi/" && '\
 'installer_pid=$(ps | grep startosinstall | grep -v grep | cut -d '"'"' '"'"' -f 3) && '\
 'kill -SIGUSR1 ${installer_pid}'
-# check if xHCI (USB 3.0) support is enabled for faster scancode typing
-xhci="$(VBoxManage showvminfo "${vm_name}" --machinereadable)"
 send_keys
 send_enter
 sleep 1
