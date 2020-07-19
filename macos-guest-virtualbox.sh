@@ -2,11 +2,11 @@
 # Push-button installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-virtualbox
-# version 0.94.4
+# version 0.95.0
 
 # Dependencies: bash  coreutils  gzip  unzip  wget  xxd  dmg2img
 # Supported versions:
-#               VirtualBox with Extension Pack >= 6.1.6
+#               VirtualBox >= 6.1.6
 #               GNU bash >= 4.3, GNU coreutils >= 8.22,
 #               GNU gzip >= 1.5, GNU wget >= 1.14,
 #               Info-ZIP unzip >= 6.0, xxd >= 1.11,
@@ -285,11 +285,15 @@ fi
 # Oracle VM VirtualBox Extension Pack
 extpacks="$(VBoxManage list extpacks 2>/dev/null)"
 if [[ "$(expr match "${extpacks}" '.*Oracle VM VirtualBox Extension Pack')" -le "0" ||
-      "$(expr match "${extpacks}" '.*Usable:[[:blank:]]*false')" -gt "0" ]]; then
-    echo "Please make sure Oracle VM VirtualBox Extension Pack is installed, and that"
-    echo "all installed VirtualBox extensions are listed as usable when"
-    echo "executing the command \"VBoxManage list extpacks\""
-    exit
+      "$(expr match "${extpacks}" '.*Usable:[[:blank:]]*false')" -gt "0" ]];
+then
+    echo -e "\nThe command \"VBoxManage list extpacks\" either does not list the Oracle VM"
+    echo -e "VirtualBox Extension Pack, or lists one or more extensions as unusable."
+    echo -e "The virtual machine will be configured without USB xHCI controllers,"
+    echo -e "sending keyboard scancodes through the script will be very slow."
+    extension_pack_usb3_support="--usbxhci off"
+else
+    extension_pack_usb3_support="--usbxhci on"
 fi
 
 # dmg2img
@@ -748,7 +752,7 @@ function configure_vm() {
 print_dimly "stage: configure_vm"
 VBoxManage modifyvm "${vm_name}" --cpus "${cpu_count}" --memory "${memory_size}" \
  --vram "${gpu_vram}" --pae on --boot1 none --boot2 none --boot3 none \
- --boot4 none --firmware efi --rtcuseutc on --usbxhci on --chipset ich9 \
+ --boot4 none --firmware efi --rtcuseutc on --chipset ich9 ${extension_pack_usb3_support} \
  --mouse usbtablet --keyboard usb --audiocontroller hda --audiocodec stac9221
 
 VBoxManage setextradata "${vm_name}" \
@@ -823,9 +827,16 @@ different CPU profiles in the section ${highlight_color}CPU profiles and CPUID s
 ( VBoxManage startvm "${vm_name}" >/dev/null 2>&1 )
 echo -e "\nUntil the script completes, please do not manually interact with\nthe virtual machine."
 [[ -z "${kscd}" ]] && declare_scancode_dict
+# check if xHCI (USB 3.0) support is enabled for faster scancode typing
+xhci="$(VBoxManage showvminfo "${vm_name}" --machinereadable)"
 prompt_lang_utils
 prompt_terminal_ready
-print_dimly "Please wait"
+if [[ "${xhci}" =~ 'xhci="on"' ]]; then
+    print_dimly "Please wait"
+else
+    print_dimly "VM configured without xHCI support, sending scancodes will be very slow."
+    print_dimly "Please wait extra patiently"
+fi
 # Assigning "physical" disks from largest to smallest to "${disks[]}" array
 # Partitining largest disk as APFS
 # Partition second-largest disk as JHFS+
@@ -918,6 +929,8 @@ fi
 echo "The VM will boot from the populated installer base system virtual disk."
 ( VBoxManage startvm "${vm_name}" >/dev/null 2>&1 )
 [[ -z "${kscd}" ]] && declare_scancode_dict
+# check if xHCI (USB 3.0) support is enabled for faster scancode typing
+xhci="$(VBoxManage showvminfo "${vm_name}" --machinereadable)"
 prompt_lang_utils
 prompt_terminal_ready
 add_another_terminal
@@ -925,7 +938,12 @@ echo -e "\nThe second open Terminal in the virtual machine copies EFI and NVRAM 
 echo -e "to the target EFI system partition when the installer finishes preparing."
 echo -e "\nAfter the installer finishes preparing and the EFI and NVRAM files are copied,"
 echo -ne "macOS will install and boot up when booting the target disk.\n"
-print_dimly "Please wait"
+if [[ "${xhci}" =~ 'xhci="on"' ]]; then
+    print_dimly "Please wait"
+else
+    print_dimly "VM configured without xHCI support, sending scancodes will be very slow."
+    print_dimly "Please wait extra patiently"
+fi
 # execute script concurrently, catch SIGUSR1 when installer finishes preparing
 kbstring='disks="$(diskutil list | grep -o "[0-9][^ ]* GB *disk[0-9]$" | sort -gr | grep -o disk[0-9])" && '\
 'disks=(${disks[@]}) && '\
@@ -935,6 +953,8 @@ kbstring='disks="$(diskutil list | grep -o "[0-9][^ ]* GB *disk[0-9]$" | sort -g
 'cp -r "/Volumes/'"${macOS_release_name:0:5}-files"'/ESP/"* "/Volumes/'"${vm_name}"'/tmp/mount_efi/" && '\
 'installer_pid=$(ps | grep startosinstall | grep -v grep | cut -d '"'"' '"'"' -f 3) && '\
 'kill -SIGUSR1 ${installer_pid}'
+# check if xHCI (USB 3.0) support is enabled for faster scancode typing
+xhci="$(VBoxManage showvminfo "${vm_name}" --machinereadable)"
 send_keys
 send_enter
 sleep 1
@@ -1457,20 +1477,35 @@ function clear_input_buffer_then_read() {
 
 # read variable kbstring and convert string to scancodes and send to guest vm
 function send_keys() {
-    scancode=$(for (( i=0; i < ${#kbstring}; i++ )); do
-                 c[${i}]=${kbstring:${i}:1}; echo -n ${kscd[${c[${i}]}]}" "
-               done)
-    VBoxManage controlvm "${vm_name}" keyboardputscancode ${scancode} 1>/dev/null 2>&1
+    if [[ "${xhci}" =~ 'xhci="on"' ]];
+    then  # fast
+        scancode=""
+        for (( i=0; i < ${#kbstring}; i++ )); do
+            scancode="${scancode}${kscd[${kbstring:${i}:1}]} "
+        done
+        VBoxManage controlvm "${vm_name}" keyboardputscancode ${scancode} 1>/dev/null 2>&1
+    else  # slow but steady
+        for (( i=0; i < ${#kbstring}; i++ )); do
+            VBoxManage controlvm "${vm_name}" keyboardputscancode ${kscd[${kbstring:${i}:1}]} 1>/dev/null 2>&1
+        done
+    fi
 }
 
 # read variable kbspecial and send keystrokes by name,
 # for example "CTRLprs c CTRLrls", and send to guest vm
 function send_special() {
-    scancode=""
-    for keypress in ${kbspecial}; do
-        scancode="${scancode}${kscd[${keypress}]}"" "
-    done
-    VBoxManage controlvm "${vm_name}" keyboardputscancode ${scancode} 1>/dev/null 2>&1
+    if [[ "${xhci}" =~ 'xhci="on"' ]];
+    then  # fast
+        scancode=""
+        for keypress in ${kbspecial}; do
+            scancode="${scancode}${kscd[${keypress}]} "
+        done
+        VBoxManage controlvm "${vm_name}" keyboardputscancode ${scancode} 1>/dev/null 2>&1
+    else  # slow but steady
+        for keypress in ${kbspecial}; do
+            VBoxManage controlvm "${vm_name}" keyboardputscancode ${kscd[${keypress}]} 1>/dev/null 2>&1
+        done
+    fi
 }
 
 function send_enter() {
@@ -1500,17 +1535,6 @@ function add_another_terminal() {
     kbspecial='CMDprs n CMDrls'
     send_special
     sleep 1
-}
-
-function if_num_of_terminals_lt_count_then_run_next_kbstring() {
-    # sleep if "${count}" or more bash shells are active
-    # when less than "${count}" are active, run "${next_string}"
-    # "${count}" and "${next_string}" need to be passed as positional parameters
-    local count="${1}"
-    local next_kbstring="${2}"
-    kbstring='while [ "$( ps -c | grep -c bash )" -ge '"${count}"' ]; do sleep 2; done; '"${next_kbstring}"
-    send_keys
-    send_enter
 }
 
 function cycle_through_terminal_windows() {
