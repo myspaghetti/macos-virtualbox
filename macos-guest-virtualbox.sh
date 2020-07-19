@@ -2,7 +2,7 @@
 # Push-button installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-virtualbox
-# version 0.95.2
+# version 0.95.3
 
 # Dependencies: bash  coreutils  gzip  unzip  wget  xxd  dmg2img
 # Supported versions:
@@ -831,12 +831,7 @@ echo -e "\nUntil the script completes, please do not manually interact with\nthe
 xhci="$(VBoxManage showvminfo "${vm_name}" --machinereadable)"
 prompt_lang_utils
 prompt_terminal_ready
-if [[ "${xhci}" =~ 'xhci="on"' ]]; then
-    print_dimly "Please wait"
-else
-    print_dimly "VM configured without xHCI support, sending scancodes will be very slow."
-    print_dimly "Please wait extra patiently"
-fi
+print_dimly "Please wait"
 # Assigning "physical" disks from largest to smallest to "${disks[]}" array
 # Partitining largest disk as APFS
 # Partition second-largest disk as JHFS+
@@ -938,12 +933,7 @@ echo -e "\nThe second open Terminal in the virtual machine copies EFI and NVRAM 
 echo -e "to the target EFI system partition when the installer finishes preparing."
 echo -e "\nAfter the installer finishes preparing and the EFI and NVRAM files are copied,"
 echo -ne "macOS will install and boot up when booting the target disk.\n"
-if [[ "${xhci}" =~ 'xhci="on"' ]]; then
-    print_dimly "Please wait"
-else
-    print_dimly "VM configured without xHCI support, sending scancodes will be very slow."
-    print_dimly "Please wait extra patiently"
-fi
+print_dimly "Please wait"
 # execute script concurrently, catch SIGUSR1 when installer finishes preparing
 kbstring='disks="$(diskutil list | grep -o "[0-9][^ ]* GB *disk[0-9]$" | sort -gr | grep -o disk[0-9])" && '\
 'disks=(${disks[@]}) && '\
@@ -1475,35 +1465,22 @@ function clear_input_buffer_then_read() {
 
 # read variable kbstring and convert string to scancodes and send to guest vm
 function send_keys() {
-    if [[ "${xhci}" =~ 'xhci="on"' ]];
-    then  # fast
-        scancode=$(for (( i=0; i < ${#kbstring}; i++ )); do
-                       # intermediate c variable because the shell gets confused otherwise
-                       c[${i}]=${kbstring:${i}:1}; echo -n ${kscd[${c[${i}]}]}" "
-                   done)
-        VBoxManage controlvm "${vm_name}" keyboardputscancode ${scancode} 1>/dev/null 2>&1
-    else  # slow but steady
-        for (( i=0; i < ${#kbstring}; i++ )); do
-            VBoxManage controlvm "${vm_name}" keyboardputscancode ${kscd[${kbstring:${i}:1}]} 1>/dev/null 2>&1
-        done
-    fi
+    # It's faster to send all the scancodes at once, but some VM configurations
+    # accept scancodes sent by multiple VBoxManage commands concurrently instead
+    # of sequentially, and there's no built-in method to tell the host to wait
+    # until the scancodes have finished being entered.
+    # This leaves only the slow, keypress-by-keypress method.
+    for (( i=0; i < ${#kbstring}; i++ )); do
+        VBoxManage controlvm "${vm_name}" keyboardputscancode ${kscd[${kbstring:${i}:1}]} 1>/dev/null 2>&1
+    done
 }
 
 # read variable kbspecial and send keystrokes by name,
 # for example "CTRLprs c CTRLrls", and send to guest vm
 function send_special() {
-    if [[ "${xhci}" =~ 'xhci="on"' ]];
-    then  # fast
-        scancode=""
-        for keypress in ${kbspecial}; do
-            scancode="${scancode}${kscd[${keypress}]}"" "
-        done
-        VBoxManage controlvm "${vm_name}" keyboardputscancode ${scancode} 1>/dev/null 2>&1
-    else  # slow but steady
-        for keypress in ${kbspecial}; do
-            VBoxManage controlvm "${vm_name}" keyboardputscancode ${kscd[${keypress}]} 1>/dev/null 2>&1
-        done
-    fi
+    for keypress in ${kbspecial}; do
+        VBoxManage controlvm "${vm_name}" keyboardputscancode ${kscd[${keypress}]} 1>/dev/null 2>&1
+    done
 }
 
 function send_enter() {
