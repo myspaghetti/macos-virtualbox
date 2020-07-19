@@ -289,8 +289,7 @@ if [[ "$(expr match "${extpacks}" '.*Oracle VM VirtualBox Extension Pack')" -le 
 then
     echo -e "\nThe command \"VBoxManage list extpacks\" either does not list the Oracle VM"
     echo -e "VirtualBox Extension Pack, or lists one or more extensions as unusable."
-    echo -e "The virtual machine will be configured without USB xHCI controllers,"
-    echo -e "sending keyboard scancodes through the script will be very slow."
+    echo -e "The virtual machine will be configured without USB xHCI controllers."
     extension_pack_usb3_support="--usbxhci off"
 else
     extension_pack_usb3_support="--usbxhci on"
