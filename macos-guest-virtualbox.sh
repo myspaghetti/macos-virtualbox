@@ -2,7 +2,7 @@
 # Push-button installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-virtualbox
-# version 0.95.1
+# version 0.95.2
 
 # Dependencies: bash  coreutils  gzip  unzip  wget  xxd  dmg2img
 # Supported versions:
@@ -1477,10 +1477,10 @@ function clear_input_buffer_then_read() {
 function send_keys() {
     if [[ "${xhci}" =~ 'xhci="on"' ]];
     then  # fast
-        scancode=""
-        for (( i=0; i < ${#kbstring}; i++ )); do
-            scancode="${scancode}${kscd[${kbstring:${i}:1}]} "
-        done
+        scancode=$(for (( i=0; i < ${#kbstring}; i++ )); do
+                       # intermediate c variable because the shell gets confused otherwise
+                       c[${i}]=${kbstring:${i}:1}; echo -n ${kscd[${c[${i}]}]}" "
+                   done)
         VBoxManage controlvm "${vm_name}" keyboardputscancode ${scancode} 1>/dev/null 2>&1
     else  # slow but steady
         for (( i=0; i < ${#kbstring}; i++ )); do
@@ -1496,7 +1496,7 @@ function send_special() {
     then  # fast
         scancode=""
         for keypress in ${kbspecial}; do
-            scancode="${scancode}${kscd[${keypress}]} "
+            scancode="${scancode}${kscd[${keypress}]}"" "
         done
         VBoxManage controlvm "${vm_name}" keyboardputscancode ${scancode} 1>/dev/null 2>&1
     else  # slow but steady
