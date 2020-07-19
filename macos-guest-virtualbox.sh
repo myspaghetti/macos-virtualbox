@@ -2,7 +2,7 @@
 # Push-button installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-virtualbox
-# version 0.95.3
+# version 0.96.0
 
 # Dependencies: bash  coreutils  gzip  unzip  wget  xxd  dmg2img
 # Supported versions:
@@ -595,7 +595,7 @@ echo -e "installation files from swcdn.apple.com\n"
 pseudouuid="$(xxd -p -l 16 /dev/urandom)"
 pseudouuid="${pseudouuid:0:8}-${pseudouuid:8:4}-${pseudouuid:12:4}-${pseudouuid:16:4}-${pseudouuid:20:12}"
 echo "--iprt-iso-maker-file-marker-bourne-sh ${pseudouuid}
---volume-id=${macOS_release_name:0:5}-files" > "${macOS_release_name}_Installation_files.viso"
+--volume-id=${macOS_release_name:0:5}-files" > "${macOS_release_name}_installation_files.viso"
 
 # Apple macOS installation files
 for filename in "BaseSystem.chunklist" \
@@ -604,32 +604,32 @@ for filename in "BaseSystem.chunklist" \
                 "AppleDiagnostics.chunklist" \
                 "BaseSystem.dmg" ; do
     if [[ -s "${macOS_release_name}_${filename}" ]]; then
-        echo "/${filename}=\"${macOS_release_name}_${filename}\"" >> "${macOS_release_name}_Installation_files.viso"
+        echo "/${filename}=\"${macOS_release_name}_${filename}\"" >> "${macOS_release_name}_installation_files.viso"
     fi
 done
 
 if [[ -s "${macOS_release_name}_InstallESD.part00" ]]; then
     for part in "${macOS_release_name}_InstallESD.part"*; do
-        echo "/InstallESD${part##*InstallESD}=\"${part}\"" >> "${macOS_release_name}_Installation_files.viso"
+        echo "/InstallESD${part##*InstallESD}=\"${part}\"" >> "${macOS_release_name}_installation_files.viso"
     done
 fi
 
 # NVRAM binary files
 for filename in "MLB.bin" "ROM.bin" "csr-active-config.bin" "system-id.bin"; do
     if [[ -s "${vm_name}_${filename}" ]]; then
-        echo "/ESP/EFI/NVRAM/${filename}=\"${vm_name}_${filename}\"" >> "${macOS_release_name}_Installation_files.viso"
+        echo "/ESP/EFI/NVRAM/${filename}=\"${vm_name}_${filename}\"" >> "${macOS_release_name}_installation_files.viso"
     fi
 done
 
 # EFI drivers for VirtualBox 6.0 and 5.2
 for filename in "ApfsDriverLoader.efi" "AppleImageLoader.efi" "AppleUiSupport.efi"; do
     if [[ -s "${filename}" ]]; then
-        echo "/ESP/EFI/OC/Drivers/${filename}=\"${filename}\"" >> "${macOS_release_name}_Installation_files.viso"
+        echo "/ESP/EFI/OC/Drivers/${filename}=\"${filename}\"" >> "${macOS_release_name}_installation_files.viso"
     fi
 done
 
 # EFI startup script
-echo "/ESP/startup.nsh=\"${vm_name}_startup.nsh\"" >> "${macOS_release_name}_Installation_files.viso"
+echo "/ESP/startup.nsh=\"${vm_name}_startup.nsh\"" >> "${macOS_release_name}_installation_files.viso"
 
 }
 
@@ -715,34 +715,34 @@ fi
 # Create the installation media virtual disk image
 function create_installer_virtual_disk() {
 print_dimly "stage: create_installer_virtual_disk"
-if [[ -w "${macOS_release_name} bootable installer.${storage_format}" ]]; then
-    echo "\"${macOS_release_name} bootable installer.${storage_format}\" virtual disk image exists."
-    echo -ne "${warning_color}Delete \"${macOS_release_name} bootable installer.${storage_format}\"?${default_color}"
+if [[ -w "${macOS_release_name}_bootable_installer.${storage_format}" ]]; then
+    echo "\"${macOS_release_name}_bootable_installer.${storage_format}\" virtual disk image exists."
+    echo -ne "${warning_color}Delete \"${macOS_release_name}_bootable_installer.${storage_format}\"?${default_color}"
     prompt_delete_y_n
     if [[ "${delete}" == "y" ]]; then
         if [[ "$( VBoxManage list runningvms )" =~ \""${vm_name}"\" ]]
         then
-            echo "\"${macOS_release_name} bootable installer.${storage_format}\" may be deleted"
+            echo "\"${macOS_release_name}_bootable_installer.${storage_format}\" may be deleted"
             echo "only when the virtual machine is powered off."
             echo "Exiting."
             exit
         else
             VBoxManage storagectl "${vm_name}" --remove --name SATA >/dev/null 2>&1
-            VBoxManage closemedium "${macOS_release_name} bootable installer.${storage_format}" >/dev/null 2>&1
-            rm "${macOS_release_name} bootable installer.${storage_format}"
+            VBoxManage closemedium "${macOS_release_name}_bootable_installer.${storage_format}" >/dev/null 2>&1
+            rm "${macOS_release_name}_bootable_installer.${storage_format}"
         fi
     else
         echo "Exiting."
         exit
     fi
 fi
-if [[ ! -e "${macOS_release_name} bootable installer.${storage_format}" ]]; then
+if [[ ! -e "${macOS_release_name}_bootable_installer.${storage_format}" ]]; then
     echo "Creating ${macOS_release_name} installation media virtual disk image."
     VBoxManage storagectl "${vm_name}" --remove --name SATA >/dev/null 2>&1
-    VBoxManage closemedium "${macOS_release_name} bootable installer.${storage_format}" >/dev/null 2>&1
+    VBoxManage closemedium "${macOS_release_name}_bootable_installer.${storage_format}" >/dev/null 2>&1
     VBoxManage createmedium --size=12000 \
                             --format "${storage_format}" \
-                            --filename "${macOS_release_name} bootable installer.${storage_format}" \
+                            --filename "${macOS_release_name}_bootable_installer.${storage_format}" \
                             --variant standard 2>/dev/tty
 fi
 }
@@ -803,9 +803,9 @@ if [[ -n $(
 fi
 if [[ -n $(
     2>&1 VBoxManage storageattach "${vm_name}" --storagectl SATA --port 1 --hotpluggable on \
-                --type hdd --nonrotational on --medium "${macOS_release_name} bootable installer.${storage_format}" >/dev/null
+                --type hdd --nonrotational on --medium "${macOS_release_name}_bootable_installer.${storage_format}" >/dev/null
 ) ]]; then
-    echo "Could not attach \"${macOS_release_name} bootable installer.${storage_format}\". Exiting."; exit
+    echo "Could not attach \"${macOS_release_name}_bootable_installer.${storage_format}\". Exiting."; exit
 fi
 if [[ -n $(
     2>&1 VBoxManage storageattach "${vm_name}" --storagectl SATA --port 2 --hotpluggable on \
@@ -815,9 +815,47 @@ if [[ -n $(
 fi
 if [[ -n $(
     2>&1 VBoxManage storageattach "${vm_name}" --storagectl SATA --port 3 \
-                --type dvddrive --medium "${macOS_release_name}_Installation_files.viso" >/dev/null
+                --type dvddrive --medium "${macOS_release_name}_installation_files.viso" >/dev/null
 ) ]]; then
-    echo "Could not attach \"${macOS_release_name}_Installation_files.viso\". Exiting."; exit
+    echo "Could not attach \"${macOS_release_name}_installation_files.viso\". Exiting."; exit
+fi
+echo -e "\nCreating VirtualBox 6 virtual ISO containing macOS Terminal script"
+echo -e "for partitioning and populating the virtual disks.\n"
+pseudouuid="$(xxd -p -l 16 /dev/urandom)"
+pseudouuid="${pseudouuid:0:8}-${pseudouuid:8:4}-${pseudouuid:12:4}-${pseudouuid:16:4}-${pseudouuid:20:12}"
+echo "--iprt-iso-maker-file-marker-bourne-sh ${pseudouuid}
+--volume-id=diskutil-sh" > "${vm_name}_populate_virtual_disks.viso"
+echo "/diskutil.sh=\"${vm_name}_diskutil.txt\"" >> "${vm_name}_populate_virtual_disks.viso"
+# Assigning "physical" disks from largest to smallest to "${disks[]}" array
+# Partitining largest disk as APFS
+# Partition second-largest disk as JHFS+
+echo '# this script is executed on the macOS virtual machine' > "${vm_name}_diskutil.txt"
+echo 'disks="$(diskutil list | grep -o "\*[0-9][^ ]* GB *disk[0-9]$" | grep -o "[0-9].*" | sort -gr | grep -o disk[0-9] )" && \
+disks=(${disks[@]}) && \
+if [ -z "${disks}" ]; then echo "Could not find disks"; fi && \
+[ -n "${disks[0]}" ] && \
+diskutil partitionDisk "/dev/${disks[0]}" 1 GPT APFS "'"${vm_name}"'" R && \
+diskutil partitionDisk "/dev/${disks[1]}" 1 GPT JHFS+ "Install" R && \' >> "${vm_name}_diskutil.txt"
+# Create secondary base system on the Install disk
+# and copy macOS install app files to the app directory
+echo 'asr restore --source "/Volumes/'"${macOS_release_name:0:5}-files"'/BaseSystem.dmg" --target /Volumes/Install --erase --noprompt && \
+app_path="$(ls -d "/Volumes/"*"Base System 1/Install"*.app)" && \
+install_path="${app_path}/Contents/SharedSupport/" && \
+mkdir -p "${install_path}" && cd "/Volumes/'"${macOS_release_name:0:5}-files/"'" && \
+cp *.chunklist *.plist *.dmg "${install_path}" && \
+echo "" && echo "Copying the several-GB InstallESD.dmg to the installer app directory" && echo "Please wait" && \
+if [ -s "${install_path}/InstallESD.dmg" ]; then \
+rm -f "${install_path}/InstallESD.dmg" ; fi && \
+for part in InstallESD.part*; do echo "Concatenating ${part}"; cat "${part}" >> "${install_path}/InstallESD.dmg"; done && \
+sed -i.bak -e "s/InstallESDDmg\.pkg/InstallESD.dmg/" -e "s/pkg\.InstallESDDmg/dmg.InstallESD/" "${install_path}InstallInfo.plist" && \
+sed -i.bak2 -e "/InstallESD\.dmg/{n;N;N;N;d;}" "${install_path}InstallInfo.plist" && \' >> "${vm_name}_diskutil.txt"
+# shut down the virtual machine
+echo 'shutdown -h now' >> "${vm_name}_diskutil.txt"
+if [[ -n $(
+    2>&1 VBoxManage storageattach "${vm_name}" --storagectl SATA --port 4 \
+                --type dvddrive --medium "${vm_name}_populate_virtual_disks.viso" >/dev/null
+) ]]; then
+    echo "Could not attach \"${vm_name}_populate_virtual_disks.viso\". Exiting."; exit
 fi
 echo -e "Starting virtual machine \"${vm_name}\".
 This should take a couple of minutes. If booting fails, exit the script by
@@ -829,32 +867,7 @@ echo -e "\nUntil the script completes, please do not manually interact with\nthe
 prompt_lang_utils
 prompt_terminal_ready
 print_dimly "Please wait"
-# Assigning "physical" disks from largest to smallest to "${disks[]}" array
-# Partitining largest disk as APFS
-# Partition second-largest disk as JHFS+
-kbstring='disks="$(diskutil list | grep -o "\*[0-9][^ ]* GB *disk[0-9]$" | grep -o "[0-9].*" | sort -gr | grep -o disk[0-9] )" && '\
-'disks=(${disks[@]}) && '\
-'if [ -z "${disks}" ]; then echo "Could not find disks"; fi && '\
-'[ -n "${disks[0]}" ] && '\
-'diskutil partitionDisk "/dev/${disks[0]}" 1 GPT APFS "'"${vm_name}"'" R && '\
-'diskutil partitionDisk "/dev/${disks[1]}" 1 GPT JHFS+ "Install" R && '
-send_keys
-# Create secondary base system on the Install disk
-# and copy macOS install app files to the app directory
-kbstring='asr restore --source "/Volumes/'"${macOS_release_name:0:5}-files"'/BaseSystem.dmg" --target /Volumes/Install --erase --noprompt && '\
-'app_path="$(ls -d "/Volumes/"*"Base System 1/Install"*.app)" && '\
-'install_path="${app_path}/Contents/SharedSupport/" && '\
-'mkdir -p "${install_path}" && cd "/Volumes/'"${macOS_release_name:0:5}-files/"'" && '\
-'cp *.chunklist *.plist *.dmg "${install_path}" && '\
-'echo "" && echo "Copying the several-GB InstallESD.dmg to the installer app directory" && echo "Please wait" && '\
-'if [ -s "${install_path}/InstallESD.dmg" ]; then '\
-'rm -f "${install_path}/InstallESD.dmg" ; fi && '\
-'for part in InstallESD.part*; do echo "Concatenating ${part}"; cat "${part}" >> "${install_path}/InstallESD.dmg"; done && '\
-'sed -i.bak -e "s/InstallESDDmg\.pkg/InstallESD.dmg/" -e "s/pkg\.InstallESDDmg/dmg.InstallESD/" "${install_path}InstallInfo.plist" && '\
-'sed -i.bak2 -e "/InstallESD\.dmg/{n;N;N;N;d;}" "${install_path}InstallInfo.plist" && '
-send_keys
-# shut down the virtual machine
-kbstring='shutdown -h now'
+kbstring='sh /Volumes/diskutil-sh/diskutil.sh'
 send_keys
 send_enter
 echo "Partitioning the target virtual disk and the installer virtual disk.
@@ -908,15 +921,49 @@ if [[ -n $(
 fi
 if [[ -n $(
     2>&1 VBoxManage storageattach "${vm_name}" --storagectl SATA --port 1 --hotpluggable on \
-                --type hdd --nonrotational on --medium "${macOS_release_name} bootable installer.${storage_format}" >/dev/null
+                --type hdd --nonrotational on --medium "${macOS_release_name}_bootable_installer.${storage_format}" >/dev/null
 ) ]]; then
-    echo "Could not attach \"${macOS_release_name} bootable installer.${storage_format}\". Exiting."; exit
+    echo "Could not attach \"${macOS_release_name}_bootable_installer.${storage_format}\". Exiting."; exit
 fi
 if [[ -n $(
     2>&1 VBoxManage storageattach "${vm_name}" --storagectl SATA --port 2 \
-                --type dvddrive --medium "${macOS_release_name}_Installation_files.viso" >/dev/null
+                --type dvddrive --medium "${macOS_release_name}_installation_files.viso" >/dev/null
 ) ]]; then
-    echo "Could not attach \"${macOS_release_name}_Installation_files.viso\". Exiting."; exit
+    echo "Could not attach \"${macOS_release_name}_installation_files.viso\". Exiting."; exit
+fi
+echo -e "\nCreating VirtualBox 6 virtual ISO containing macOS Terminal scripts"
+echo -e "for populating the target disks.\n"
+pseudouuid="$(xxd -p -l 16 /dev/urandom)"
+pseudouuid="${pseudouuid:0:8}-${pseudouuid:8:4}-${pseudouuid:12:4}-${pseudouuid:16:4}-${pseudouuid:20:12}"
+echo "--iprt-iso-maker-file-marker-bourne-sh ${pseudouuid}
+--volume-id=target-sh" > "${vm_name}_populate_macos_target_disk.viso"
+echo "/nvram.sh=\"${vm_name}_configure_nvram.txt\"" >> "${vm_name}_populate_macos_target_disk.viso"
+echo "/startosinstall.sh=\"${vm_name}_startosinstall.txt\"" >> "${vm_name}_populate_macos_target_disk.viso"
+# execute script concurrently, catch SIGUSR1 when installer finishes preparing
+echo '# this script is executed on the macOS virtual machine' > "${vm_name}_configure_nvram.txt"
+echo 'disks="$(diskutil list | grep -o "[0-9][^ ]* GB *disk[0-9]$" | sort -gr | grep -o disk[0-9])" && \
+disks=(${disks[@]}) && \
+printf '"'"'trap "exit 0" SIGUSR1; while true; do sleep 10; done;'"'"' | sh && \
+mkdir -p "/Volumes/'"${vm_name}"'/tmp/mount_efi" && \
+mount_msdos /dev/${disks[0]}s1 "/Volumes/'"${vm_name}"'/tmp/mount_efi" && \
+cp -r "/Volumes/'"${macOS_release_name:0:5}-files"'/ESP/"* "/Volumes/'"${vm_name}"'/tmp/mount_efi/" && \
+installer_pid=$(ps | grep startosinstall | grep -v grep | cut -d '"'"' '"'"' -f 3) && \
+kill -SIGUSR1 ${installer_pid}' > "${vm_name}_configure_nvram.txt"
+# Find background process PID, then
+# start the installer, send SIGUSR1 to concurrent bash script,
+# the other script copies files to EFI system partition,
+# then sends SIGUSR1 to the installer which restarts the virtual machine
+echo '# this script is executed on the macOS virtual machine' > "${vm_name}_startosinstall.txt"
+echo 'background_pid="$(ps | grep '"'"' sh$'"'"' | cut -d '"'"' '"'"' -f 3)" && \
+[[ "${background_pid}" =~ ^[0-9][0-9]*$ ]] && \
+app_path="$(ls -d /Install*.app)" && \
+cd "/${app_path}/Contents/Resources/" && \
+./startosinstall --agreetolicense --pidtosignal ${background_pid} --rebootdelay 500 --volume "/Volumes/'"${vm_name}"'"' >> "${vm_name}_startosinstall.txt"
+if [[ -n $(
+    2>&1 VBoxManage storageattach "${vm_name}" --storagectl SATA --port 3 \
+                --type dvddrive --medium "${vm_name}_populate_macos_target_disk.viso" >/dev/null
+) ]]; then
+    echo "Could not attach \"${vm_name}_populate_macos_target_disk.viso\". Exiting."; exit
 fi
 echo "The VM will boot from the populated installer base system virtual disk."
 ( VBoxManage startvm "${vm_name}" >/dev/null 2>&1 )
@@ -924,40 +971,23 @@ echo "The VM will boot from the populated installer base system virtual disk."
 prompt_lang_utils
 prompt_terminal_ready
 add_another_terminal
+sleep 1
 echo -e "\nThe second open Terminal in the virtual machine copies EFI and NVRAM files"
 echo -e "to the target EFI system partition when the installer finishes preparing."
 echo -e "\nAfter the installer finishes preparing and the EFI and NVRAM files are copied,"
 echo -ne "macOS will install and boot up when booting the target disk.\n"
 print_dimly "Please wait"
-# execute script concurrently, catch SIGUSR1 when installer finishes preparing
-kbstring='disks="$(diskutil list | grep -o "[0-9][^ ]* GB *disk[0-9]$" | sort -gr | grep -o disk[0-9])" && '\
-'disks=(${disks[@]}) && '\
-'printf '"'"'trap "exit 0" SIGUSR1; while true; do sleep 10; done;'"'"' | sh && '\
-'mkdir -p "/Volumes/'"${vm_name}"'/tmp/mount_efi" && '\
-'mount_msdos /dev/${disks[0]}s1 "/Volumes/'"${vm_name}"'/tmp/mount_efi" && '\
-'cp -r "/Volumes/'"${macOS_release_name:0:5}-files"'/ESP/"* "/Volumes/'"${vm_name}"'/tmp/mount_efi/" && '\
-'installer_pid=$(ps | grep startosinstall | grep -v grep | cut -d '"'"' '"'"' -f 3) && '\
-'kill -SIGUSR1 ${installer_pid}'
+kbstring='sh /Volumes/target-sh/nvram.sh'
 send_keys
 send_enter
-sleep 1
 cycle_through_terminal_windows
-
-# Find background process PID, then
-# start the installer, send SIGUSR1 to concurrent bash script,
-# the other script copies files to EFI system partition,
-# then sends SIGUSR1 to the installer which restarts the virtual machine
-kbstring='background_pid="$(ps | grep '"'"' sh$'"'"' | cut -d '"'"' '"'"' -f 3)" && '\
-'[[ "${background_pid}" =~ ^[0-9][0-9]*$ ]] && '\
-'app_path="$(ls -d /Install*.app)" && '\
-'cd "/${app_path}/Contents/Resources/" && '\
-'./startosinstall --agreetolicense --pidtosignal ${background_pid} --rebootdelay 500 --volume "/Volumes/'"${vm_name}"'"'
+kbstring='sh /Volumes/target-sh/startosinstall.sh'
 send_keys
 send_enter
 if [[ ! ( "${vbox_version:0:1}" -gt 6
         || ( "${vbox_version:0:1}" = 6 && "${vbox_version:2:1}" -ge 1 ) ) ]]; then
     echo -e "\n${highlight_color}When the installer finishes preparing and reboots the VM, press enter${default_color} so the script
-powers off the virtual machine and detaches the device \"${macOS_release_name} bootable installer.${storage_format}\" to avoid
+powers off the virtual machine and detaches the device \"${macOS_release_name}_bootable_installer.${storage_format}\" to avoid
 booting into the initial installer environment again."
     clear_input_buffer_then_read
     VBoxManage controlvm "${vm_name}" poweroff >/dev/null 2>&1
@@ -990,22 +1020,23 @@ else
         VBoxManage storageattach "${vm_name}" --storagectl SATA --port 0 \
                    --type hdd --nonrotational on --medium "${vm_name}.${storage_format}"
     fi
-    VBoxManage closemedium "${macOS_release_name} bootable installer.${storage_format}" >/dev/null 2>&1
+    VBoxManage closemedium "${macOS_release_name}_bootable_installer.${storage_format}" >/dev/null 2>&1
     VBoxManage closemedium "${macOS_release_name}_BaseSystem.${storage_format}" >/dev/null 2>&1
     echo -e "The following temporary files are safe to delete:\n"
     temporary_files=("${macOS_release_name}_Apple"*
                      "${macOS_release_name}_BaseSystem"*
                      "${macOS_release_name}_Install"*
-                     "${macOS_release_name} bootable installer"*
+                     "${macOS_release_name}_bootable_installer"*
                      "${vm_name}_"*".bin"
                      "${vm_name}_"*".txt"
+                     "${vm_name}_"*".viso"
                      "${vm_name}_startup.nsh"
                      "ApfsDriverLoader.efi"
                      "Apple"*".efi"
                      "AppleSupport-v2.0.4-RELEASE.zip"
                      "dmg2img.exe")
     ls -d "${temporary_files[@]}" 2>/dev/null
-    echo -e "\n${warning_color}Delete temporary files listed above?${default_color}"
+    echo -ne "\n${warning_color}Delete temporary files listed above?${default_color}"
     prompt_delete_y_n
     if [[ "${delete}" == "y" ]]; then
         rm -f "${temporary_files[@]}" 2>/dev/null
