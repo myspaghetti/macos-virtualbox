@@ -2,7 +2,7 @@
 # Push-button installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-virtualbox
-# version 0.96.0
+# version 0.96.1
 
 # Dependencies: bash  coreutils  gzip  unzip  wget  xxd  dmg2img
 # Supported versions:
@@ -592,10 +592,9 @@ endfor' >> "${vm_name}_startup.nsh"
 
 echo -e "\nCreating VirtualBox 6 virtual ISO containing the"
 echo -e "installation files from swcdn.apple.com\n"
-pseudouuid="$(xxd -p -l 16 /dev/urandom)"
-pseudouuid="${pseudouuid:0:8}-${pseudouuid:8:4}-${pseudouuid:12:4}-${pseudouuid:16:4}-${pseudouuid:20:12}"
-echo "--iprt-iso-maker-file-marker-bourne-sh ${pseudouuid}
---volume-id=${macOS_release_name:0:5}-files" > "${macOS_release_name}_installation_files.viso"
+make_viso_header "${macOS_release_name}_installation_files.viso" "${macOS_release_name:0:5}-files"
+
+# add files to viso
 
 # Apple macOS installation files
 for filename in "BaseSystem.chunklist" \
@@ -790,41 +789,30 @@ print_dimly "stage: populate_virtual_disks"
 # Attach virtual disk images of the base system, installation, and target
 # to the virtual machine
 VBoxManage storagectl "${vm_name}" --remove --name SATA >/dev/null 2>&1
+
 if [[ -n $(
-    2>&1 VBoxManage storagectl "${vm_name}" --add sata --name SATA --hostiocache on >/dev/null
-) ]]; then
-    echo "Could not configure virtual machine storage controller. Exiting."; exit
-fi
+           2>&1 VBoxManage storagectl "${vm_name}" --add sata --name SATA --hostiocache on >/dev/null
+          ) ]]; then echo "Could not configure virtual machine storage controller. Exiting."; exit; fi
 if [[ -n $(
-    2>&1 VBoxManage storageattach "${vm_name}" --storagectl SATA --port 0 \
+           2>&1 VBoxManage storageattach "${vm_name}" --storagectl SATA --port 0 \
                 --type hdd --nonrotational on --medium "${vm_name}.${storage_format}" >/dev/null
-) ]]; then
-    echo "Could not attach \"${vm_name}.${storage_format}\". Exiting."; exit
-fi
+          ) ]]; then echo "Could not attach \"${vm_name}.${storage_format}\". Exiting."; exit; fi
 if [[ -n $(
-    2>&1 VBoxManage storageattach "${vm_name}" --storagectl SATA --port 1 --hotpluggable on \
-                --type hdd --nonrotational on --medium "${macOS_release_name}_bootable_installer.${storage_format}" >/dev/null
-) ]]; then
-    echo "Could not attach \"${macOS_release_name}_bootable_installer.${storage_format}\". Exiting."; exit
-fi
+           2>&1 VBoxManage storageattach "${vm_name}" --storagectl SATA --port 1 --hotpluggable on \
+               --type hdd --nonrotational on --medium "${macOS_release_name}_bootable_installer.${storage_format}" >/dev/null
+          ) ]]; then echo "Could not attach \"${macOS_release_name}_bootable_installer.${storage_format}\". Exiting."; exit; fi
 if [[ -n $(
-    2>&1 VBoxManage storageattach "${vm_name}" --storagectl SATA --port 2 --hotpluggable on \
-                --type hdd --nonrotational on --medium "${macOS_release_name}_BaseSystem.${storage_format}" >/dev/null
-) ]]; then
-    echo "Could not attach \"${macOS_release_name}_BaseSystem.${storage_format}\". Exiting."; exit
-fi
+           2>&1 VBoxManage storageattach "${vm_name}" --storagectl SATA --port 2 --hotpluggable on \
+               --type hdd --nonrotational on --medium "${macOS_release_name}_BaseSystem.${storage_format}" >/dev/null
+          ) ]]; then echo "Could not attach \"${macOS_release_name}_BaseSystem.${storage_format}\". Exiting."; exit; fi
 if [[ -n $(
-    2>&1 VBoxManage storageattach "${vm_name}" --storagectl SATA --port 3 \
-                --type dvddrive --medium "${macOS_release_name}_installation_files.viso" >/dev/null
-) ]]; then
-    echo "Could not attach \"${macOS_release_name}_installation_files.viso\". Exiting."; exit
-fi
+           2>&1 VBoxManage storageattach "${vm_name}" --storagectl SATA --port 3 \
+               --type dvddrive --medium "${macOS_release_name}_installation_files.viso" >/dev/null
+          ) ]]; then echo "Could not attach \"${macOS_release_name}_installation_files.viso\". Exiting."; exit; fi
+
 echo -e "\nCreating VirtualBox 6 virtual ISO containing macOS Terminal script"
 echo -e "for partitioning and populating the virtual disks.\n"
-pseudouuid="$(xxd -p -l 16 /dev/urandom)"
-pseudouuid="${pseudouuid:0:8}-${pseudouuid:8:4}-${pseudouuid:12:4}-${pseudouuid:16:4}-${pseudouuid:20:12}"
-echo "--iprt-iso-maker-file-marker-bourne-sh ${pseudouuid}
---volume-id=diskutil-sh" > "${vm_name}_populate_virtual_disks.viso"
+make_viso_header "${vm_name}_populate_virtual_disks.viso" "diskutil-sh"
 echo "/diskutil.sh=\"${vm_name}_diskutil.txt\"" >> "${vm_name}_populate_virtual_disks.viso"
 # Assigning "physical" disks from largest to smallest to "${disks[]}" array
 # Partitining largest disk as APFS
@@ -852,11 +840,9 @@ sed -i.bak2 -e "/InstallESD\.dmg/{n;N;N;N;d;}" "${install_path}InstallInfo.plist
 # shut down the virtual machine
 echo 'shutdown -h now' >> "${vm_name}_diskutil.txt"
 if [[ -n $(
-    2>&1 VBoxManage storageattach "${vm_name}" --storagectl SATA --port 4 \
-                --type dvddrive --medium "${vm_name}_populate_virtual_disks.viso" >/dev/null
-) ]]; then
-    echo "Could not attach \"${vm_name}_populate_virtual_disks.viso\". Exiting."; exit
-fi
+           2>&1 VBoxManage storageattach "${vm_name}" --storagectl SATA --port 4 \
+               --type dvddrive --medium "${vm_name}_populate_virtual_disks.viso" >/dev/null
+          ) ]]; then echo "Could not attach \"${vm_name}_populate_virtual_disks.viso\". Exiting."; exit; fi
 echo -e "Starting virtual machine \"${vm_name}\".
 This should take a couple of minutes. If booting fails, exit the script by
 pressing CTRL-C then see the documentation for information about applying
@@ -909,34 +895,24 @@ if [[ "$( VBoxManage list runningvms )" =~ \""${vm_name}"\" ]]; then
 fi
 VBoxManage storagectl "${vm_name}" --remove --name SATA >/dev/null 2>&1
 if [[ -n $(
-    2>&1 VBoxManage storagectl "${vm_name}" --add sata --name SATA --hostiocache on >/dev/null
-) ]]; then
-    echo "Could not configure virtual machine storage controller. Exiting."; exit
-fi
+           2>&1 VBoxManage storagectl "${vm_name}" --add sata --name SATA --hostiocache on >/dev/null
+          ) ]]; then echo "Could not configure virtual machine storage controller. Exiting."; exit; fi
 if [[ -n $(
-    2>&1 VBoxManage storageattach "${vm_name}" --storagectl SATA --port 0 \
-                --type hdd --nonrotational on --medium "${vm_name}.${storage_format}" >/dev/null
-) ]]; then
-    echo "Could not attach \"${vm_name}.${storage_format}\". Exiting."; exit
-fi
+           2>&1 VBoxManage storageattach "${vm_name}" --storagectl SATA --port 0 \
+               --type hdd --nonrotational on --medium "${vm_name}.${storage_format}" >/dev/null
+          ) ]]; then echo "Could not attach \"${vm_name}.${storage_format}\". Exiting."; exit; fi
 if [[ -n $(
-    2>&1 VBoxManage storageattach "${vm_name}" --storagectl SATA --port 1 --hotpluggable on \
-                --type hdd --nonrotational on --medium "${macOS_release_name}_bootable_installer.${storage_format}" >/dev/null
-) ]]; then
-    echo "Could not attach \"${macOS_release_name}_bootable_installer.${storage_format}\". Exiting."; exit
-fi
+           2>&1 VBoxManage storageattach "${vm_name}" --storagectl SATA --port 1 --hotpluggable on \
+               --type hdd --nonrotational on --medium "${macOS_release_name}_bootable_installer.${storage_format}" >/dev/null
+          ) ]]; then echo "Could not attach \"${macOS_release_name}_bootable_installer.${storage_format}\". Exiting."; exit; fi
 if [[ -n $(
-    2>&1 VBoxManage storageattach "${vm_name}" --storagectl SATA --port 2 \
-                --type dvddrive --medium "${macOS_release_name}_installation_files.viso" >/dev/null
-) ]]; then
-    echo "Could not attach \"${macOS_release_name}_installation_files.viso\". Exiting."; exit
-fi
+           2>&1 VBoxManage storageattach "${vm_name}" --storagectl SATA --port 2 \
+               --type dvddrive --medium "${macOS_release_name}_installation_files.viso" >/dev/null
+          ) ]]; then echo "Could not attach \"${macOS_release_name}_installation_files.viso\". Exiting."; exit; fi
+
 echo -e "\nCreating VirtualBox 6 virtual ISO containing macOS Terminal scripts"
 echo -e "for populating the target disks.\n"
-pseudouuid="$(xxd -p -l 16 /dev/urandom)"
-pseudouuid="${pseudouuid:0:8}-${pseudouuid:8:4}-${pseudouuid:12:4}-${pseudouuid:16:4}-${pseudouuid:20:12}"
-echo "--iprt-iso-maker-file-marker-bourne-sh ${pseudouuid}
---volume-id=target-sh" > "${vm_name}_populate_macos_target_disk.viso"
+make_viso_header "${vm_name}_populate_macos_target_disk.viso" "target-sh"
 echo "/nvram.sh=\"${vm_name}_configure_nvram.txt\"" >> "${vm_name}_populate_macos_target_disk.viso"
 echo "/startosinstall.sh=\"${vm_name}_startosinstall.txt\"" >> "${vm_name}_populate_macos_target_disk.viso"
 # execute script concurrently, catch SIGUSR1 when installer finishes preparing
@@ -960,11 +936,9 @@ app_path="$(ls -d /Install*.app)" && \
 cd "/${app_path}/Contents/Resources/" && \
 ./startosinstall --agreetolicense --pidtosignal ${background_pid} --rebootdelay 500 --volume "/Volumes/'"${vm_name}"'"' >> "${vm_name}_startosinstall.txt"
 if [[ -n $(
-    2>&1 VBoxManage storageattach "${vm_name}" --storagectl SATA --port 3 \
-                --type dvddrive --medium "${vm_name}_populate_macos_target_disk.viso" >/dev/null
-) ]]; then
-    echo "Could not attach \"${vm_name}_populate_macos_target_disk.viso\". Exiting."; exit
-fi
+           2>&1 VBoxManage storageattach "${vm_name}" --storagectl SATA --port 3 \
+               --type dvddrive --medium "${vm_name}_populate_macos_target_disk.viso" >/dev/null
+          ) ]]; then echo "Could not attach \"${vm_name}_populate_macos_target_disk.viso\". Exiting."; exit; fi
 echo "The VM will boot from the populated installer base system virtual disk."
 ( VBoxManage startvm "${vm_name}" >/dev/null 2>&1 )
 [[ -z "${kscd}" ]] && declare_scancode_dict
@@ -1340,6 +1314,16 @@ echo -e "\n${low_contrast_color}$@${default_color}"
 # don't need sleep when we can read!
 function sleep() {
     read -t "${1}" >/dev/null 2>&1
+}
+
+# create a viso with no files
+make_viso_header() {
+    # input: filename volume-id (two positional parameters, both required)
+    # output: nothing to stdout, viso file to working directory
+    local uuid="$(xxd -p -l 16 /dev/urandom)"
+    local uuid="${uuid:0:8}-${uuid:8:4}-${uuid:12:4}-${uuid:16:4}-${uuid:20:12}"
+    echo "--iprt-iso-maker-file-marker-bourne-sh ${uuid}
+    --volume-id=${2}" > "${1}"
 }
 
 # QWERTY-to-scancode dictionary. Hex scancodes, keydown and keyup event.
