@@ -945,7 +945,6 @@ echo "The VM will boot from the populated installer base system virtual disk."
 prompt_lang_utils
 prompt_terminal_ready
 add_another_terminal
-sleep 1
 echo -e "\nThe second open Terminal in the virtual machine copies EFI and NVRAM files"
 echo -e "to the target EFI system partition when the installer finishes preparing."
 echo -e "\nAfter the installer finishes preparing and the EFI and NVRAM files are copied,"
@@ -955,6 +954,7 @@ kbstring='/Volumes/target-sh/nvram.sh'
 send_keys
 send_enter
 cycle_through_terminal_windows
+sleep 1
 kbstring='/Volumes/target-sh/startosinstall.sh'
 send_keys
 send_enter
