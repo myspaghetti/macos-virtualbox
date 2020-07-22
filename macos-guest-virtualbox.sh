@@ -2,7 +2,7 @@
 # Push-button installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-virtualbox
-# version 0.96.1
+# version 0.96.2
 
 # Dependencies: bash  coreutils  gzip  unzip  wget  xxd  dmg2img
 # Supported versions:
@@ -592,7 +592,7 @@ endfor' >> "${vm_name}_startup.nsh"
 
 echo -e "\nCreating VirtualBox 6 virtual ISO containing the"
 echo -e "installation files from swcdn.apple.com\n"
-make_viso_header "${macOS_release_name}_installation_files.viso" "${macOS_release_name:0:5}-files"
+create_viso_header "${macOS_release_name}_installation_files.viso" "${macOS_release_name:0:5}-files"
 
 # add files to viso
 
@@ -812,7 +812,7 @@ if [[ -n $(
 
 echo -e "\nCreating VirtualBox 6 virtual ISO containing macOS Terminal script"
 echo -e "for partitioning and populating the virtual disks.\n"
-make_viso_header "${vm_name}_populate_virtual_disks.viso" "diskutil-sh"
+create_viso_header "${vm_name}_populate_virtual_disks.viso" "diskutil-sh"
 echo "/diskutil.sh=\"${vm_name}_diskutil.txt\"" >> "${vm_name}_populate_virtual_disks.viso"
 # Assigning "physical" disks from largest to smallest to "${disks[]}" array
 # Partitining largest disk as APFS
@@ -912,14 +912,14 @@ if [[ -n $(
 
 echo -e "\nCreating VirtualBox 6 virtual ISO containing macOS Terminal scripts"
 echo -e "for populating the target disks.\n"
-make_viso_header "${vm_name}_populate_macos_target_disk.viso" "target-sh"
+create_viso_header "${vm_name}_populate_macos_target_disk.viso" "target-sh"
 echo "/nvram.sh=\"${vm_name}_configure_nvram.txt\"" >> "${vm_name}_populate_macos_target_disk.viso"
 echo "/startosinstall.sh=\"${vm_name}_startosinstall.txt\"" >> "${vm_name}_populate_macos_target_disk.viso"
 # execute script concurrently, catch SIGUSR1 when installer finishes preparing
 echo '# this script is executed on the macOS virtual machine' > "${vm_name}_configure_nvram.txt"
-echo 'disks="$(diskutil list | grep -o "[0-9][^ ]* GB *disk[0-9]$" | sort -gr | grep -o disk[0-9])" && \
+echo 'printf '"'"'trap "exit 0" SIGUSR1; while true; do sleep 10; done;'"'"' | sh && \
+disks="$(diskutil list | grep -o "[0-9][^ ]* GB *disk[0-9]$" | sort -gr | grep -o disk[0-9])" && \
 disks=(${disks[@]}) && \
-printf '"'"'trap "exit 0" SIGUSR1; while true; do sleep 10; done;'"'"' | sh && \
 mkdir -p "/Volumes/'"${vm_name}"'/tmp/mount_efi" && \
 mount_msdos /dev/${disks[0]}s1 "/Volumes/'"${vm_name}"'/tmp/mount_efi" && \
 cp -r "/Volumes/'"${macOS_release_name:0:5}-files"'/ESP/"* "/Volumes/'"${vm_name}"'/tmp/mount_efi/" && \
@@ -951,11 +951,11 @@ echo -e "to the target EFI system partition when the installer finishes preparin
 echo -e "\nAfter the installer finishes preparing and the EFI and NVRAM files are copied,"
 echo -ne "macOS will install and boot up when booting the target disk.\n"
 print_dimly "Please wait"
-kbstring='sh /Volumes/target-sh/nvram.sh'
+kbstring='/Volumes/target-sh/nvram.sh'
 send_keys
 send_enter
 cycle_through_terminal_windows
-kbstring='sh /Volumes/target-sh/startosinstall.sh'
+kbstring='/Volumes/target-sh/startosinstall.sh'
 send_keys
 send_enter
 if [[ ! ( "${vbox_version:0:1}" -gt 6
@@ -1317,7 +1317,7 @@ function sleep() {
 }
 
 # create a viso with no files
-make_viso_header() {
+create_viso_header() {
     # input: filename volume-id (two positional parameters, both required)
     # output: nothing to stdout, viso file to working directory
     local uuid="$(xxd -p -l 16 /dev/urandom)"
