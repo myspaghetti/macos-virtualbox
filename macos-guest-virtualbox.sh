@@ -954,7 +954,6 @@ kbstring='/Volumes/target-sh/nvram.sh'
 send_keys
 send_enter
 cycle_through_terminal_windows
-sleep 1
 kbstring='/Volumes/target-sh/startosinstall.sh'
 send_keys
 send_enter
