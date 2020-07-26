@@ -646,6 +646,7 @@ echo "Converting BaseSystem.dmg to BaseSystem.img"
 dmg2img "${macOS_release_name}_BaseSystem.dmg" "${macOS_release_name}_BaseSystem.img"
 VBoxManage storagectl "${vm_name}" --remove --name SATA >/dev/null 2>&1
 VBoxManage closemedium "${macOS_release_name}_BaseSystem.${storage_format}" >/dev/null 2>&1
+local success=''
 VBoxManage convertfromraw --format "${storage_format}" "${macOS_release_name}_BaseSystem.img" "${macOS_release_name}_BaseSystem.${storage_format}" && local success="True"
 if [[ "${success}" = "True" ]]; then
     rm "${macOS_release_name}_BaseSystem.img" 2>/dev/null
