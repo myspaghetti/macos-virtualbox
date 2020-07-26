@@ -2,7 +2,7 @@
 # Push-button installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-virtualbox
-# version 0.96.2
+# version 0.96.3
 
 # Dependencies: bash  coreutils  gzip  unzip  wget  xxd  dmg2img
 # Supported versions:
@@ -300,7 +300,8 @@ if [[ -z "$(dmg2img -d 2>/dev/null)" ]]; then
     if [[ -z "$(cygcheck -V 2>/dev/null)" ]]; then
         echo "Please install the package dmg2img."
         exit
-    elif [[ -z "$("${PWD}/dmg2img.exe" -d 2>/dev/null)" ]]; then
+    elif [[ -z "$("${PWD%%/}/dmg2img.exe" -d 2>/dev/null)" ]]; then
+        if [[ -z "${PWD}" ]]; then echo "PWD environment variable is not set. Exiting."; exit; fi
         echo "Locally installing dmg2img"
         wget "http://vu1tur.eu.org/tools/dmg2img-1.6.6-win32.zip" \
              ${wgetargs} \
@@ -312,6 +313,10 @@ if [[ -z "$(dmg2img -d 2>/dev/null)" ]]; then
         unzip -oj "dmg2img-1.6.6-win32.zip" "dmg2img.exe"
         rm "dmg2img-1.6.6-win32.zip"
         chmod +x "dmg2img.exe"
+    elif [[ -n "$("${PWD%%/}/dmg2img.exe" -d 2>/dev/null)" ]]; then
+        function dmg2img() {
+            "${PWD%%/}/dmg2img.exe" "$@"
+        }
     fi
 fi
 
@@ -635,36 +640,26 @@ echo "/ESP/startup.nsh=\"${vm_name}_startup.nsh\"" >> "${macOS_release_name}_ins
 # Create the macOS base system virtual disk image
 function create_basesystem_virtual_disk() {
 print_dimly "stage: create_basesystem_virtual_disk"
-if [[ -s "${macOS_release_name}_BaseSystem.${storage_format}" ]]; then
-    echo "${macOS_release_name}_BaseSystem.${storage_format} bootstrap virtual disk image exists."
-elif [[ ! -s "${macOS_release_name}_BaseSystem.dmg" ]]; then
-    echo -e "\nCould not find ${macOS_release_name}_BaseSystem.dmg; exiting."
-    exit
-else
-    local failed=''
-    echo "Converting BaseSystem.dmg to BaseSystem.img"
-    if [[ -n "$("${PWD}/dmg2img.exe" -d 2>/dev/null)" ]]; then
-        "${PWD}/dmg2img.exe" "${macOS_release_name}_BaseSystem.dmg" "${macOS_release_name}_BaseSystem.img" || local failed='failed'
-    else
-        dmg2img "${macOS_release_name}_BaseSystem.dmg" "${macOS_release_name}_BaseSystem.img" || local failed='failed'
-    fi
-    VBoxManage storagectl "${vm_name}" --remove --name SATA >/dev/null 2>&1
-    VBoxManage closemedium "${macOS_release_name}_BaseSystem.${storage_format}" >/dev/null 2>&1
-    VBoxManage convertfromraw --format "${storage_format}" "${macOS_release_name}_BaseSystem.img" "${macOS_release_name}_BaseSystem.${storage_format}" || local failed='failed'
-    if [[ -n "${failed}" ]]; then
-        echo "Failed to create \"${macOS_release_name}_BaseSystem.${storage_format}\"."
-        if [[ "$(cat /proc/sys/kernel/osrelease 2>/dev/null)" =~ [Mm]icrosoft ]]; then
-            echo -e "\nSome versions of WSL require the script to execute on a Windows filesystem path,"
-            echo -e "for example   ${highlight_color}/mnt/c/Users/Public/Documents${default_color}"
-            echo -e "Switch to a path on the Windows filesystem if VBoxManage.exe fails to"
-            echo -e "create or open a file.\n"
-        fi
-        echo "Exiting."
-        exit
-    else
-        rm "${macOS_release_name}_BaseSystem.img" 2>/dev/null
-    fi
+[[ -s "${macOS_release_name}_BaseSystem.${storage_format}" ]] && echo "${macOS_release_name}_BaseSystem.${storage_format} bootstrap virtual disk image exists." && return
+[[ ! -s "${macOS_release_name}_BaseSystem.dmg" ]] && echo -e "\nCould not find ${macOS_release_name}_BaseSystem.dmg; exiting." && exit
+echo "Converting BaseSystem.dmg to BaseSystem.img"
+dmg2img "${macOS_release_name}_BaseSystem.dmg" "${macOS_release_name}_BaseSystem.img"
+VBoxManage storagectl "${vm_name}" --remove --name SATA >/dev/null 2>&1
+VBoxManage closemedium "${macOS_release_name}_BaseSystem.${storage_format}" >/dev/null 2>&1
+VBoxManage convertfromraw --format "${storage_format}" "${macOS_release_name}_BaseSystem.img" "${macOS_release_name}_BaseSystem.${storage_format}" && local success="True"
+if [[ "${success}" = "True" ]]; then
+    rm "${macOS_release_name}_BaseSystem.img" 2>/dev/null
+    return
 fi
+echo "Failed to create \"${macOS_release_name}_BaseSystem.${storage_format}\"."
+if [[ "$(cat /proc/sys/kernel/osrelease 2>/dev/null)" =~ [Mm]icrosoft ]]; then
+    echo -e "\nSome versions of WSL require the script to execute on a Windows filesystem path,"
+    echo -e "for example   ${highlight_color}/mnt/c/Users/Public/Documents${default_color}"
+    echo -e "Switch to a path on the Windows filesystem if VBoxManage.exe fails to"
+    echo -e "create or open a file.\n"
+fi
+echo "Exiting."
+exit
 }
 
 # Create the target virtual disk image
