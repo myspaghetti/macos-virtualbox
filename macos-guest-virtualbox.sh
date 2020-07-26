@@ -1114,13 +1114,13 @@ the parameter is not always required.
 
         ${highlight_color}Applying the EFI and NVRAM parameters${default_color}
 The EFI and NVRAM parameters may be set in the script before installation by
-editing them at the top of the script, and applied after the last step of the
-installation by resetting the virtual machine and booting into the
-EFI Internal Shell. When resetting or powering up the VM, immediately press
-Esc when the VirtualBox logo appears. This boots into the EFI Internal Shell or
-the boot menu. If the boot menu appears, select \"Boot Manager\" and then
-\"EFI Internal Shell\" and then allow the startup.nsh script to execute
-automatically, applying the EFI and NVRAM variables before booting macOS.
+editing them at the top of the script. NVRAM parameters may be applied after
+the last step of the installation by resetting the virtual machine and booting
+into the EFI Internal Shell. When resetting or powering up the VM, immediately
+press Esc when the VirtualBox logo appears. This boots into the EFI Internal
+Shell or the boot menu. If the boot menu appears, select \"Boot Manager\" and
+then \"EFI Internal Shell\" and then allow the startup.nsh script to execute
+automatically, applying the NVRAM variables before booting macOS.
 
         ${highlight_color}Changing the EFI and NVRAM parameters after installation${default_color}
 The variables mentioned above may be edited and applied to an existing macOS
