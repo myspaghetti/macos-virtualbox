@@ -969,15 +969,15 @@ would_you_like_to_know_less
 echo -e "\n${highlight_color}That's it! Enjoy your virtual machine.${default_color}\n"
 }
 
-function delete_temporary_files() {
-print_dimly "stage: delete_temporary_files"
+function prompt_delete_temporary_files() {
+print_dimly "stage: prompt_delete_temporary_files"
 if [[ ! "$(VBoxManage showvminfo "${vm_name}")" =~ State:[\ \t]*powered\ off ]]
 then
     echo -e "Temporary files may be deleted when the virtual machine is powered off
 and without a suspended state by executing the following command at the script's
 working directory:
 
-  ${highlight_color}${0} delete_temporary_files${default_color}"
+  ${highlight_color}${0} prompt_delete_temporary_files${default_color}"
 else
     # detach temporary VDIs and attach the macOS target disk
     VBoxManage storagectl "${vm_name}" --remove --name SATA >/dev/null 2>&1
@@ -1052,7 +1052,7 @@ The above stage might be used to create and configure a virtual machine on a
 new VirtualBox installation, then manually attach to the new virtual machine
 an existing macOS disk image that was previously created by the script.
 
-    ${low_contrast_color}${0} delete_temporary_files${default_color}
+    ${low_contrast_color}${0} prompt_delete_temporary_files${default_color}
 
 The above stage might be used when no more virtual machines need to be
 installed, and the temporary files can be deleted.
@@ -1562,7 +1562,7 @@ stages='
     populate_bootable_installer_virtual_disk
     create_target_virtual_disk
     populate_macos_target_disk
-    delete_temporary_files
+    prompt_delete_temporary_files
 '
 [[ -z "${1}" ]] && for stage in ${stages}; do ${stage}; done && exit
 [[ "${1}" = "documentation" ]] && documentation && exit
