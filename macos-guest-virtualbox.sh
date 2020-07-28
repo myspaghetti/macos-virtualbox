@@ -1111,7 +1111,7 @@ the last step of the installation by resetting the virtual machine and booting
 into the EFI Internal Shell. When resetting or powering up the VM, immediately
 press Esc when the VirtualBox logo appears. This boots into the EFI Internal
 Shell or the boot menu. If the boot menu appears, select \"Boot Manager\" and
-then \"EFI Internal Shell\" and then allow the startup.nsh script to execute
+then \"EFI Internal Shell\" and then allow the ${low_contrast_color}startup.nsh${default_color} script to execute
 automatically, applying the NVRAM variables before booting macOS.
 
         ${highlight_color}Changing the EFI and NVRAM parameters after installation${default_color}
@@ -1133,7 +1133,7 @@ sure to replace \"/Volumes/path/to/VISO/\" with the correct path:
     ${low_contrast_color}diskutil mount -mountPoint ESP disk0s1${default_color}
     ${low_contrast_color}cp -r /Volumes/path/to/VISO/ESP/* ESP/${default_color}
 
-After copying the files, boot into the EFI Internal Shell as desribed in the
+After copying the files, boot into the EFI Internal Shell as described in the
 section \"Applying the EFI and NVRAM parameters\".
 
         ${highlight_color}Storage format${default_color}
@@ -1191,8 +1191,8 @@ audio support, FileVault boot password prompt support, and other features.
 After successfully creating a working macOS virtual machine, consider importing
 the virtual machine into more performant virtualization software, or packaging
 it for configuration management platforms for automated deployment. These
-virtualization and deployment applications require additonal configuration that
-is beyond the scope of the script.
+virtualization and deployment applications require additional configuration
+that is beyond the scope of the script.
 
 QEMU with KVM is capable of providing virtual machine hardware passthrough
 for near-native performance. QEMU supports the VMDK virtual disk image format,
