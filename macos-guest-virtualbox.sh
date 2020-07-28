@@ -2,7 +2,7 @@
 # Push-button installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-virtualbox
-# version 0.96.4
+# version 0.96.5
 
 # Dependencies: bash  coreutils  gzip  unzip  wget  xxd  dmg2img
 # Supported versions:
@@ -134,7 +134,7 @@ elif [[ "${SHELL}" =~ /zsh ]]; then
         exit
     fi
     # make zsh parse the script (almost) like bash
-    setopt extendedglob sh_word_split ksh_arrays posix_argzero nullglob
+    setopt extendedglob sh_word_split ksh_arrays posix_argzero nullglob bsd_echo
 else
     echo "Can't determine SHELL. Exiting."
     exit
