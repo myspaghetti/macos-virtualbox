@@ -2,9 +2,11 @@
 
 ## Push-button installer of macOS on VirtualBox
 
-[`macos-guest-virtualbox.sh`](https://raw.githubusercontent.com/myspaghetti/macos-guest-virtualbox/master/macos-guest-virtualbox.sh) is a Bash script that creates a macOS virtual machine guest on VirtualBox with unmodified macOS installation files downloaded directly from Apple servers. Tested on [Cygwin](https://cygwin.com/install.html) `bash` and infrequently on `zsh`. Works on macOS, CentOS 7, and Windows. Should work on most modern Linux distros.
+[`macos-guest-virtualbox.sh`](https://raw.githubusercontent.com/myspaghetti/macos-guest-virtualbox/master/macos-guest-virtualbox.sh) is a Bash script that creates a macOS virtual machine guest on VirtualBox with unmodified macOS installation files downloaded directly from Apple servers.
 
 A default install only requires the user to sit patiently and, less than ten times, press enter when prompted by the script, without interacting with the virtual machine.
+
+Tested on `bash` and `zsh` on [Cygwin](https://cygwin.com/install.html). Works on macOS, CentOS 7, and Windows. Should work on most modern Linux distros.
 
 macOS Catalina (10.15), Mojave (10.14), and High Sierra (10.13) currently supported.
 
