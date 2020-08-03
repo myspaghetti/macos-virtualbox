@@ -2,7 +2,7 @@
 # Push-button installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-virtualbox
-# version 0.96.5
+# version 0.96.6
 
 # Dependencies: bash  coreutils  gzip  unzip  wget  xxd  dmg2img
 # Supported versions:
@@ -300,7 +300,8 @@ if [[ -z "$(dmg2img -d 2>/dev/null)" ]]; then
     if [[ -z "$(cygcheck -V 2>/dev/null)" ]]; then
         echo "Please install the package dmg2img."
         exit
-    elif [[ -z "$("${PWD%%/}/dmg2img.exe" -d 2>/dev/null)" ]]; then
+    fi
+    if [[ -z "$("${PWD%%/}/dmg2img.exe" -d 2>/dev/null)" ]]; then
         if [[ -z "${PWD}" ]]; then echo "PWD environment variable is not set. Exiting."; exit; fi
         echo "Locally installing dmg2img"
         wget "http://vu1tur.eu.org/tools/dmg2img-1.6.6-win32.zip" \
@@ -313,11 +314,10 @@ if [[ -z "$(dmg2img -d 2>/dev/null)" ]]; then
         unzip -oj "dmg2img-1.6.6-win32.zip" "dmg2img.exe"
         rm "dmg2img-1.6.6-win32.zip"
         chmod +x "dmg2img.exe"
-    elif [[ -n "$("${PWD%%/}/dmg2img.exe" -d 2>/dev/null)" ]]; then
-        function dmg2img() {
-            "${PWD%%/}/dmg2img.exe" "$@"
-        }
     fi
+    function dmg2img() {
+        "${PWD%%/}/dmg2img.exe" "$@"
+    }
 fi
 
 # set Apple software update catalog URL according to macOS version
