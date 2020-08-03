@@ -22,6 +22,7 @@ cpu_count=2                      # VM CPU cores, minimum 2
 memory_size=4096                 # VM RAM in MB, minimum 2048
 gpu_vram=128                     # VM video RAM in MB, minimum 34, maximum 128
 resolution="1280x800"            # VM display resolution
+cpu_profile="Intel Core i7-6700K" # VM cpu profile
 
 # The following commented commands, when executed on a genuine Mac,
 # may provide the values for NVRAM and EFI parameters required by iCloud,
@@ -92,6 +93,7 @@ pad_to_33_chars "cpu_count=${cpu_count}"                       "# VM CPU cores, 
 pad_to_33_chars "memory_size=${memory_size}"                   "# VM RAM in MB, minimum 2048"
 pad_to_33_chars "gpu_vram=${gpu_vram}"                         "# VM video RAM in MB, minimum 34, maximum 128"
 pad_to_33_chars "resolution=\"${resolution}\""                 "# VM display resolution"
+pad_to_33_chars "cpu_profile=\"${cpu_profile}\""               "# VM cpu profile"
 echo -ne "\nThese values may be customized as described in the documentation.\n
 ${highlight_color}Press enter to continue, CTRL-C to exit${default_color}"
 clear_input_buffer_then_read
@@ -642,7 +644,8 @@ print_dimly "stage: configure_vm"
 VBoxManage modifyvm "${vm_name}" --cpus "${cpu_count}" --memory "${memory_size}" \
  --vram "${gpu_vram}" --pae on --boot1 none --boot2 none --boot3 none \
  --boot4 none --firmware efi --rtcuseutc on --chipset ich9 ${extension_pack_usb3_support} \
- --mouse usbtablet --keyboard usb --audiocontroller hda --audiocodec stac9221
+ --mouse usbtablet --keyboard usb --audiocontroller hda --audiocodec stac9221 \
+ --cpu-profile "${cpu_profile}"
 
 VBoxManage setextradata "${vm_name}" \
  "VBoxInternal2/EfiGraphicsResolution" "${resolution}"
