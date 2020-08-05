@@ -2,7 +2,7 @@
 # Push-button installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-virtualbox
-# version 0.96.6
+# version 0.96.7
 
 # Dependencies: bash  coreutils  gzip  unzip  wget  xxd  dmg2img
 # Supported versions:
@@ -100,43 +100,35 @@ clear_input_buffer_then_read
 # check dependencies
 
 function check_shell() {
-if [[ "${SHELL}" =~ /bash ]]; then
-    if [[ -z "${BASH_VERSION}" ]]; then
-        echo "Can't determine BASH_VERSION. Exiting."
-        exit
-    elif [[ ! ( "${BASH_VERSION:0:1}" -ge 4 ) ]]; then
-        echo "Please execute this script with Bash 4.3 or higher."
+if [[ -n "${BASH_VERSION}" && -n "${ZSH_VERSION}" ]]; then
+    echo "The script cannot determine if it is executed on bash or zsh."
+    echo "Please explicitly execute the script on the same shell as the interactive shell,"
+    echo -e "for example, for zsh:\n"
+    echo "    ${highlight_color}zsh macos-guest-virtualbox.sh${default_color}"
+    exit
+elif [[ -n "${BASH_VERSION}" ]]; then
+    if [[ ! ( "${BASH_VERSION:0:1}" -ge 5
+             || "${BASH_VERSION:0:3}" =~ 4\.[3-9]
+             || "${BASH_VERSION:0:4}" =~ 4\.[12][0-9] ) ]]; then
+        echo "Please execute this script with Bash 4.3 or higher, or zsh 5.5 or higher."
         if [[ -n "$(sw_vers 2>/dev/null)" ]]; then
             echo "macOS detected. Make sure the script is not executed with"
             echo "the default /bin/bash which is version 3."
         fi
         exit
-    elif [[ ! ( "${BASH_VERSION:0:1}" -ge 5
-             || "${BASH_VERSION:0:3}" =~ 4\.[3-9]
-             || "${BASH_VERSION:0:4}" =~ 4\.[12][0-9] ) ]]; then
-        echo "Please execute this script with Bash 4.3 or higher."
-        exit
     fi
-elif [[ "${SHELL}" =~ /zsh ]]; then
-    if [[ -z "${ZSH_VERSION}" ]]; then
-        echo "Can't determine ZSH_VERSION."
-        if [[ -n "${BASH_VERSION}" ]]; then
-            echo "The script appears to be executed on bash inside zsh."
-            echo "Please explicitly execute the script with zsh or edit the #! at the top of the"
-            echo "script so it points to the zsh executable."
-        fi
-        echo "Exiting."
-        exit
-    elif [[ ! ( "${ZSH_VERSION:0:1}" -ge 6 
-             || "${ZSH_VERSION:0:3}" =~ 5\.[5-9]
-             || "${ZSH_VERSION:0:4}" =~ 5\.[1-4][0-9] ) ]]; then
+elif [[ -n "${ZSH_VERSION}" ]]; then
+    if [[ ( "${ZSH_VERSION:0:1}" -ge 6 
+           || "${ZSH_VERSION:0:3}" =~ 5\.[5-9]
+           || "${ZSH_VERSION:0:4}" =~ 5\.[1-4][0-9] ) ]]; then
+    # make zsh parse the script (almost) like bash
+    setopt extendedglob sh_word_split ksh_arrays posix_argzero nullglob bsd_echo
+    else
         echo "Please execute this script with zsh version 5.5 or higher."
         exit
     fi
-    # make zsh parse the script (almost) like bash
-    setopt extendedglob sh_word_split ksh_arrays posix_argzero nullglob bsd_echo
 else
-    echo "Can't determine SHELL. Exiting."
+    echo "The script appears to be executed on a shell other than bash or zsh. Exiting."
     exit
 fi
 }
@@ -1531,10 +1523,10 @@ function prompt_delete_y_n() {
     # workaround for zsh-bash differences in read
     delete=""
     if [[ -t 1 ]]; then
-        if [[ "${SHELL}" =~ /zsh ]]; then
+        if [[ -n "${ZSH_VERSION}" ]]; then
             read -s -q delete\?' [y/N] '
             delete="${delete:l}"
-        elif [[ "${SHELL}" =~ /bash ]]; then
+        elif [[ -n "${BASH_VERSION}" ]]; then
             read -n 1 -p ' [y/N] ' delete
             delete="${delete,,}"
         fi
