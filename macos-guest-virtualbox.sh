@@ -1,8 +1,8 @@
-#!/bin/bash
+#!/bin/zsh
 # Push-button installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-virtualbox
-# version 0.96.7
+# version 0.97.0
 
 # Dependencies: bash  coreutils  gzip  unzip  wget  xxd  dmg2img
 # Supported versions:
@@ -11,15 +11,16 @@
 #               GNU gzip >= 1.5, GNU wget >= 1.14,
 #               Info-ZIP unzip >= 6.0, xxd >= 1.11,
 #               dmg2img >= 1.6.5
+#               imageMagick >= 6.9.10
 
 function set_variables() {
 # Customize the installation by setting these variables:
-vm_name="macOS"                  # name of the VirtualBox virtual machine
+vm_name="macOS"					         # name of the VirtualBox virtual machine
 macOS_release_name="Catalina"    # install "HighSierra" "Mojave" or "Catalina"
 storage_size=80000               # VM disk image size in MB, minimum 22000
 storage_format="vdi"             # VM disk image file format, "vdi" or "vmdk"
-cpu_count=2                      # VM CPU cores, minimum 2
-memory_size=4096                 # VM RAM in MB, minimum 2048
+cpu_count=4                      # VM CPU cores, minimum 2
+memory_size=2048                 # VM RAM in MB, minimum 2048
 gpu_vram=128                     # VM video RAM in MB, minimum 34, maximum 128
 resolution="1280x800"            # VM display resolution
 
@@ -192,6 +193,19 @@ if [[ -z "$(echo -n "xxd" | xxd -e -p 2>/dev/null)" ||
     fi
     exit
 fi
+
+# check for bc and compare from imageMagick
+if [[ -z "$(convert -h 2>/dev/null)" ||
+      -z "$(compare -h 2>/dev/null)" ]]; then
+    echo "Please make sure the following packages are installed"
+		echo "(if you want to use automation check during install)"
+    echo -e "and that they are of the version specified or newer:\n"
+		echo "    convert and compare from ImageMagick 6.9.10"
+    imagecheck=false
+	else
+		imagecheck=true
+fi
+
 
 # wget supports --show-progress from version 1.16
 regex='1\.1[6-9]|1\.[2-9][0-9]'  # for zsh compatibility
@@ -1481,21 +1495,55 @@ function send_enter() {
     send_special
 }
 
+imagecheck=false
+function compare_vb_screen_and_ref() {
+		threshold=10000
+
+		while [ ${threshold%%.*} -gt 5000 ]
+		do
+			echo -ne "${highlight_color}.${default_color}"
+		  sleep 30
+			VBoxManage controlvm "${vm_name}" screenshotpng images/virtualbox_macos.png 
+			convert images/virtualbox_macos.png -resize 640x480 images/virtualbox_macos_640x480.png
+			threshold=$(compare -metric MAE "images/${vbscreenimage}" images/virtualbox_macos_640x480.png null: 2>&1 | grep -o -E '[0-9]+' | head -n 1)
+		done
+		echo -ne "\n${highlight_color}Image reference images/${vbscreenimage} valided.${default_color}"
+
+}
+
 function prompt_lang_utils() {
-    # called after the virtual machine boots up
-    echo -ne "\n${highlight_color}Press enter when the Language window is ready.${default_color}"
-    clear_input_buffer_then_read
-    send_enter
-    echo -ne "\n${highlight_color}Press enter when the macOS Utilities window is ready.${default_color}"
-    clear_input_buffer_then_read
-    kbspecial='CTRLprs F2 CTRLrls u ENTER t ENTER'
-    send_special
+    # called after the virtual machine boots up / manual or autocheck
+		if [[ ${imagecheck} = false ]]; then
+	    echo -ne "\n${highlight_color}Press enter when the Language window is ready.${default_color}"
+  	  clear_input_buffer_then_read
+      send_enter
+			echo -ne "\n${highlight_color}Press enter when the macOS Utilities window is ready.${default_color}"
+			clear_input_buffer_then_read
+    	kbspecial='CTRLprs F2 CTRLrls u ENTER t ENTER'
+    	send_special
+		else
+	    echo -ne "\n${highlight_color}Waiting Language window is ready.${default_color}"
+			vbscreenimage="virtualbox_macos_language_640x480.png"
+			compare_vb_screen_and_ref
+			send_enter
+	    echo -ne "\n${highlight_color}Waiting Utilities window is ready.${default_color}"
+			vbscreenimage="virtualbox_macos_utilities_640x480.png"
+			compare_vb_screen_and_ref
+    	kbspecial='CTRLprs F2 CTRLrls u ENTER t ENTER'
+    	send_special
+		fi
 }
 
 function prompt_terminal_ready() {
-    # called after the Utilities window is ready
-    echo -ne "\n${highlight_color}Press enter when the Terminal command prompt is ready.${default_color}"
-    clear_input_buffer_then_read
+	  if [[ ${imagecheck} = false ]]; then
+	    # called after the Utilities window is ready
+    	echo -ne "\n${highlight_color}Press enter when the Terminal command prompt is ready.${default_color}"
+    	clear_input_buffer_then_read
+		else
+    	echo -ne "\n${highlight_color}Waiting the Terminal command prompt is ready.${default_color}"
+			vbscreenimage="virtualbox_macos_terminal_640x480.png"
+			compare_vb_screen_and_ref 
+		fi
 }
 
 function add_another_terminal() {
