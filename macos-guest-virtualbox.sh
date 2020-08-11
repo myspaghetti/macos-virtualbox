@@ -1505,7 +1505,7 @@ function compare_vb_screen_and_ref() {
 		  sleep 30
 			VBoxManage controlvm "${vm_name}" screenshotpng images/virtualbox_macos.png 
 			convert images/virtualbox_macos.png -resize 640x480 images/virtualbox_macos_640x480.png
-			threshold=$(compare -metric MAE "images/${vbscreenimage}" images/virtualbox_macos_640x480.png null: 2>&1 | grep -o -E '[0-9]+' | head -n 1)
+			threshold=$(compare -metric MAE "images/${vbscreenimage}" images/virtualbox_macos_640x480.png null: 2>&1 | cut -d'.' -f1)
 		done
 		echo -ne "\n${highlight_color}Image reference images/${vbscreenimage} valided.${default_color}"
 
