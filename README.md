@@ -60,10 +60,16 @@ The VirtualBox EFI implementation does not properly load the FileVault full disk
 
 ## Dependencies
 
-All the dependencies should be available through a package manager:  
+The following dependencies should be available through a package manager:  
 `bash` `coreutils` `gzip` `unzip` `wget` `xxd` `dmg2img`  `virtualbox`
+
+The following optional packages provide optical character recognition that reduces the required interaction with the script:  
+`tesseract-ocr` `tesseract-ocr-eng`
+
+Supported versions:
 
 * [VirtualBox](https://www.virtualbox.org/wiki/Downloads) ≥ 6.1.6, though versions as low as 5.2 may work.
 * GNU `Bash` ≥ 4.3, on Windows run through [Cygwin](https://cygwin.com/install.html) or WSL - see [NEM](#virtualbox-native-execution-manager-nem)
 * GNU `coreutils` ≥ 8.22, GNU `gzip` ≥ 1.5, Info-ZIP `unzip` ≥ v6.0, GNU `wget` ≥ 1.14, `xxd` ≥ 1.11
 * `dmg2img` ≥ 1.6.5, on Cygwin the package is not available through the package manager so the script downloads it automatically.
+* `tesseract-ocr` ≥ 4
