@@ -2,15 +2,16 @@
 # Push-button installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-virtualbox
-# version 0.96.7
+# version 0.97.0
 
-# Dependencies: bash  coreutils  gzip  unzip  wget  xxd  dmg2img
+#       Dependencies: bash  coreutils  gzip  unzip  wget  xxd  dmg2img
+#  Optional features: tesseract-ocr  tesseract-ocr-eng
 # Supported versions:
-#               VirtualBox >= 6.1.6
-#               GNU bash >= 4.3, GNU coreutils >= 8.22,
-#               GNU gzip >= 1.5, GNU wget >= 1.14,
-#               Info-ZIP unzip >= 6.0, xxd >= 1.11,
-#               dmg2img >= 1.6.5
+#               VirtualBox >= 6.1.6     dmg2img >= 1.6.5
+#               GNU bash >= 4.3         GNU coreutils >= 8.22
+#               GNU gzip >= 1.5         GNU wget >= 1.14
+#               Info-ZIP unzip >= 6.0   xxd >= 1.11,
+#               tesseract-ocr >= 4
 
 function set_variables() {
 # Customize the installation by setting these variables:
@@ -153,6 +154,9 @@ if [[ -n "$(gcsplit --help 2>/dev/null)" ]]; then
     function tac() {
         gtac "$@"
     }
+    function seq() {
+        gseq "$@"
+    }
 fi
 }
 
@@ -194,7 +198,7 @@ if [[ -z "$(echo -n "xxd" | xxd -e -p 2>/dev/null)" ||
 fi
 
 # wget supports --show-progress from version 1.16
-regex='1\.1[6-9]|1\.[2-9][0-9]'  # for zsh compatibility
+regex='1\.1[6-9]|1\.[2-9][0-9]'  # for zsh regex compatibility
 if [[ "$(wget --version 2>/dev/null | head -n 1)" =~ ${regex} ]]; then
     wgetargs="--quiet --continue --show-progress --timeout=60"  # pretty
 else
@@ -386,7 +390,7 @@ fi
 VBoxManage controlvm "${vm_name}" poweroff 2>/dev/null
 echo -e "\nChecking that VirtualBox uses hardware-supported virtualization."
 vbox_log="$(VBoxManage showvminfo "${vm_name}" --log 0)"
-regex='.*Attempting fall back to NEM.*'  # for zsh compatibility
+regex='.*Attempting fall back to NEM.*'  # for zsh regex compatibility
 if [[ "${vbox_log}" =~ ${regex} ]]; then
     echo -e "\nVirtualbox is not using hardware-supported virtualization features."
     if [[ -n "$(cygcheck -V 2>/dev/null)" ||
@@ -789,9 +793,7 @@ different CPU profiles in the section ${highlight_color}CPU profiles and CPUID s
 ( VBoxManage startvm "${vm_name}" >/dev/null 2>&1 )
 echo -e "\nUntil the script completes, please do not manually interact with\nthe virtual machine."
 [[ -z "${kscd}" ]] && declare_scancode_dict
-prompt_lang_utils
-prompt_terminal_ready
-print_dimly "Please wait"
+prompt_lang_utils_terminal
 kbstring='/Volumes/bootinst-sh/bootinst.sh'
 send_keys
 send_enter
@@ -927,8 +929,7 @@ if [[ -n $(
 echo "The VM will boot from the populated installer base system virtual disk."
 ( VBoxManage startvm "${vm_name}" >/dev/null 2>&1 )
 [[ -z "${kscd}" ]] && declare_scancode_dict
-prompt_lang_utils
-prompt_terminal_ready
+prompt_lang_utils_terminal
 add_another_terminal
 echo -e "\nThe second open Terminal in the virtual machine copies EFI and NVRAM files"
 echo -e "to the target EFI system partition when the installer finishes preparing."
@@ -1015,6 +1016,7 @@ The script downloads macOS High Sierra, Mojave, and Catalina from Apple servers
 and installs them on VirtualBox 5.2, 6.0, and 6.1. The script doesn't install
 any closed-source additions or bootloaders. A default install requires the user
 press enter when prompted, less than ten times, to complete the installation.
+Systems with the package ${low_contrast_color}tesseract-ocr${low_contrast_color} may automate the installation completely.
 
         ${highlight_color}USAGE${default_color}
     ${low_contrast_color}${0} [STAGE]... ${default_color}
@@ -1481,22 +1483,62 @@ function send_enter() {
     send_special
 }
 
-function prompt_lang_utils() {
-    # called after the virtual machine boots up
+function prompt_lang_utils_terminal() {
+    tesseract_ocr="$(tesseract --version 2>/dev/null)"
+    tesseract_lang="$(tesseract.exe --list-langs 2>/dev/null)"
+    regex_ver='[Tt]esseract 4'  # for zsh regex compatibility
+    if [[ "${tesseract_ocr}" =~ ${regex_ver} && "${tesseract_lang}" =~ eng ]]; then
+        echo -e "\n${low_contrast_color}Attempting automated recognition of virtual machine graphical user interface.${default_color}"
+        animated_please_wait 30
+        for i in $(seq 1 60); do  # try automatic ocr for about 5 minutes
+            VBoxManage controlvm "${vm_name}" screenshotpng "${vm_name}_screenshot.png" 2>&1 1>/dev/null
+            ocr="$(tesseract "${vm_name}_screenshot.png" - -l eng 2>/dev/null)"
+            if [[ "${ocr}" =~ English ]]; then
+                sleep 10
+                send_enter
+            fi
+            if [[ "${ocr}" =~ Utilities ]]; then
+                sleep 10
+                kbspecial='CTRLprs F2 CTRLrls u ENTER t ENTER'  # start Terminal
+                send_special
+            fi
+            if [[ "${ocr}" =~ Terminal\ Shell ]]; then
+                sleep 2
+                return
+            fi
+            echo -ne '\r                \r'
+            animated_please_wait 10
+        done
+        echo -e "\nFailed automated recognition of virtual machine graphical user interface.\nPlease press enter as directed."
+    fi
     echo -ne "\n${highlight_color}Press enter when the Language window is ready.${default_color}"
     clear_input_buffer_then_read
     send_enter
     echo -ne "\n${highlight_color}Press enter when the macOS Utilities window is ready.${default_color}"
     clear_input_buffer_then_read
-    kbspecial='CTRLprs F2 CTRLrls u ENTER t ENTER'
+    kbspecial='CTRLprs F2 CTRLrls u ENTER t ENTER'  # start Terminal
     send_special
-}
-
-function prompt_terminal_ready() {
-    # called after the Utilities window is ready
     echo -ne "\n${highlight_color}Press enter when the Terminal command prompt is ready.${default_color}"
     clear_input_buffer_then_read
 }
+
+function animated_please_wait() {
+    # "Please wait" prompt with animated dots.
+    # Requires one positional parameter, an integer
+    # The parameter specifies how many half-seconds to wait
+    echo -ne "${low_contrast_color}Please wait${default_color}"
+    specified_halfseconds="${1}"
+    [[ "${specified_halfseconds}" =~ [^0-9]
+       || -z "${specified_halfseconds}" ]] && specified_halfseconds=2
+    for halfsecond in $(seq 1 ${specified_halfseconds}); do
+        echo -ne "${low_contrast_color}.${default_color}"
+        sleep 0.5
+        if [[ $(( halfsecond % 5 )) -eq 0 ]]; then
+            echo -ne "\r                 \r${low_contrast_color}Please wait${default_color}"
+        fi
+    done
+}
+
 
 function add_another_terminal() {
     # at least one terminal has to be open before calling this function
