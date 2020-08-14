@@ -390,7 +390,7 @@ fi
 VBoxManage controlvm "${vm_name}" poweroff 2>/dev/null
 echo -e "\nChecking that VirtualBox uses hardware-supported virtualization."
 vbox_log="$(VBoxManage showvminfo "${vm_name}" --log 0)"
-regex='.*Attempting fall back to NEM.*'  # for zsh regex compatibility
+regex='Attempting fall back to NEM'  # for zsh regex compatibility
 if [[ "${vbox_log}" =~ ${regex} ]]; then
     echo -e "\nVirtualbox is not using hardware-supported virtualization features."
     if [[ -n "$(cygcheck -V 2>/dev/null)" ||
@@ -437,7 +437,7 @@ for catalog in "${macOS_release_name}_sucatalog_"* "error"; do
     wget "${urlbase}InstallAssistantAuto.smd" \
     ${wgetargs} \
     --output-document="${catalog}_InstallAssistantAuto.smd"
-    if [[ "$(cat "${catalog}_InstallAssistantAuto.smd" )" =~ .*Beta.* ]]; then
+    if [[ "$(cat "${catalog}_InstallAssistantAuto.smd" )" =~ Beta ]]; then
         continue
     fi
     found_version="$(head -n 6 "${catalog}_InstallAssistantAuto.smd" | tail -n 1)"
@@ -1525,12 +1525,11 @@ function prompt_lang_utils_terminal() {
 
 function animated_please_wait() {
     # "Please wait" prompt with animated dots.
-    # Requires one positional parameter, an integer
+    # Accepts one optional positional parameter, an integer
     # The parameter specifies how many half-seconds to wait
     echo -ne "${low_contrast_color}Please wait${default_color}"
-    specified_halfseconds="${1}"
-    [[ "${specified_halfseconds}" =~ [^0-9]
-       || -z "${specified_halfseconds}" ]] && specified_halfseconds=2
+    specified_halfseconds=5
+    [[ "${1}" =~ [^0-9] || -z "${1}" ]] || specified_halfseconds=${1}
     for halfsecond in $(seq 1 ${specified_halfseconds}); do
         echo -ne "${low_contrast_color}.${default_color}"
         sleep 0.5
