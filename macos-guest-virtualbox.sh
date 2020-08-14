@@ -1017,7 +1017,7 @@ The script downloads macOS High Sierra, Mojave, and Catalina from Apple servers
 and installs them on VirtualBox 5.2, 6.0, and 6.1. The script doesn't install
 any closed-source additions or bootloaders. A default install requires the user
 press enter when prompted, less than ten times, to complete the installation.
-Systems with the package ${low_contrast_color}tesseract-ocr${low_contrast_color} may automate the installation completely.
+Systems with the package ${low_contrast_color}tesseract-ocr${default_color} may automate the installation completely.
 
         ${highlight_color}USAGE${default_color}
     ${low_contrast_color}${0} [STAGE]... ${default_color}
@@ -1539,7 +1539,6 @@ function animated_please_wait() {
         fi
     done
 }
-
 
 function add_another_terminal() {
     # at least one terminal has to be open before calling this function
