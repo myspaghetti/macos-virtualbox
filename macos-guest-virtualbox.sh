@@ -1495,11 +1495,11 @@ function prompt_lang_utils_terminal() {
             VBoxManage controlvm "${vm_name}" screenshotpng "${vm_name}_screenshot.png" 2>&1 1>/dev/null
             ocr="$(tesseract "${vm_name}_screenshot.png" - -l eng 2>/dev/null)"
             if [[ "${ocr}" =~ English ]]; then
-                sleep 10
+                animated_please_wait 20
                 send_enter
             fi
             if [[ "${ocr}" =~ Utilities ]]; then
-                sleep 10
+                animated_please_wait 20
                 kbspecial='CTRLprs F2 CTRLrls u ENTER t ENTER'  # start Terminal
                 send_special
             fi
@@ -1507,7 +1507,6 @@ function prompt_lang_utils_terminal() {
                 sleep 2
                 return
             fi
-            echo -ne '\r                \r'
             animated_please_wait 10
         done
         echo -e "\nFailed automated recognition of virtual machine graphical user interface.\nPlease press enter as directed."
@@ -1527,7 +1526,7 @@ function animated_please_wait() {
     # "Please wait" prompt with animated dots.
     # Accepts one optional positional parameter, an integer
     # The parameter specifies how many half-seconds to wait
-    echo -ne "${low_contrast_color}Please wait${default_color}"
+    echo -ne "\r                 \r${low_contrast_color}Please wait${default_color}"
     specified_halfseconds=5
     [[ "${1}" =~ [^0-9] || -z "${1}" ]] || specified_halfseconds=${1}
     for halfsecond in $(seq 1 ${specified_halfseconds}); do
