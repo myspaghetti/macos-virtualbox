@@ -2,7 +2,7 @@
 # Push-button installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-virtualbox
-# version 0.97.0
+# version 0.97.1
 
 #       Dependencies: bash  coreutils  gzip  unzip  wget  xxd  dmg2img
 #  Optional features: tesseract-ocr  tesseract-ocr-eng
@@ -198,7 +198,7 @@ if [[ -z "$(echo -n "xxd" | xxd -e -p 2>/dev/null)" ||
 fi
 
 # wget supports --show-progress from version 1.16
-regex='1\.1[6-9]|1\.[2-9][0-9]'  # for zsh regex compatibility
+regex='1\.1[6-9]|1\.[2-9][0-9]'  # for zsh quoted regex compatibility
 if [[ "$(wget --version 2>/dev/null | head -n 1)" =~ ${regex} ]]; then
     wgetargs="--quiet --continue --show-progress --timeout=60"  # pretty
 else
@@ -390,7 +390,7 @@ fi
 VBoxManage controlvm "${vm_name}" poweroff 2>/dev/null
 echo -e "\nChecking that VirtualBox uses hardware-supported virtualization."
 vbox_log="$(VBoxManage showvminfo "${vm_name}" --log 0)"
-regex='Attempting fall back to NEM'  # for zsh regex compatibility
+regex='Attempting fall back to NEM'  # for zsh quoted regex compatibility
 if [[ "${vbox_log}" =~ ${regex} ]]; then
     echo -e "\nVirtualbox is not using hardware-supported virtualization features."
     if [[ -n "$(cygcheck -V 2>/dev/null)" ||
@@ -1487,14 +1487,15 @@ function send_enter() {
 function prompt_lang_utils_terminal() {
     tesseract_ocr="$(tesseract --version 2>/dev/null)"
     tesseract_lang="$(tesseract.exe --list-langs 2>/dev/null)"
-    regex_ver='[Tt]esseract 4'  # for zsh regex compatibility
+    regex_ver='[Tt]esseract 4'  # for zsh quoted regex compatibility
     if [[ "${tesseract_ocr}" =~ ${regex_ver} && "${tesseract_lang}" =~ eng ]]; then
         echo -e "\n${low_contrast_color}Attempting automated recognition of virtual machine graphical user interface.${default_color}"
         animated_please_wait 30
         for i in $(seq 1 60); do  # try automatic ocr for about 5 minutes
             VBoxManage controlvm "${vm_name}" screenshotpng "${vm_name}_screenshot.png" 2>&1 1>/dev/null
             ocr="$(tesseract "${vm_name}_screenshot.png" - -l eng 2>/dev/null)"
-            if [[ "${ocr}" =~ English ]]; then
+            regex='Language|English'  # for zsh quoted regex compatibility
+            if [[ "${ocr}" =~ ${regex} ]]; then
                 animated_please_wait 20
                 send_enter
             fi
@@ -1562,7 +1563,7 @@ function would_you_like_to_know_less() {
 function prompt_delete_y_n() {
     # workaround for zsh-bash differences in read
     delete=""
-    if [[ -t 1 ]]; then
+    if [[ -t 1 ]]; then  # terminal is interactive
         if [[ -n "${ZSH_VERSION}" ]]; then
             read -s -q delete\?' [y/N] '
             delete="${delete:l}"
