@@ -2,7 +2,7 @@
 # Push-button installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-virtualbox
-# version 0.97.2
+# version 0.97.3
 
 #       Dependencies: bash  coreutils  gzip  unzip  wget  xxd  dmg2img
 #  Optional features: tesseract-ocr  tesseract-ocr-eng
@@ -1486,7 +1486,7 @@ function send_enter() {
 
 function prompt_lang_utils_terminal() {
     tesseract_ocr="$(tesseract --version 2>/dev/null)"
-    tesseract_lang="$(tesseract.exe --list-langs 2>/dev/null)"
+    tesseract_lang="$(tesseract --list-langs 2>/dev/null)"
     regex_ver='[Tt]esseract 4'  # for zsh quoted regex compatibility
     if [[ "${tesseract_ocr}" =~ ${regex_ver} && "${tesseract_lang}" =~ eng ]]; then
         echo -e "\n${low_contrast_color}Attempting automated recognition of virtual machine graphical user interface.${default_color}"
