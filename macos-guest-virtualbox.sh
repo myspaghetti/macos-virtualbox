@@ -10,7 +10,7 @@
 #               VirtualBox >= 6.1.6     dmg2img >= 1.6.5
 #               GNU bash >= 4.3         GNU coreutils >= 8.22
 #               GNU gzip >= 1.5         GNU wget >= 1.14
-#               Info-ZIP unzip >= 6.0   xxd >= 1.11,
+#               Info-ZIP unzip >= 6.0   xxd >= 1.11
 #               tesseract-ocr >= 4
 
 function set_variables() {
@@ -113,8 +113,9 @@ elif [[ -n "${BASH_VERSION}" ]]; then
               || "${BASH_VERSION:0:4}" =~ 4\.[12][0-9] ) ]]; then
         echo "Please execute this script with Bash 4.3 or higher, or zsh 5.5 or higher."
         if [[ -n "$(sw_vers 2>/dev/null)" ]]; then
-            echo "macOS detected. Make sure the script is not executed with"
-            echo "the default /bin/bash which is version 3."
+            echo "macOS detected. Make sure the script is not executed with the default /bin/bash"
+            echo "which is version 3. Explicitly type the executable path, for example for zsh:"
+            echo "    ${highlight_color}/path/to/5.5/zsh macos-guest-virtualbox.sh${default_color}"
         fi
         exit
     fi
