@@ -787,7 +787,7 @@ if [[ -n $(
            2>&1 VBoxManage storageattach "${vm_name}" --storagectl SATA --port 4 \
                --type dvddrive --medium "${vm_name}_populate_bootable_installer_virtual_disk.viso" >/dev/null
           ) ]]; then echo "Could not attach \"${vm_name}_populate_bootable_installer_virtual_disk.viso\". Exiting."; exit; fi
-echo -e "Starting virtual machine \"${vm_name}\".
+echo -e "\nStarting virtual machine \"${vm_name}\".
 This should take a couple of minutes. If booting fails, exit the script by
 pressing CTRL-C then see the documentation for information about applying
 different CPU profiles in the section ${highlight_color}CPU profiles and CPUID settings${default_color}."
@@ -798,7 +798,7 @@ prompt_lang_utils_terminal
 kbstring='/Volumes/bootinst-sh/bootinst.sh'
 send_keys
 send_enter
-echo "Partitioning the bootable installer virtual disk; loading base system onto the
+echo -e "\nPartitioning the bootable installer virtual disk; loading base system onto the
 installer virtual disk; moving installation files to installer virtual disk;
 updating the InstallInfo.plist file; and rebooting the virtual machine.
 
