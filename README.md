@@ -1,4 +1,4 @@
-![macOS inside a VirtualBox window with the dock positioned on the left](https://repository-images.githubusercontent.com/156108442/54b8ff00-b6b4-11ea-96d2-c21f40531ab9 "macos-guest-virtualbox.sh")
+![macOS inside a VirtualBox window with the dock positioned on the left](https://repository-images.githubusercontent.com/156108442/c501b100-0e5a-11eb-8b49-90afd63f5d03 "macos-guest-virtualbox.sh")
 
 ## Push-button installer of macOS on VirtualBox
 
@@ -8,7 +8,7 @@ A default install only requires the user to sit patiently and, less than ten tim
 
 Tested on `bash` and `zsh` on [Cygwin](https://cygwin.com/install.html). Works on macOS, CentOS 7, and Windows. Should work on most modern Linux distros.
 
-macOS Catalina (10.15), Mojave (10.14), and High Sierra (10.13) currently supported.
+macOS Catalina (10.15), Mojave (10.14), and High Sierra (10.13) currently supported. The virtual machine may be upgraded to Big Sur (11.0) through macOS Software Update.
 
 ## Documentation
 
