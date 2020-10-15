@@ -1161,7 +1161,12 @@ The following primary display resolutions are supported by macOS on VirtualBox:
   ${low_contrast_color}1440x900   1280x800   1024x768   640x480${default_color}
 Secondary displays can have an arbitrary resolution.
 
-        ${highlight_color}CPU profiles and CPUID settings${default_color}
+        ${highlight_color}Unsupported features${default_color}
+Developing and maintaining VirtualBox or macOS features is beyond the scope of
+this script. Some features may behave unexpectedly, such as USB device support,
+audio support, FileVault boot password prompt support, and other features.
+
+        ${highlight_color}CPU profiles and CPUID settings${default_color} (unsupported)
 macOS does not supprort every CPU supported by VirtualBox. If the macOS Base
 System does not boot, try applying different CPU profiles to the virtual
 machine with the ${low_contrast_color}VBoxManage${default_color} commands described below. First, while the
@@ -1178,12 +1183,7 @@ Available CPU profiles:
 If booting fails after trying each preconfigured CPU profile, the host's CPU
 requires specific ${highlight_color}macOS VirtualBox CPUID settings${default_color}.
 
-        ${highlight_color}Unsupported features${default_color}
-Developing and maintaining VirtualBox or macOS features is beyond the scope of
-this script. Some features may behave unexpectedly, such as USB device support,
-audio support, FileVault boot password prompt support, and other features.
-
-        ${highlight_color}Performance and deployment${default_color}
+        ${highlight_color}Performance and deployment${default_color} (unsupported)
 After successfully creating a working macOS virtual machine, consider importing
 the virtual machine into more performant virtualization software, or packaging
 it for configuration management platforms for automated deployment. These
@@ -1198,7 +1198,7 @@ default VirtualBox VDI format into the VMDK format with the following command:
 QEMU and KVM require additional configuration that is beyond the scope of the
 script.
 
-        ${highlight_color}VirtualBox Native Execution Manager${default_color}
+        ${highlight_color}VirtualBox Native Execution Manager${default_color} (unsupported)
 The VirtualBox Native Execution Manager (NEM) is an experimental VirtualBox
 feature. VirtualBox uses NEM when access to VT-x and AMD-V is blocked by
 virtualization software or execution protection features such as Hyper-V,
@@ -1207,21 +1207,21 @@ macOS and the macOS installer have memory corruption issues under NEM
 virtualization. The script checks for NEM and exits with an error message if
 NEM is detected.
 
-        ${highlight_color}Bootloaders${default_color}
+        ${highlight_color}Bootloaders${default_color} (unsupported)
 The macOS VirtualBox guest is loaded without extra bootloaders, but it is
 compatible with OpenCore. OpenCore requires additonal configuration that is
 beyond the scope of the script.
 
-        ${highlight_color}Display scaling${default_color}
+        ${highlight_color}Display scaling${default_color} (unsupported)
 VirtualBox does not supply an EDID for its virtual display, and macOS does not
 enable display scaling (high PPI) without an EDID. The bootloader OpenCore can
 inject an EDID which enables display scaling.
 
-        ${highlight_color}Audio${default_color}
+        ${highlight_color}Audio${default_color} (unsupported)
 macOS may not support any built-in VirtualBox audio controllers. The bootloader
 OpenCore may be able to load open-source audio drivers in VirtualBox.
 
-        ${highlight_color}FileVault${default_color}
+        ${highlight_color}FileVault${default_color} (unsupported)
 The VirtualBox EFI implementation does not properly load the FileVault full disk
 encryption password prompt upon boot. The bootloader OpenCore is be able to
 load the password prompt with the parameter \"ProvideConsoleGop\" set to \"true\".
