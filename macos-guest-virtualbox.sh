@@ -1140,7 +1140,7 @@ a QEMU virtual machine for use with Linux KVM for better performance.
 
         ${highlight_color}Storage size${default_color}
 The script by default assigns a target virtual disk storage size of 80GB, which
-is populated to about 20GB on the host on initial installation. After the
+is populated to about 25GB on the host on initial installation. After the
 installation is complete, the VDI storage size may be increased. First increase
 the virtual disk image size through VirtualBox Manager or VBoxManage, then in
 Terminal in the virtual machine execute the following command:
