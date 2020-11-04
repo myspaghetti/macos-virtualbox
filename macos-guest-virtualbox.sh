@@ -819,8 +819,8 @@ if [[ -n $(
     2>&1 VBoxManage closemedium "${macOS_release_name}_BaseSystem.${storage_format}" >/dev/null
     ) ]]; then
     echo "Could not detach ${macOS_release_name}_BaseSystem.${storage_format}"
-    echo "It's possible the VirtualBox GUI took longer than five seconds to shut off."
-    echo "If the script waits for more than a few seconds, terminate it with CTRL-C"
+    echo "The script will try to detach the virtual disk image. If this takes more than"
+    echo "a few seconds, terminate the script with CTRL-C, manually shut down VirtualBox,"
     echo "and resume with the following stages as described in the documentation:"
     echo "      ${highlight_color}create_target_virtual_disk populate_macos_target_disk${default_color}"
     while [[ -n $(
