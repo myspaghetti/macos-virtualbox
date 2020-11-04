@@ -2,7 +2,7 @@
 # Push-button installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-virtualbox
-# version 0.97.4
+# version 0.97.5
 
 #       Dependencies: bash  coreutils  gzip  unzip  wget  xxd  dmg2img
 #  Optional features: tesseract-ocr  tesseract-ocr-eng
@@ -811,7 +811,7 @@ print_dimly "If the partitioning fails, exit the script by pressing CTRL-C
 Otherwise, please wait."
 while [[ "$( VBoxManage list runningvms )" =~ \""${vm_name}"\" ]]; do sleep 2 >/dev/null 2>&1; done
 echo "Waiting for the VirtualBox GUI to shut off."
-for (( i=10; i>0; i-- )); do echo -ne "   \r${i} "; sleep 0.5; done; echo -e "\r   "
+animated_please_wait 10
 # Detach the original 2GB BaseSystem virtual disk image
 # and release basesystem VDI from VirtualBox configuration
 if [[ -n $(
@@ -820,9 +820,15 @@ if [[ -n $(
     ) ]]; then
     echo "Could not detach ${macOS_release_name}_BaseSystem.${storage_format}"
     echo "It's possible the VirtualBox GUI took longer than five seconds to shut off."
-    echo "The macOS installation may be resumed with the following command:"
-    echo "  ${highlight_color}${0} populate_macos_target_disk${default_color}"
-    exit
+    echo "If the script waits for more than a few seconds, terminate it with CTRL-C"
+    echo "and resume with the following stages as described in the documentation:"
+    echo "      ${highlight_color}create_target_virtual_disk populate_macos_target_disk${default_color}"
+    while [[ -n $(
+        2>&1 VBoxManage storageattach "${vm_name}" --storagectl SATA --port 3 --medium none >/dev/null
+        2>&1 VBoxManage closemedium "${macOS_release_name}_BaseSystem.${storage_format}" >/dev/null
+        ) ]]; then do
+        animated_please_wait 10
+    done
 fi
 echo "${macOS_release_name}_BaseSystem.${storage_format} successfully detached from"
 echo "the virtual machine and released from VirtualBox Manager."
