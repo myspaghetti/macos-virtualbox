@@ -2,7 +2,7 @@
 # Push-button installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-virtualbox
-# version 0.97.7
+# version 0.97.8
 
 #       Dependencies: bash  coreutils  gzip  unzip  wget  xxd  dmg2img
 #  Optional features: tesseract-ocr  tesseract-ocr-eng
@@ -763,7 +763,7 @@ echo "/bootinst.sh=\"${vm_name}_bootinst.txt\"" >> "${vm_name}_populate_bootable
 # Partitining largest disk as APFS
 # Partition second-largest disk as JHFS+
 echo '# this script is executed on the macOS virtual machine' > "${vm_name}_bootinst.txt"
-echo 'disks="$(diskutil list | grep -o "\*[0-9][^ ]* [GTP]B *disk[0-9]$" | sed -e "s/\.[0-9] T/000.0 T" -e "s/\.[0-9] P/000000.0 G" | grep -o "[0-9].*" | sort -gr | grep -o disk[0-9] )" && \
+echo 'disks="$(diskutil list | grep -o "\*[0-9][^ ]* [GTP]B *disk[0-9]$" | sed -e "s/\.[0-9] T/000.0 G/" -e "s/\.[0-9] P/000000.0 G/" | grep -o "[0-9].*" | sort -gr | grep -o disk[0-9] )" && \
 disks=(${disks[@]}) && \
 if [ -z "${disks}" ]; then echo "Could not find disks"; fi && \
 [ -n "${disks[0]}" ] && \
