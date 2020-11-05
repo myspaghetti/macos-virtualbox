@@ -826,7 +826,7 @@ if [[ -n $(
     while [[ -n $(
         2>&1 VBoxManage storageattach "${vm_name}" --storagectl SATA --port 3 --medium none >/dev/null
         2>&1 VBoxManage closemedium "${macOS_release_name}_BaseSystem.${storage_format}" >/dev/null
-        ) ]]; then do
+        ) ]]; do
         animated_please_wait 10
     done
 fi
