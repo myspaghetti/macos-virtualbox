@@ -223,7 +223,7 @@ if [[ -n "$(cygcheck -V 2>/dev/null)" ]]; then
             }
             echo "Found VBoxManage"
         else
-            echo "Please make sure VirtualBox version 6.0 or higher is installed, and that"
+            echo "Please make sure VirtualBox version 5.2 or higher is installed, and that"
             echo "the path to the VBoxManage.exe executable is in the PATH variable, or assign"
             echo "in the script the full path including the name of the executable to"
             echo -e "the variable ${highlight_color}cmd_path_VBoxManage${default_color}"
@@ -255,7 +255,7 @@ elif [[ "$(cat /proc/sys/kernel/osrelease 2>/dev/null)" =~ [Mm]icrosoft ]]; then
     fi
 # everything else (not cygwin and not wsl)
 elif [[ -z "$(VBoxManage -v 2>/dev/null)" ]]; then
-    echo "Please make sure VirtualBox version 6.0 or higher is installed,"
+    echo "Please make sure VirtualBox version 5.2 or higher is installed,"
     echo "and that the path to the VBoxManage executable is in the PATH variable."
     exit
 fi
@@ -830,7 +830,7 @@ if [[ -n $(
         animated_please_wait 10
     done
 fi
-echo "${macOS_release_name}_BaseSystem.${storage_format} successfully detached from"
+echo -e "\n${macOS_release_name}_BaseSystem.${storage_format} successfully detached from"
 echo "the virtual machine and released from VirtualBox Manager."
 }
 
