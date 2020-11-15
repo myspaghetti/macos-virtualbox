@@ -925,7 +925,7 @@ echo '# this script is executed on the macOS virtual machine' > "${vm_name}_star
 echo 'background_pid="$(ps | grep '"'"' sh$'"'"' | cut -d '"'"' '"'"' -f 3)" && \
 [[ "${background_pid}" =~ ^[0-9][0-9]*$ ]] && \
 disks="$(diskutil list | grep -o "[0-9][^ ]* [GTP]B *disk[0-9]$")" && \
-disks="echo "${disks}" | sed -e "s/\.[0-9] T/000.0 G/" -e "s/\.[0-9] P/000000.0 G/" | sort -gr | grep -o disk[0-9])" && \
+disks="$(echo "${disks}" | sed -e "s/\.[0-9] T/000.0 G/" -e "s/\.[0-9] P/000000.0 G/" | sort -gr | grep -o disk[0-9])" && \
 disks=(${disks[@]}) && \
 [ -n "${disks[0]}" ] && \
 diskutil partitionDisk "/dev/${disks[0]}" 1 GPT APFS "'"${vm_name}"'" R && \
