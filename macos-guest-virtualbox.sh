@@ -2,7 +2,7 @@
 # Push-button installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-virtualbox
-# version 0.97.9
+# version 0.98.0
 
 #       Dependencies: bash  coreutils  gzip  unzip  wget  xxd  dmg2img
 #  Optional features: tesseract-ocr  tesseract-ocr-eng
@@ -10,7 +10,7 @@
 #               VirtualBox >= 6.1.6     dmg2img >= 1.6.5
 #               GNU bash >= 4.3         GNU coreutils >= 8.22
 #               GNU gzip >= 1.5         GNU wget >= 1.14
-#               Info-ZIP unzip >= 6.0   xxd >= 1.11
+#               Info-ZIP unzip >= 6.0   xxd with -e little endian support
 #               tesseract-ocr >= 4
 
 function set_variables() {
@@ -175,26 +175,29 @@ if [[ -n "$(sw_vers 2>/dev/null)" ]]; then
         echo -e "\nmacOS detected.\nPlease use a package manager such as ${highlight_color}homebrew${default_color}, ${highlight_color}pkgsrc${default_color}, ${highlight_color}nix${default_color}, or ${highlight_color}MacPorts${default_color}"
         echo "Please make sure the following packages are installed and that"
         echo "their path is in the PATH variable:"
-        echo -e "${highlight_color}bash  coreutils  dmg2img  gzip  unzip  wget  xxd${default_color}"
+        echo -e "    ${highlight_color}bash  coreutils  dmg2img  gzip  unzip  wget  xxd${default_color}"
         echo "Please make sure Bash and coreutils are the GNU variant."
         exit
     fi
 fi
 
-# check for xxd, gzip, unzip, coreutils, wget
-if [[ -z "$(echo -n "xxd" | xxd -e -p 2>/dev/null)" ||
-      -z "$(gzip --help 2>/dev/null)" ||
+# check for gzip, unzip, coreutils, wget
+if [[ -z "$(gzip --help 2>/dev/null)" ||
       -z "$(unzip -hh 2>/dev/null)" ||
       -z "$(csplit --help 2>/dev/null)" ||
       -z "$(wget --version 2>/dev/null)" ]]; then
     echo "Please make sure the following packages are installed"
     echo -e "and that they are of the version specified or newer:\n"
-    echo "    coreutils 8.22   wget 1.14   gzip 1.5   unzip 6.0   xxd 1.11"
+    echo "    coreutils 8.22   wget 1.14   gzip 1.5   unzip 6.0"
     echo -e "\nPlease make sure the coreutils and gzip packages are the GNU variant."
-    if [[ -z "$(echo -n "xxd" | xxd -e -p 2>/dev/null))" ]]; then
-        echo -e "\nMost xxd V1.11 binaries print their version as V1.10 or V1.7."
-        echo "The package vim-common-8 and newer provides the correct version."
-    fi
+    exit
+fi
+
+# check that xxd supports endianness -e flag
+if [[ -z "$(echo -n "xxd" | xxd -e -p 2>/dev/null))" ]]; then
+    echo "Please make sure a version of xxd which supports the -e option is installed."
+    echo -e "The -e option should be listed when executing   ${low_contrast_color}xxd --help${default_color}"
+    echo "The package vim-common-8 provides a compatible version on most distros."
     exit
 fi
 
