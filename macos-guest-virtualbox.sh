@@ -2,7 +2,7 @@
 # Push-button installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-virtualbox
-# version 0.98.0
+# version 0.98.1
 
 #       Dependencies: bash  coreutils  gzip  unzip  wget  xxd  dmg2img
 #  Optional features: tesseract-ocr  tesseract-ocr-eng
@@ -194,7 +194,7 @@ if [[ -z "$(gzip --help 2>/dev/null)" ||
 fi
 
 # check that xxd supports endianness -e flag
-if [[ -z "$(echo -n "xxd" | xxd -e -p 2>/dev/null))" ]]; then
+if [[ -z "$(echo -n "xxd" | xxd -e -p 2>/dev/null)" ]]; then
     echo "Please make sure a version of xxd which supports the -e option is installed."
     echo -e "The -e option should be listed when executing   ${low_contrast_color}xxd --help${default_color}"
     echo "The package vim-common-8 provides a compatible version on most modern distros."
