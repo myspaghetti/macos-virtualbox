@@ -999,6 +999,7 @@ else
                      "${macOS_release_name}_BaseSystem"*
                      "${macOS_release_name}_Install"*
                      "${macOS_release_name}_bootable_installer"*
+                     "${macOS_release_name}_"*".viso"
                      "${vm_name}_"*".png"
                      "${vm_name}_"*".bin"
                      "${vm_name}_"*".txt"
