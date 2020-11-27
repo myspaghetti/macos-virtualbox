@@ -642,7 +642,7 @@ print_dimly "stage: configure_vm"
 VBoxManage modifyvm "${vm_name}" --cpus "${cpu_count}" --memory "${memory_size}" \
  --vram "${gpu_vram}" --pae on --boot1 none --boot2 none --boot3 none \
  --boot4 none --firmware efi --rtcuseutc on --chipset ich9 ${extension_pack_usb3_support} \
- --mouse usbtablet --keyboard usb --audiocontroller hda --audiocodec stac9221
+ --mouse usbtablet --keyboard usb --audiocontroller hda --audiocodec stac9221 --cpu-profile "Intel Xeon X5482 3.20GHz"
 
 VBoxManage setextradata "${vm_name}" \
  "VBoxInternal2/EfiGraphicsResolution" "${resolution}"
