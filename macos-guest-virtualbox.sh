@@ -1222,7 +1222,7 @@ NEM is detected.
 
         ${highlight_color}Bootloaders${default_color} (unsupported)
 The macOS VirtualBox guest is loaded without extra bootloaders, but it is
-compatible with OpenCore. OpenCore requires additonal configuration that is
+compatible with OpenCore. OpenCore requires additional configuration that is
 beyond the scope of the script.
 
         ${highlight_color}Display scaling${default_color} (unsupported)
