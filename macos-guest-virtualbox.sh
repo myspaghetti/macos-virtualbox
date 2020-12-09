@@ -1091,7 +1091,7 @@ name and serial number, board ID and serial number, and other genuine
 (or genuine-like) Apple parameters. These parameters may be edited at the top
 of the script or loaded through a configuration file as described in the
 section above. Assigning these parameters is not required when installing or
-using macOS, only when connecting to the iCould app, iMessage, and other
+using macOS, only when connecting to the iCloud app, iMessage, and other
 apps that authenticate the device with Apple.
 
 These are the variables that are usually required for iMessage connectivity:
