@@ -2,7 +2,7 @@
 # Push-button installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-virtualbox
-# version 0.98.1
+# version 0.98.2
 
 #       Dependencies: bash  coreutils  gzip  unzip  wget  xxd  dmg2img
 #  Optional features: tesseract-ocr  tesseract-ocr-eng
@@ -1317,7 +1317,7 @@ function sleep() {
 }
 
 # create a viso with no files
-create_viso_header() {
+function create_viso_header() {
     # input: filename volume-id (two positional parameters, both required)
     # output: nothing to stdout, viso file to working directory
     local uuid="$(xxd -p -l 16 /dev/urandom)"
