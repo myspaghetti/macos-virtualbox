@@ -32,6 +32,10 @@ The following primary display resolutions are supported by macOS on VirtualBox: 
 
 Developing and maintaining VirtualBox or macOS features is beyond the scope of this script. Some features may behave unexpectedly, such as USB device support, audio support, FileVault boot password prompt support, and other features.
 
+### CPU compatibility
+
+macOS guests on VirtualBox are ubcompatible with some CPU models. If the guest macOS boot process hangs on “LoadKernelFromStream”, “EndRandomSeed”, or "EXITBS", see the [documentation command](#documentation) regarding VirtualBox CPU profiles and [CPUID settings](https://www.virtualbox.org/manual/ch08.html#vboxmanage-modifyvm-teleport). Some CPU models released in 2020 and later may require configuring the guest to "Mac OS X (64-bit)" instead of "macOS 10.13 High Sierra (64-bit)".
+
 ### Performance and deployment
 
 After successfully creating a working macOS virtual machine, consider importing it into more performant virtualization software, or packaging it for configuration management platforms for automated deployment. These virtualization and deployment applications require additional configuration that is beyond the scope of the script.
