@@ -375,11 +375,11 @@ fi
 # Attempt to create new virtual machine named "${vm_name}"
 function create_vm() {
 print_dimly "stage: create_vm"
-if [[ -n "$( VBoxManage createvm --name "${vm_name}" --ostype "MacOS1013_64" --register 2>&1 >/dev/null )" ]]; then
+if [[ -n "$( VBoxManage createvm --name "${vm_name}" --ostype "MacOS_64" --register 2>&1 >/dev/null )" ]]; then
     echo -e "\nError: Could not create virtual machine \"${vm_name}\"."
     echo -e "${highlight_color}Please delete exising \"${vm_name}\" VirtualBox configuration files ${warning_color}manually${default_color}.\n"
     echo -e "Error message:\n"
-    VBoxManage createvm --name "${vm_name}" --ostype "MacOS1013_64" --register 2>/dev/tty
+    VBoxManage createvm --name "${vm_name}" --ostype "MacOS_64" --register 2>/dev/tty
     exit
 fi
 }
