@@ -34,7 +34,7 @@ Developing and maintaining VirtualBox or macOS features is beyond the scope of t
 
 ### CPU compatibility
 
-macOS guests on VirtualBox are ubcompatible with some CPU models. If the guest macOS boot process hangs on “LoadKernelFromStream”, “EndRandomSeed”, or "EXITBS", see the [documentation command](#documentation) regarding VirtualBox CPU profiles and [CPUID settings](https://www.virtualbox.org/manual/ch08.html#vboxmanage-modifyvm-teleport). Some CPU models released in 2020 and later may require configuring the guest to "Mac OS X (64-bit)" instead of "macOS 10.13 High Sierra (64-bit)".
+macOS guests on VirtualBox are incompatible with some CPU models. If the guest macOS boot process hangs on “LoadKernelFromStream”, “EndRandomSeed”, or "EXITBS", see the [documentation command](#documentation) regarding VirtualBox CPU profiles and [CPUID settings](https://www.virtualbox.org/manual/ch08.html#vboxmanage-modifyvm-teleport). Some CPU models released in 2020 and later may require configuring the guest to "Mac OS X (64-bit)" instead of "macOS 10.13 High Sierra (64-bit)".
 
 ### Performance and deployment
 
