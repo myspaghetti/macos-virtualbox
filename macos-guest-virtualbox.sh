@@ -1135,12 +1135,12 @@ ${low_contrast_color}configure_vm create_nvram_files create_macos_installation_f
 After executing the command, attach the resulting VISO file to the virtual
 machine's storage through VirtualBox Manager or VBoxManage. Power up the VM
 and boot macOS, then start Terminal and execute the following commands, making
-sure to replace \"/Volumes/path/to/VISO/\" with the correct path:
+sure to replace \"[VISO_mountpoint]\" with the correct path:
 
     ${low_contrast_color}mkdir ESP${default_color}
     ${low_contrast_color}sudo su # this will prompt for a password${default_color}
     ${low_contrast_color}diskutil mount -mountPoint ESP disk0s1${default_color}
-    ${low_contrast_color}cp -r /Volumes/path/to/VISO/ESP/* ESP/${default_color}
+    ${low_contrast_color}cp -r /Volumes/[VISO_mountpoint]/ESP/* ESP/${default_color}
 
 After copying the files, boot into the EFI Internal Shell as described in the
 section \"Applying the EFI and NVRAM parameters\".
