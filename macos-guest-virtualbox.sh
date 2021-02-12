@@ -14,6 +14,7 @@
 #               tesseract-ocr >= 4
 
 function set_variables() {
+cpu_profile_on=false
 # Customize the installation by setting these variables:
 vm_name="macOS"                  # name of the VirtualBox virtual machine
 macOS_release_name="Catalina"    # install "HighSierra" "Mojave" or "Catalina"
@@ -23,7 +24,7 @@ cpu_count=2                      # VM CPU cores, minimum 2
 memory_size=4096                 # VM RAM in MB, minimum 2048
 gpu_vram=128                     # VM video RAM in MB, minimum 34, maximum 128
 resolution="1280x800"            # VM display resolution 
-#cpu_profile="Intel Core i7-3960X" && cpu_profile?=true #If having issues on the boot screen try uncommenting this
+cpu_profile="Intel Core i7-3960X" && cpu_profile_on=true #If having issues on the boot screen try uncommenting this
 
 # The following commented commands, when executed on a genuine Mac,
 # may provide the values for NVRAM and EFI parameters required by iCloud,
@@ -94,7 +95,7 @@ pad_to_33_chars "cpu_count=${cpu_count}"                       "# VM CPU cores, 
 pad_to_33_chars "memory_size=${memory_size}"                   "# VM RAM in MB, minimum 2048"
 pad_to_33_chars "gpu_vram=${gpu_vram}"                         "# VM video RAM in MB, minimum 34, maximum 128"
 pad_to_33_chars "resolution=\"${resolution}\""                 "# VM display resolution"
-if [ ${cpu_profile?} = true ] ; then
+if [ ${cpu_profile_on} = true ] ; then
     echo -e "cpu_profile=\"${cpu_profile}\""                 "# VM CPU Profile If Needed For Boot"
 fi
 echo -ne "\nThese values may be customized as described in the documentation.\n
@@ -677,7 +678,7 @@ VBoxManage setextradata "${vm_name}" \
   "ourhardworkbythesewordsguardedpleasedontsteal(c)AppleComputerInc"
 VBoxManage setextradata "${vm_name}" \
  "VBoxInternal/Devices/smc/0/Config/GetKeyFromRealSMC" 0
-if [ ${cpu_profile?} = true ] ; then
+if [ ${cpu_profile_on} = true ] ; then
     VBoxManage modifyvm "${vm_name}" --cpu-profile "${cpu_profile}"
     VBoxManage modifyvm "${vm_name}" --cpuidremoveall
 fi
