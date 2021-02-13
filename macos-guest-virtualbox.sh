@@ -24,6 +24,7 @@ memory_size=4096                 # VM RAM in MB, minimum 2048
 gpu_vram=128                     # VM video RAM in MB, minimum 34, maximum 128
 resolution="1280x800"            # VM display resolution 
 cpu_profile="host"               #VM CPU Profile
+# If booting fails try changing cpu_profile to "Intel Core i7-3960X"
 
 # The following commented commands, when executed on a genuine Mac,
 # may provide the values for NVRAM and EFI parameters required by iCloud,
