@@ -2,7 +2,7 @@
 # Push-button installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-virtualbox
-# version 0.98.2
+# version 0.98.3
 
 #       Dependencies: bash  coreutils  gzip  unzip  wget  xxd  dmg2img
 #  Optional features: tesseract-ocr  tesseract-ocr-eng
@@ -133,6 +133,18 @@ else
     echo "The script appears to be executed on a shell other than bash or zsh. Exiting."
     exit
 fi
+
+if [[ ! -t 1 ]]; then  # terminal is not interactive
+    tesseract_ocr="$(tesseract --version 2>/dev/null)"
+    tesseract_lang="$(tesseract --list-langs 2>/dev/null)"
+    regex_ver='[Tt]esseract 4'  # for zsh quoted regex compatibility
+    if [[ ! ( "${tesseract_ocr}" =~ ${regex_ver} ) || -z "${tesseract_lang}" ]]; then
+        echo "Running the script on a non-interactive shell requires the following packages:"
+        echo "    tesseract-ocr >= 4    tesseract-ocr-eng"
+        exit
+    fi
+fi
+
 }
 
 function check_gnu_coreutils_prefix() {
