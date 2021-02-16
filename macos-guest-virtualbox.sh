@@ -232,29 +232,29 @@ if [[ -n "$(cygcheck -V 2>/dev/null)" ]]; then
             cmd.exe /d /s /c call VBoxManage.exe "$@"
         }
     else
-		declare -a driveletters=("C:", "G:", "E:", "D:", "F:", "H:", "I:")
-		declare -i f=0
-		for i in ${driveletters[@]}; do
-			cmd_path_VBoxManage="$i\Program Files\Oracle\VirtualBox\VBoxManage.exe"
-			echo "Can't find VBoxManage in PATH variable,"
-			echo "checking ${cmd_path_VBoxManage}"
-			if [[ -n "$(cmd.exe /d /s /c call "${cmd_path_VBoxManage}" -v 2>/dev/null)" ]]; then
-				function VBoxManage() {
-					cmd.exe /d /s /c call "${cmd_path_VBoxManage}" "$@"
-				}
-				echo "Found VBoxManage"
-				break
-			elif [ f = "${#driveletters[@]}" ]; then
-				echo "Please make sure VirtualBox version 5.2 or higher is installed, and that"
-				echo "the path to the VBoxManage.exe executable is in the PATH variable, or assign"
-				echo "in the script the full path including the name of the executable to"
-				echo -e "the variable ${highlight_color}cmd_path_VBoxManage${default_color}"
-				exit
-			else
-				f+=1
-				echo "VBoxManage Is Not Found On Drive $i Checking Drive $driveletters[f]"
-			fi
-		done
+	declare -a driveletters=("C:", "G:", "E:", "D:", "F:", "H:", "I:")
+	declare -i f=0
+	for i in ${driveletters[@]}; do
+		cmd_path_VBoxManage="$i\Program Files\Oracle\VirtualBox\VBoxManage.exe"
+		echo "Can't find VBoxManage in PATH variable,"
+		echo "checking ${cmd_path_VBoxManage}"
+		if [[ -n "$(cmd.exe /d /s /c call "${cmd_path_VBoxManage}" -v 2>/dev/null)" ]]; then
+			function VBoxManage() {
+				cmd.exe /d /s /c call "${cmd_path_VBoxManage}" "$@"
+			}
+			echo "Found VBoxManage"
+			break
+		elif [ f = "${#driveletters[@]}" ]; then
+			echo "Please make sure VirtualBox version 5.2 or higher is installed, and that"
+			echo "the path to the VBoxManage.exe executable is in the PATH variable, or assign"
+			echo "in the script the full path including the name of the executable to"
+			echo -e "the variable ${highlight_color}cmd_path_VBoxManage${default_color}"
+			exit
+		else
+			f+=1
+			echo "VBoxManage Is Not Found On Drive $i Checking Drive $driveletters[f]"
+		fi
+	done
     fi
 
 # Windows Subsystem for Linux (WSL)
