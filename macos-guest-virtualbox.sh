@@ -232,10 +232,11 @@ if [[ -n "$(cygcheck -V 2>/dev/null)" ]]; then
             cmd.exe /d /s /c call VBoxManage.exe "$@"
         }
     else
-	declare -a driveletters=("C:", "G:", "E:", "D:", "F:", "H:", "I:")
+    	# drives A and B are last because they are reserved for floppy drives
+	declare -a driveletters=("C" "D" "E" "F" "G" "H" "I" "J" "K" "L" "M" "N", "O" "P" "Q" "R" "S" "T" "U" "V" "W" "X" "Y" "Z" "A" "B")
 	declare -i f=0
 	for i in ${driveletters[@]}; do
-		cmd_path_VBoxManage="$i\Program Files\Oracle\VirtualBox\VBoxManage.exe"
+		cmd_path_VBoxManage="$i:\Program Files\Oracle\VirtualBox\VBoxManage.exe"
 		echo "Can't find VBoxManage in PATH variable,"
 		echo "checking ${cmd_path_VBoxManage}"
 		if [[ -n "$(cmd.exe /d /s /c call "${cmd_path_VBoxManage}" -v 2>/dev/null)" ]]; then
@@ -265,30 +266,31 @@ elif [[ "$(cat /proc/sys/kernel/osrelease 2>/dev/null)" =~ [Mm]icrosoft ]]; then
         }
     else
         echo "Can't find VBoxManage in PATH variable,"
-		declare -a driveletters=("c" "g" "e" "d" "f" "h" "i")
-		declare -i f=0
-		for i in ${driveletters[@]}; do
-			wsl_path_VBoxManage="/mnt/$i/Program Files/Oracle/VirtualBox/VBoxManage.exe"
-			echo "checking $wsl_path_VBoxManage"
-			if [[ -n "$("${wsl_path_VBoxManage}" -v 2>/dev/null)" ]]; then
-				PATH="${PATH}:${wsl_path_VBoxManage%/*}"
-				function VBoxManage() {
-					VBoxManage.exe "$@"
-				}
-				echo "Found VBoxManage On Drive $i"
-				break
-			elif [ f = ${#driveletters[@]} ]; then
-				echo "VBoxManage Is Not Found On Drive $i"
-				echo "Please make sure VirtualBox is installed on Windows, and that the path to the"
-				echo "VBoxManage.exe executable is in the PATH variable, or assigned in the script"
-				echo -e "to the variable \"${highlight_color}wsl_path_VBoxManage${default_color}\" including the name of the executable."
-				exit
-			else
-				f+=1
-				echo "VBoxManage Is Not Found On Drive $i"
-			fi
-		done
-    fi
+	# drives a and b are last because they are reserved for floppy drives
+	declare -a driveletters=("c" "d" "e" "f" "g" "h" "i" "j" "k" "l" "m" "n" "o" "p" "q" "r" "s" "t" "u" "v" "w" "x" "y" "z" "a" "b")
+	declare -i f=0
+	for i in ${driveletters[@]}; do
+		wsl_path_VBoxManage="/mnt/$i/Program Files/Oracle/VirtualBox/VBoxManage.exe"
+		echo "checking $wsl_path_VBoxManage"
+		if [[ -n "$("${wsl_path_VBoxManage}" -v 2>/dev/null)" ]]; then
+			PATH="${PATH}:${wsl_path_VBoxManage%/*}"
+			function VBoxManage() {
+				VBoxManage.exe "$@"
+			}
+			echo "Found VBoxManage On Drive $i"
+			break
+		elif [ f = ${#driveletters[@]} ]; then
+			echo "VBoxManage Is Not Found On Drive $i"
+			echo "Please make sure VirtualBox is installed on Windows, and that the path to the"
+			echo "VBoxManage.exe executable is in the PATH variable, or assigned in the script"
+			echo -e "to the variable \"${highlight_color}wsl_path_VBoxManage${default_color}\" including the name of the executable."
+			exit
+		else
+			f+=1
+			echo "VBoxManage Is Not Found On Drive $i"
+		fi
+	done
+   fi
 # everything else (not cygwin and not wsl)
 elif [[ -z "$(VBoxManage -v 2>/dev/null)" ]]; then
     echo "Please make sure VirtualBox version 5.2 or higher is installed,"
