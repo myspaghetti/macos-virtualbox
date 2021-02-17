@@ -353,6 +353,18 @@ if [[ -z "$(dmg2img -d 2>/dev/null)" ]]; then
     }
 fi
 
+# get CPU Information from /proc/cpuinfo
+modelname=$(cat /proc/cpuinfo | grep 'model name' | head -1)
+# check if cpu_profile contains something other than host, as to not disturb testers trying a different cpu_profile.
+if [[ ${cpu_profile} != "host" ]]; then
+	echo "cpu_profile Is $cpu_profile, Other Than host, So Not Changing Anything"
+elif grep Intel <<<"$modelname" > /dev/null; then
+	echo "Intel CPU Detected, So Not Changing Anything"
+elif grep "AMD" <<<"$modelname" > /dev/null; then
+	echo "AMD CPU Detected, So Changing cpu_profile To: Intel Core i7-3960X"
+	cpu_profile="Intel Core i7-3960X"
+fi
+
 # set Apple software update catalog URL according to macOS version
 HighSierra_sucatalog='https://swscan.apple.com/content/catalogs/others/index-10.13-10.12-10.11-10.10-10.9-mountainlion-lion-snowleopard-leopard.merged-1.sucatalog'
 Mojave_sucatalog='https://swscan.apple.com/content/catalogs/others/index-10.14-10.13-10.12-10.11-10.10-10.9-mountainlion-lion-snowleopard-leopard.merged-1.sucatalog'
