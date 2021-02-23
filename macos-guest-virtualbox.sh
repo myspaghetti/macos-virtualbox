@@ -232,8 +232,9 @@ if [[ -n "$(cygcheck -V 2>/dev/null)" ]]; then
             cmd.exe /d /s /c call VBoxManage.exe "$@"
         }
     else
-    	# drives A and B are last because they are reserved for floppy drives
-	declare -a driveletters=("C" "D" "E" "F" "G" "H" "I" "J" "K" "L" "M" "N", "O" "P" "Q" "R" "S" "T" "U" "V" "W" "X" "Y" "Z" "A" "B")
+    	# 
+	declare -a driveletters={C..Z}
+	driveletters+=("A" "B")
 	declare -i f=0
 	for i in ${driveletters[@]}; do
 		cmd_path_VBoxManage="$i:\Program Files\Oracle\VirtualBox\VBoxManage.exe"
@@ -267,7 +268,7 @@ elif [[ "$(cat /proc/sys/kernel/osrelease 2>/dev/null)" =~ [Mm]icrosoft ]]; then
     else
         echo "Can't find VBoxManage in PATH variable,"
 	# drives a and b are last because they are reserved for floppy drives
-	declare -a driveletters=("c" "d" "e" "f" "g" "h" "i" "j" "k" "l" "m" "n" "o" "p" "q" "r" "s" "t" "u" "v" "w" "x" "y" "z" "a" "b")
+	declare -a driveletters={c..z} && driveletters+=("a" "b")
 	declare -i f=0
 	for i in ${driveletters[@]}; do
 		wsl_path_VBoxManage="/mnt/$i/Program Files/Oracle/VirtualBox/VBoxManage.exe"
