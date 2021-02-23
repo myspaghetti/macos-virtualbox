@@ -232,9 +232,9 @@ if [[ -n "$(cygcheck -V 2>/dev/null)" ]]; then
             cmd.exe /d /s /c call VBoxManage.exe "$@"
         }
     else
-    	# 
-	declare -a driveletters={C..Z}
-	driveletters+=("A" "B")
+    	# drives A and B are last because they are reserved for floppy drives
+	declare -a driveletters={C..Z} && driveletters+=("A" "B")
+	# f is a counter
 	declare -i f=0
 	for i in ${driveletters[@]}; do
 		cmd_path_VBoxManage="$i:\Program Files\Oracle\VirtualBox\VBoxManage.exe"
@@ -254,7 +254,7 @@ if [[ -n "$(cygcheck -V 2>/dev/null)" ]]; then
 			exit
 		else
 			f+=1
-			echo "VBoxManage Is Not Found On Drive $i Checking Drive $driveletters[f]"
+			echo "VBoxManage Is Not Found On Drive $i"
 		fi
 	done
     fi
