@@ -8,7 +8,6 @@
 #  Optional features: tesseract-ocr  tesseract-ocr-eng
 # Supported versions:
 #               VirtualBox >= 6.1.6     dmg2img >= 1.6.5
-#               VirtualBox >= 6.1.6     dmg2img >= 1.6.5macos-guest-virtualbox.sh
 #               GNU bash >= 4.3         GNU coreutils >= 8.22
 #               GNU gzip >= 1.5         GNU wget >= 1.14
 #               Info-ZIP unzip >= 6.0   xxd with -e little endian support
@@ -18,7 +17,6 @@ function set_variables() {
 # Customize the installation by setting these variables:
 vm_name="macOS"                  # name of the VirtualBox virtual machine
 macOS_release_name="Catalina"    # install "HighSierra" "Mojave" or "Catalina"
-storage_size=80000               # VM disk image size in MB, minimum 22000
 storage_format="vdi"             # VM disk image file format, "vdi" or "vmdk"
 cpu_count=2                      # VM CPU cores, minimum 2
 memory_size=4096                 # VM RAM in MB, minimum 2048
