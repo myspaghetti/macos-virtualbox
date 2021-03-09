@@ -8,6 +8,7 @@
 #  Optional features: tesseract-ocr  tesseract-ocr-eng
 # Supported versions:
 #               VirtualBox >= 6.1.6     dmg2img >= 1.6.5
+#               VirtualBox >= 6.1.6     dmg2img >= 1.6.5macos-guest-virtualbox.sh
 #               GNU bash >= 4.3         GNU coreutils >= 8.22
 #               GNU gzip >= 1.5         GNU wget >= 1.14
 #               Info-ZIP unzip >= 6.0   xxd with -e little endian support
@@ -120,7 +121,6 @@ elif [[ -n "${BASH_VERSION}" ]]; then
         exit
     fi
 elif [[ -n "${ZSH_VERSION}" ]]; then
-    if [[ ( "${ZSH_VERSION:0:1}" -ge 6 
             || "${ZSH_VERSION:0:3}" =~ 5\.[5-9]
             || "${ZSH_VERSION:0:4}" =~ 5\.[1-4][0-9] ) ]]; then
         # make zsh parse the script (almost) like bash
