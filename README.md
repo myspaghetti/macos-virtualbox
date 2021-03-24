@@ -8,7 +8,7 @@ A default install only requires the user to sit patiently and, less than ten tim
 
 Tested on `bash` and `zsh` on [Cygwin](https://cygwin.com/install.html). Works on macOS, CentOS 7, and Windows. Should work on most modern Linux distros.
 
-macOS Catalina (10.15), Mojave (10.14), and High Sierra (10.13) currently supported. The virtual machine may be upgraded to Big Sur 11.1 through Software Update.
+macOS Catalina (10.15), Mojave (10.14), and High Sierra (10.13) currently supported. The virtual machine may be upgraded to the latest Big Sur (11) version through Software Update.
 
 ## Documentation
 
@@ -34,7 +34,7 @@ Developing and maintaining VirtualBox or macOS features is beyond the scope of t
 
 ### CPU compatibility
 
-macOS guests on VirtualBox are incompatible with some CPU models. If the guest macOS boot process hangs on “LoadKernelFromStream”, “EndRandomSeed”, or "EXITBS", see the [documentation command](#documentation) regarding VirtualBox CPU profiles and [CPUID settings](https://www.virtualbox.org/manual/ch08.html#vboxmanage-modifyvm-teleport). Some CPU models released in 2020 and later may require configuring the guest to "Mac OS X (64-bit)" instead of "macOS 10.13 High Sierra (64-bit)".
+macOS guests on VirtualBox are incompatible with some CPU models. If the guest macOS boot process hangs on “LoadKernelFromStream”, “EndRandomSeed”, or "EXITBS", see the [documentation command](#documentation) regarding VirtualBox CPU profiles and [CPUID settings](https://www.virtualbox.org/manual/ch08.html#vboxmanage-modifyvm-teleport). Some CPU models released in 2020 and later will fail to start or complete the installer, and may require manually adjusting the CPUID settings.
 
 ### Performance and deployment
 
