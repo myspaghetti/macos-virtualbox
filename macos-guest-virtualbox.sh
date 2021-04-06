@@ -87,7 +87,7 @@ function pad_to_33_chars() {
 # custom settings prompt
 echo -e "\nvm_name=\"${vm_name}\""
 pad_to_33_chars "macOS_release_name=\"${macOS_release_name}\"" "# install \"HighSierra\" \"Mojave\" \"Catalina\""
-pad_to_33_chars "storage_size=${storage_size}"                 "# VM disk image size in MB. minimum 22000"
+pad_to_33_chars "storage_size=${storage_size}"                 "# VM disk image size in MB, minimum 22000"
 pad_to_33_chars "storage_format=\"${storage_format}\""         "# VM disk image file format, \"vdi\" or \"vmdk\""
 pad_to_33_chars "cpu_count=${cpu_count}"                       "# VM CPU cores, minimum 2"
 pad_to_33_chars "memory_size=${memory_size}"                   "# VM RAM in MB, minimum 2048"
