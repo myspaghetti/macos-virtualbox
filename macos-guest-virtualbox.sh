@@ -2,7 +2,7 @@
 # Push-button installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-virtualbox
-# version 0.98.3
+# version 0.98.4
 
 #       Dependencies: bash  coreutils  gzip  unzip  wget  xxd  dmg2img
 #  Optional features: tesseract-ocr  tesseract-ocr-eng
@@ -651,10 +651,18 @@ echo "/ESP/startup.nsh=\"${vm_name}_startup.nsh\"" >> "${macOS_release_name}_ins
 
 function configure_vm() {
 print_dimly "stage: configure_vm"
-VBoxManage modifyvm "${vm_name}" --cpus "${cpu_count}" --memory "${memory_size}" \
- --vram "${gpu_vram}" --pae on --boot1 none --boot2 none --boot3 none \
- --boot4 none --firmware efi --rtcuseutc on --chipset ich9 ${extension_pack_usb3_support} \
- --mouse usbtablet --keyboard usb --audiocontroller hda --audiocodec stac9221
+if [[ -n "$(VBoxManage modifyvm "${vm_name}" --cpus "${cpu_count}" \
+            --memory "${memory_size}" --vram "${gpu_vram}" --pae on \
+            --boot1 none --boot2 none --boot3 none --boot4 none \
+            --firmware efi --rtcuseutc on --chipset ich9 ${extension_pack_usb3_support} \
+            --mouse usbtablet --keyboard usb --audiocontroller hda \
+            --audiocodec stac9221 2>&1 >/dev/null )" ]]; then
+    echo -e "\nError: Could not configure virtual machine \"${vm_name}\"."
+    echo -e "Please execute the stage ${low_contrast_color}configure_vm${default_color} again before resuming the script"
+    echo -e "as described in the documentation.\n"
+    echo "Exiting."
+    exit
+fi
 
 VBoxManage setextradata "${vm_name}" \
  "VBoxInternal2/EfiGraphicsResolution" "${resolution}"
