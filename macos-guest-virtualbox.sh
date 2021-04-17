@@ -2,7 +2,7 @@
 # Push-button installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-virtualbox
-# version 0.98.4
+# version 0.98.5
 
 #       Dependencies: bash  coreutils  gzip  unzip  wget  xxd  dmg2img
 #  Optional features: tesseract-ocr  tesseract-ocr-eng
@@ -1038,6 +1038,17 @@ else
 fi
 }
 
+function and_all_subsequent_stages() {
+    # if exactly two arguments were specified on the command line, and the first is a stage title,
+    # then perform all stages subsequent to the specified stage, otherwise do nothing.
+    # first_argument is already sanitized so it's safe (though incorrect) to use as a regex (for brevity)
+    first_argument=${specified_arguments%% *}
+    last_argument=${specified_arguments##* }
+    [[ "${first_argument} ${last_argument}" = "${specified_arguments}" ]] && \
+    [[ "${stages}" =~ "${first_argument}" ]] && \
+    for stage in ${stages##*${first_argument}}; do ${stage}; done
+}
+
 function documentation() {
 low_contrast_stages=""
 for stage in ${stages}; do
@@ -1061,11 +1072,15 @@ line arguments for the script. When the script is executed with no command-line
 arguments, each of the stages is performed in succession in the order listed:
 
 ${low_contrast_stages}
-Other than the stages above, the command-line arguments \"${low_contrast_color}documentation${default_color}\" and
-\"${low_contrast_color}troubleshoot${default_color}\" are available. \"${low_contrast_color}troubleshoot${default_color}\" outputs system information,
-VirtualBox logs, and checksums for some installation files. \"${low_contrast_color}documentation${default_color}\"
-outputs the script's documentation. If \"${low_contrast_color}documentation${default_color}\" is the first argument,
-no other arguments are parsed.
+Other than the stages above, the command-line arguments \"${low_contrast_color}documentation${default_color}\",
+\"${low_contrast_color}troubleshoot${default_color}\", and \"${low_contrast_color}and_all_subsequent_stages${default_color}\" are available. \"${low_contrast_color}troubleshoot${default_color}\"
+generates a file with system information, VirtualBox logs, and checksums for
+some installation files. \"${low_contrast_color}documentation${default_color}\" outputs the script's documentation.
+If \"${low_contrast_color}documentation${default_color}\" is the first argument, no other arguments are parsed.
+If the first argument is a stage title and the only other argument is
+\"${low_contrast_color}and_all_subsequent_stages${default_color}\", then the speficied stage and all subsequent
+stages are performed in succession in the order liste above;
+otherwise, \"${low_contrast_color}and_all_subsequent_stages${default_color}\" does not perform any stages.
 
 The stage \"${low_contrast_color}check_shell${default_color}\" is always performed when the script loads.
 
@@ -1077,19 +1092,24 @@ specified stages are performed only after the checks pass.
         ${highlight_color}EXAMPLES${default_color}
     ${low_contrast_color}${0} create_vm configure_vm${default_color}
 
-The above stage might be used to create and configure a virtual machine on a
+The above command might be used to create and configure a virtual machine on a
 new VirtualBox installation, then manually attach to the new virtual machine
 an existing macOS disk image that was previously created by the script.
 
     ${low_contrast_color}${0} prompt_delete_temporary_files${default_color}
 
-The above stage might be used when no more virtual machines need to be
+The above command might be used when no more virtual machines need to be
 installed, and the temporary files can be deleted.
+
+    ${low_contrast_color}${0} configure_vm and_all_subsequent_stages${default_color}
+
+The above command might be used to resume the script stages after the stage
+\"${low_contrast_color}configure_vm${default_color}\" failed.
 
     ${low_contrast_color}${0} "'\\'"${default_color}
 ${low_contrast_color}configure_vm create_nvram_files create_macos_installation_files_viso${default_color}
 
-The above stages might be used to update the EFI and NVRAM variables required
+The above command might be used to update the EFI and NVRAM variables required
 for iCloud and iMessage connectivity and other Apple-connected apps.
 
         ${highlight_color}Configuration${default_color}
@@ -1634,7 +1654,8 @@ stages='
 '
 [[ -z "${1}" ]] && for stage in ${stages}; do ${stage}; done && exit
 [[ "${1}" = "documentation" ]] && documentation && exit
-valid_arguments=(${stages//$'[\r\n]'/ } troubleshoot documentation)
+valid_arguments=(${stages//$'[\r\n]'/ } troubleshoot documentation and_all_subsequent_stages)
+specified_arguments="$@"  # this variable is used in the function "and_all_subsequent_stages"
 for specified_arg in "$@"; do
     there_is_a_match=""
     # doing matching the long way to prevent delimiter confusion
@@ -1644,7 +1665,7 @@ for specified_arg in "$@"; do
     if [[ -z "${there_is_a_match}" ]]; then
         echo -e "\nOne or more specified arguments is not recognized."
         echo -e "\nRecognized stages:\n${stages}"
-        echo -e "Other recognized arguments:\n\n    documentation\n    troubleshoot"
+        echo -e "Other recognized arguments:\n\n    documentation\n    troubleshoot\n    and_all_subsequent_stages"
         echo -e "\nView documentation by entering the following command:"
         would_you_like_to_know_less
         exit
