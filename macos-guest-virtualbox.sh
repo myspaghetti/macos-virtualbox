@@ -1079,7 +1079,7 @@ some installation files. \"${low_contrast_color}documentation${default_color}\" 
 If \"${low_contrast_color}documentation${default_color}\" is the first argument, no other arguments are parsed.
 If the first argument is a stage title and the only other argument is
 \"${low_contrast_color}and_all_subsequent_stages${default_color}\", then the speficied stage and all subsequent
-stages are performed in succession in the order liste above;
+stages are performed in succession in the order listed above;
 otherwise, \"${low_contrast_color}and_all_subsequent_stages${default_color}\" does not perform any stages.
 
 The stage \"${low_contrast_color}check_shell${default_color}\" is always performed when the script loads.
