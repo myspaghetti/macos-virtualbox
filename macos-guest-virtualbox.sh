@@ -783,7 +783,7 @@ echo -e "for partitioning and populating the bootable installer virtual disk.\n"
 create_viso_header "${vm_name}_populate_bootable_installer_virtual_disk.viso" "bootinst-sh"
 echo "/bootinst.sh=\"${vm_name}_bootinst.txt\"" >> "${vm_name}_populate_bootable_installer_virtual_disk.viso"
 # Assigning "physical" disks from largest to smallest to "${disks[]}" array
-# Partitining largest disk as APFS
+# Partitioning largest disk as APFS
 # Partition second-largest disk as JHFS+
 echo '# this script is executed on the macOS virtual machine' > "${vm_name}_bootinst.txt"
 echo 'disks="$(diskutil list | grep -o "\*[0-9][^ ]* [GTP]B *disk[0-9]$" | grep -o "[0-9].*")" && \
