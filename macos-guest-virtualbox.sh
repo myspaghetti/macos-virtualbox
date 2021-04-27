@@ -2,7 +2,7 @@
 # Push-button installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-virtualbox
-# version 0.98.6
+# version 0.98.7
 
 #       Dependencies: bash  coreutils  gzip  unzip  wget  xxd  dmg2img
 #  Optional features: tesseract-ocr  tesseract-ocr-eng
@@ -24,32 +24,58 @@ memory_size=4096                 # VM RAM in MB, minimum 2048
 gpu_vram=128                     # VM video RAM in MB, minimum 34, maximum 128
 resolution="1280x800"            # VM display resolution
 
-# The following commented commands, when executed on a genuine Mac,
-# may provide the values for NVRAM and EFI parameters required by iCloud,
-# iMessage, and other connected Apple applications.
+# Assigning the following parameters is not required when installing or using macOS.
+
+# The script will attempt to get the host's EFI and NVRAM parameters
+# if it is running on macOS and "get_parameters_from_macOS_host" is set to "yes"
+
+get_parameters_from_macOS_host="no"
+
+# Values for NVRAM and EFI parameters are required by iCloud, iMessage,
+# and other connected Apple applications, but otherwise not required.
 # Parameters taken from a genuine Mac may result in a "Call customer support"
 # message if they do not match the genuine Mac exactly.
 # Non-genuine yet genuine-like parameters usually work.
 
-#   system_profiler SPHardwareDataType
-DmiSystemFamily="MacBook Pro"        # Model Name
-DmiSystemProduct="MacBookPro11,2"    # Model Identifier
-DmiSystemSerial="NO_DEVICE_SN"       # Serial Number (system)
-DmiSystemUuid="CAFECAFE-CAFE-CAFE-CAFE-DECAFFDECAFF" # Hardware UUID
-DmiBIOSVersion="string:MBP7.89"      # Boot ROM Version
-DmiOEMVBoxVer="string:1"             # Apple ROM Info - left of the first dot
-DmiOEMVBoxRev="string:.23.45.6"      # Apple ROM Info - first dot and onward
-#   ioreg -l | grep -m 1 board-id
-DmiBoardProduct="Mac-3CBD00234E554E41"
-#   nvram 4D1EDE05-38C7-4A6A-9CC6-4BCCA8B38C14:MLB
-DmiBoardSerial="NO_LOGIC_BOARD_SN"    # stored in EFI
-MLB="${DmiBoardSerial}"               # stored in NVRAM
-#   nvram 4D1EDE05-38C7-4A6A-9CC6-4BCCA8B38C14:ROM
-ROM='%aa*%bbg%cc%dd'
-#   ioreg -l -p IODeviceTree | grep \"system-id
-SYSTEM_UUID="aabbccddeeff00112233445566778899"
-#   csrutil status
-SYSTEM_INTEGRITY_PROTECTION='10'  # '10' - enabled, '77' - disabled
+# check environment for macOS using sw_vers
+if [[ -n "$(sw_vers 2>/dev/null)" && "${get_parameters_from_macOS_host}" =~ [Yy] ]]; then
+    # These values are taken from a genuine Mac...
+    hardware_overview="$(system_profiler SPHardwareDataType)"
+    model_name="${hardware_overview##*Model Name: }"; model_name="${model_name%%$'\n'*}"
+    model_identifier="${hardware_overview##*Model Identifier: }"; model_identifier="${model_identifier%%$'\n'*}"
+    boot_rom_ver="${hardware_overview##*Boot ROM Version: }"; boot_rom_ver="${boot_rom_ver%%$'\n'*}"
+    sn_system="${hardware_overview##*Serial Number (system): }"; sn_system="${sn_system%%$'\n'*}"
+    hardware_uuid="${hardware_overview##*Hardware UUID: }"; hardware_uuid="${hardware_uuid%%$'\n'*}"
+    nvram_rom="$(nvram 4D1EDE05-38C7-4A6A-9CC6-4BCCA8B38C14:ROM)"; nvram_rom="${nvram_rom##*$'\t'}"
+    nvram_mlb="$(nvram 4D1EDE05-38C7-4A6A-9CC6-4BCCA8B38C14:MLB)"; nvram_mlb="${nvram_mlb##*$'\t'}"
+    ioreg_board_id="$(ioreg -p "IODeviceTree" -r -n / -d 1)"; ioreg_board_id="${ioreg_board_id##*board-id\" = <\"}"; ioreg_board_id="${ioreg_board_id%%\">*}"
+    ioreg_system_id="$(ioreg -p "IODeviceTree" -n platform -r)"; ioreg_system_id="${ioreg_system_id##*system-id\" = <}"; ioreg_system_id="${ioreg_system_id%%>*}"
+
+    # ...and set in VirtualBox EFI and NVRAM...
+    DmiSystemFamily="${model_name}"         # Model Name
+    DmiSystemProduct="${model_identifier}"  # Model Identifier
+    DmiBIOSVersion="string:${boot_rom_ver}" # Boot ROM Version
+    DmiSystemSerial="${sn_system}"          # Serial Number (system)
+    DmiSystemUuid="${hardware_uuid}"        # Hardware UUID
+    ROM="${nvram_rom}"                      # ROM identifier, stored in NVRAM
+    MLB="${nvram_mlb}"                      # MLB SN, stored in NVRAM
+    DmiBoardSerial="${nvram_mlb}"           # MLB SN, stored in EFI
+    DmiBoardProduct="${ioreg_board_id}"     # Product (board) identifier
+    SystemUUID="${ioreg_system_id}"         # System UUID, stored in NVRAM
+else
+    # ...or they can be set manually.
+    DmiSystemFamily="MacBook Pro"          # Model Name
+    DmiSystemProduct="MacBookPro11,2"      # Model Identifier
+    DmiBIOSVersion="string:MBP7.89"        # Boot ROM Version
+    DmiSystemSerial="NO_DEVICE_SN"         # Serial Number (system)
+    DmiSystemUuid="CAFECAFE-CAFE-CAFE-CAFE-DECAFFDECAFF" # Hardware UUID
+    ROM='%aa*%bbg%cc%dd'                   # ROM identifier
+    MLB="NO_LOGIC_BOARD_SN"                # MLB SN stored in NVRAM
+    DmiBoardSerial="${MLB}"                # MLB SN stored in EFI
+    DmiBoardProduct="Mac-3CBD00234E554E41" # Product (board) identifier
+    SystemUUID="aabbccddeeff00112233445566778899" # System UUID
+fi
+system_integrity_protection='10'  # '10' - enabled, '77' - disabled
 
 # Additional configurations may be saved in external files and loaded with the
 # following command prior to executing the script:
@@ -120,7 +146,7 @@ elif [[ -n "${BASH_VERSION}" ]]; then
         exit
     fi
 elif [[ -n "${ZSH_VERSION}" ]]; then
-    if [[ ( "${ZSH_VERSION:0:1}" -ge 6 
+    if [[ ( "${ZSH_VERSION:0:1}" -ge 6
             || "${ZSH_VERSION:0:3}" =~ 5\.[5-9]
             || "${ZSH_VERSION:0:4}" =~ 5\.[1-4][0-9] ) ]]; then
         # make zsh parse the script (almost) like bash
@@ -565,10 +591,10 @@ ROM_b16="$(for (( i=0; i<${#ROM}; )); do
 generate_nvram_bin_file "ROM" "${ROM_b16}" "4D1EDE05-38C7-4A6A-9CC6-4BCCA8B38C14"
 
 # system-id
-generate_nvram_bin_file "system-id" "${SYSTEM_UUID}" "7C436110-AB2A-4BBB-A880-FE41995C9F82"
+generate_nvram_bin_file "system-id" "${SystemUUID}" "7C436110-AB2A-4BBB-A880-FE41995C9F82"
 
 # SIP / csr-active-config
-generate_nvram_bin_file "csr-active-config" "${SYSTEM_INTEGRITY_PROTECTION}" "7C436110-AB2A-4BBB-A880-FE41995C9F82"
+generate_nvram_bin_file "csr-active-config" "${system_integrity_protection}" "7C436110-AB2A-4BBB-A880-FE41995C9F82"
 }
 
 function create_macos_installation_files_viso() {
@@ -1147,7 +1173,7 @@ These are the variables that are usually required for iMessage connectivity:
     ${low_contrast_color}DmiBoardSerial     # Main Logic Board serial (stored in EFI)${default_color}
     ${low_contrast_color}MLB                # Main Logic Board serial (stored in NVRAM)${default_color}
     ${low_contrast_color}ROM                # ROM identifier (stored in NVRAM)${default_color}
-    ${low_contrast_color}SYSTEM_UUID        # System unique identifier (stored in NVRAM)${default_color}
+    ${low_contrast_color}SystemUUID         # System unique identifier (stored in NVRAM)${default_color}
 
 The comments at the top of the script specify how to view these variables
 on a genuine Mac. Some new Macs do not output the Apple ROM info which suggests
