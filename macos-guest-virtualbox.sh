@@ -1154,30 +1154,29 @@ for example ${low_contrast_color}macOS_release_name=\"HighSierra\"${default_colo
         ${highlight_color}iCloud and iMessage connectivity${default_color}
 iCloud, iMessage, and other connected Apple services require a valid device
 name and serial number, board ID and serial number, and other genuine
-(or genuine-like) Apple parameters. These parameters may be edited at the top
-of the script or loaded through a configuration file as described in the
-section above. Assigning these parameters is not required when installing or
-using macOS, only when connecting to the iCloud app, iMessage, and other
-apps that authenticate the device with Apple.
+(or genuine-like) Apple parameters. Assigning these parameters is ${low_contrast_color}not required${default_color}
+when installing or using macOS, only when connecting to the iCloud app,
+iMessage, and other apps that authenticate the device with Apple. These
+parameters may be edited at the top of the script or loaded through a
+configuration file as described in the section above. The script may get these
+parameters when executed on a genuine Mac host by setting the variable
+"${low_contrast_color}get_parameters_from_macOS_host${default_color}" to "${low_contrast_color}yes${default_color}" in the ${low_contrast_color}set_variables()${default_color} function.
 
 These are the variables that are usually required for iMessage connectivity:
 
     ${low_contrast_color}DmiSystemFamily    # Model name${default_color}
     ${low_contrast_color}DmiSystemProduct   # Model identifier${default_color}
+    ${low_contrast_color}DmiBIOSVersion     # Boot ROM version${default_color}
     ${low_contrast_color}DmiSystemSerial    # System serial number${default_color}
     ${low_contrast_color}DmiSystemUuid      # Hardware unique identifier${default_color}
-    ${low_contrast_color}DmiOEMVBoxVer      # Apple ROM info (major version)${default_color}
-    ${low_contrast_color}DmiOEMVBoxRev      # Apple ROM info (revision)${default_color}
-    ${low_contrast_color}DmiBIOSVersion     # Boot ROM version${default_color}
-    ${low_contrast_color}DmiBoardProduct    # Main Logic Board identifier${default_color}
-    ${low_contrast_color}DmiBoardSerial     # Main Logic Board serial (stored in EFI)${default_color}
-    ${low_contrast_color}MLB                # Main Logic Board serial (stored in NVRAM)${default_color}
-    ${low_contrast_color}ROM                # ROM identifier (stored in NVRAM)${default_color}
-    ${low_contrast_color}SystemUUID         # System unique identifier (stored in NVRAM)${default_color}
+    ${low_contrast_color}ROM                # ROM identifier, stored in NVRAM${default_color}
+    ${low_contrast_color}MLB                # Main Logic Board serial, stored in NVRAM${default_color}
+    ${low_contrast_color}DmiBoardSerial     # Main Logic Board serial, stored in EFI${default_color}
+    ${low_contrast_color}DmiBoardProduct    # Product (board) identifier${default_color}
+    ${low_contrast_color}SystemUUID         # System unique identifier, stored in NVRAM${default_color}
 
 The comments at the top of the script specify how to view these variables
-on a genuine Mac. Some new Macs do not output the Apple ROM info which suggests
-the parameter is not always required.
+on a genuine Mac.
 
         ${highlight_color}Applying the EFI and NVRAM parameters${default_color}
 The EFI and NVRAM parameters may be set in the script before installation by

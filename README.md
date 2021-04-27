@@ -18,7 +18,7 @@ The majority of the script is either documentation, comments, or actionable erro
 
 ## iCloud and iMessage connectivity and NVRAM
 
-iCloud, iMessage, and other connected Apple services require a valid device name and serial number, board ID and serial number, and other genuine (or genuine-like) Apple parameters. These can be set in NVRAM by editing the script. See the [documentation command](#documentation) for further information.
+iCloud, iMessage, and other connected Apple services require a valid device name and serial number, board ID and serial number, and other genuine (or genuine-like) Apple parameters. These can be set in EFI and NVRAM by editing the script. See the [documentation command](#documentation) for further information.
 
 ## Storage size
 
