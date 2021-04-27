@@ -24,8 +24,6 @@ memory_size=4096                 # VM RAM in MB, minimum 2048
 gpu_vram=128                     # VM video RAM in MB, minimum 34, maximum 128
 resolution="1280x800"            # VM display resolution
 
-# Assigning the following parameters is not required when installing or using macOS.
-
 # The script will attempt to get the host's EFI and NVRAM parameters
 # if it is running on macOS and "get_parameters_from_macOS_host" is set to "yes"
 
@@ -38,7 +36,19 @@ get_parameters_from_macOS_host="no"
 # Non-genuine yet genuine-like parameters usually work.
 
 # check environment for macOS using sw_vers
-if [[ -n "$(sw_vers 2>/dev/null)" && "${get_parameters_from_macOS_host}" =~ [Yy] ]]; then
+if [[ -z "$(sw_vers 2>/dev/null)" || ! "${get_parameters_from_macOS_host}" =~ [Yy] ]]; then
+    # Assigning the following parameters is not required when installing or using macOS.
+    DmiSystemFamily="MacBook Pro"          # Model Name
+    DmiSystemProduct="MacBookPro11,2"      # Model Identifier
+    DmiBIOSVersion="string:MBP7.89"        # Boot ROM Version
+    DmiSystemSerial="NO_DEVICE_SN"         # Serial Number (system)
+    DmiSystemUuid="CAFECAFE-CAFE-CAFE-CAFE-DECAFFDECAFF" # Hardware UUID
+    ROM='%aa*%bbg%cc%dd'                   # ROM identifier
+    MLB="NO_LOGIC_BOARD_SN"                # MLB SN stored in NVRAM
+    DmiBoardSerial="${MLB}"                # MLB SN stored in EFI
+    DmiBoardProduct="Mac-3CBD00234E554E41" # Product (board) identifier
+    SystemUUID="aabbccddeeff00112233445566778899" # System UUID
+else
     # These values are taken from a genuine Mac...
     hardware_overview="$(system_profiler SPHardwareDataType)"
     model_name="${hardware_overview##*Model Name: }"; model_name="${model_name%%$'\n'*}"
@@ -62,18 +72,6 @@ if [[ -n "$(sw_vers 2>/dev/null)" && "${get_parameters_from_macOS_host}" =~ [Yy]
     DmiBoardSerial="${nvram_mlb}"           # MLB SN, stored in EFI
     DmiBoardProduct="${ioreg_board_id}"     # Product (board) identifier
     SystemUUID="${ioreg_system_id}"         # System UUID, stored in NVRAM
-else
-    # ...or they can be set manually.
-    DmiSystemFamily="MacBook Pro"          # Model Name
-    DmiSystemProduct="MacBookPro11,2"      # Model Identifier
-    DmiBIOSVersion="string:MBP7.89"        # Boot ROM Version
-    DmiSystemSerial="NO_DEVICE_SN"         # Serial Number (system)
-    DmiSystemUuid="CAFECAFE-CAFE-CAFE-CAFE-DECAFFDECAFF" # Hardware UUID
-    ROM='%aa*%bbg%cc%dd'                   # ROM identifier
-    MLB="NO_LOGIC_BOARD_SN"                # MLB SN stored in NVRAM
-    DmiBoardSerial="${MLB}"                # MLB SN stored in EFI
-    DmiBoardProduct="Mac-3CBD00234E554E41" # Product (board) identifier
-    SystemUUID="aabbccddeeff00112233445566778899" # System UUID
 fi
 system_integrity_protection='10'  # '10' - enabled, '77' - disabled
 
@@ -1156,11 +1154,7 @@ iCloud, iMessage, and other connected Apple services require a valid device
 name and serial number, board ID and serial number, and other genuine
 (or genuine-like) Apple parameters. Assigning these parameters is ${low_contrast_color}not required${default_color}
 when installing or using macOS, only when connecting to the iCloud app,
-iMessage, and other apps that authenticate the device with Apple. These
-parameters may be edited at the top of the script or loaded through a
-configuration file as described in the section above. The script may get these
-parameters when executed on a genuine Mac host by setting the variable
-"${low_contrast_color}get_parameters_from_macOS_host${default_color}" to "${low_contrast_color}yes${default_color}" in the ${low_contrast_color}set_variables()${default_color} function.
+iMessage, and other apps that authenticate the device with Apple.
 
 These are the variables that are usually required for iMessage connectivity:
 
@@ -1175,8 +1169,9 @@ These are the variables that are usually required for iMessage connectivity:
     ${low_contrast_color}DmiBoardProduct    # Product (board) identifier${default_color}
     ${low_contrast_color}SystemUUID         # System unique identifier, stored in NVRAM${default_color}
 
-The comments at the top of the script specify how to view these variables
-on a genuine Mac.
+These parameters may be manually set in the ${low_contrast_color}set_variables()${default_color} function when the
+"${low_contrast_color}get_parameters_from_macOS_host${default_color}" is set to "${low_contrast_color}no${default_color}", which is the default setting. When
+the script is executed on macOS and the variable "${low_contrast_color}get_parameters_from_macOS_host${default_color}" is set to "${low_contrast_color}yes${default_color}", the script copies them from the host.
 
         ${highlight_color}Applying the EFI and NVRAM parameters${default_color}
 The EFI and NVRAM parameters may be set in the script before installation by
