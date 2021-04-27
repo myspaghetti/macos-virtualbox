@@ -20,6 +20,8 @@ The majority of the script is either documentation, comments, or actionable erro
 
 iCloud, iMessage, and other connected Apple services require a valid device name and serial number, board ID and serial number, and other genuine (or genuine-like) Apple parameters. These can be set in NVRAM by editing the script. See the [documentation command](#documentation) for further information.
 
+To export the needed variables from a genuine mac look at this [comment in issue 76](https://github.com/myspaghetti/macos-virtualbox/issues/76#issuecomment-658747998) and run it as a shell script.
+
 ## Storage size
 
 The script by default assigns a target virtual disk storage size of 80GB, which is populated to about 25GB on the host on initial installation. After the installation is complete, the storage size may be increased. See the [documentation command](#documentation) for further information.
