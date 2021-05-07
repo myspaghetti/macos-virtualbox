@@ -978,7 +978,7 @@ disks=(${disks[@]}) && \
 diskutil partitionDisk "/dev/${disks[0]}" 1 GPT APFS "'"${vm_name}"'" R && \
 app_path="$(ls -d /Install*.app)" && \
 cd "/${app_path}/Contents/Resources/" && \
-./startosinstall --agreetolicense --pidtosignal ${background_pid} --rebootdelay 500 --volume "/Volumes/'"${vm_name}"'"' >> "${vm_name}_startosinstall.txt"
+./startosinstall --agreetolicense --pidtosignal ${background_pid} --rebootdelay 90 --volume "/Volumes/'"${vm_name}"'"' >> "${vm_name}_startosinstall.txt"
 if [[ -n $(
            2>&1 VBoxManage storageattach "${vm_name}" --storagectl SATA --port 3 \
                --type dvddrive --medium "${vm_name}_populate_macos_target_disk.viso" >/dev/null
