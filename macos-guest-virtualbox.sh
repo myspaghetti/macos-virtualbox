@@ -418,6 +418,18 @@ if [[ -n "$( VBoxManage createvm --name "${vm_name}" --ostype "MacOS1013_64" --r
     VBoxManage createvm --name "${vm_name}" --ostype "MacOS1013_64" --register 2>/dev/tty
     exit
 fi
+if test \! \( -f  ${macOS_release_name}.png \) ; then
+	if test ${macOS_release_name} = "HighSierra" ; then
+		wget -O ${macOS_release_name}.png https://upload.wikimedia.org/wikipedia/fr/1/13/Macos_highsierra_logo.png
+	fi
+	if test ${macOS_release_name} = "Mojave" ; then
+		wget -O ${macOS_release_name}.png https://upload.wikimedia.org/wikipedia/fr/3/3a/MacOS_Mojave_logo_light.png
+	fi
+	if test ${macOS_release_name} = "Catalina" ; then
+		wget -O ${macOS_release_name}.png https://upload.wikimedia.org/wikipedia/fr/c/c9/MacOS_Catalina_logo_light.png
+	fi
+fi
+VBoxManage modifyvm "${vm_name}" --iconfile ${macOS_release_name}.png
 }
 
 function check_default_virtual_machine() {
