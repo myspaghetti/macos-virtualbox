@@ -230,7 +230,7 @@ if [[ -z "$(gzip --help 2>/dev/null)" ||
 fi
 
 # check that xxd supports endianness -e flag
-if [[ -z "$(echo -n "xxd" | xxd -e -p 2>/dev/null)" ]]; then
+if [[ -z "$(xxd -e -p -l 16 /dev/urandom 2>/dev/null)" ]]; then
     echo "Please make sure a version of xxd which supports the -e option is installed."
     echo -e "The -e option should be listed when executing   ${low_contrast_color}xxd --help${default_color}"
     echo "The package vim-common-8 provides a compatible version on most modern distros."
