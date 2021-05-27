@@ -1697,7 +1697,7 @@ for specified_arg in "$@"; do
     if [[ -z "${there_is_a_match}" ]]; then
         echo -e "\nOne or more specified arguments is not recognized."
         echo -e "\nRecognized stages:\n${stages}"
-        echo -e "Other recognized arguments:\n\n        check_shell\n    documentation\n    troubleshoot\n    and_all_subsequent_stages"
+        echo -e "Other recognized arguments:\n\n    check_shell\n    documentation\n    troubleshoot\n    and_all_subsequent_stages"
         echo -e "\nView documentation by entering the following command:"
         would_you_like_to_know_less
         exit
