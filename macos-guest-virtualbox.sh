@@ -131,7 +131,7 @@ if [[ -n "${BASH_VERSION}" && -n "${ZSH_VERSION}" ]]; then
     echo "The script cannot determine if it is executed on bash or zsh."
     echo "Please explicitly execute the script on the same shell as the interactive shell,"
     echo -e "for example, for zsh:\n"
-    echo "    ${highlight_color}zsh macos-guest-virtualbox.sh${default_color}"
+    echo "    ${highlight_color}zsh -i macos-guest-virtualbox.sh${default_color}"
     exit
 elif [[ -n "${BASH_VERSION}" ]]; then
     if [[ ! ( "${BASH_VERSION:0:1}" -ge 5
