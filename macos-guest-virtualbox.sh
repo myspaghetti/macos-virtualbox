@@ -1,8 +1,8 @@
-#!/bin/bash
+#!/bin/bash -i
 # Push-button installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-virtualbox
-# version 0.98.7
+# version 0.98.8
 
 #       Dependencies: bash  coreutils  gzip  unzip  wget  xxd  dmg2img
 #  Optional features: tesseract-ocr  tesseract-ocr-eng
@@ -24,31 +24,32 @@ memory_size=4096                 # VM RAM in MB, minimum 2048
 gpu_vram=128                     # VM video RAM in MB, minimum 34, maximum 128
 resolution="1280x800"            # VM display resolution
 
-# The script will attempt to get the host's EFI and NVRAM parameters
-# if it is running on macOS and "get_parameters_from_macOS_host" is set to "yes"
-
-get_parameters_from_macOS_host="no"
-
 # Values for NVRAM and EFI parameters are required by iCloud, iMessage,
 # and other connected Apple applications, but otherwise not required.
 # Parameters taken from a genuine Mac may result in a "Call customer support"
 # message if they do not match the genuine Mac exactly.
 # Non-genuine yet genuine-like parameters usually work.
 
-# check environment for macOS using sw_vers
-if [[ -z "$(sw_vers 2>/dev/null)" || ! "${get_parameters_from_macOS_host}" =~ [Yy] ]]; then
-    # Assigning the following parameters is not required when installing or using macOS.
-    DmiSystemFamily="MacBook Pro"          # Model Name
-    DmiSystemProduct="MacBookPro11,2"      # Model Identifier
-    DmiBIOSVersion="string:MBP7.89"        # Boot ROM Version
-    DmiSystemSerial="NO_DEVICE_SN"         # Serial Number (system)
-    DmiSystemUuid="CAFECAFE-CAFE-CAFE-CAFE-DECAFFDECAFF" # Hardware UUID
-    ROM='%aa*%bbg%cc%dd'                   # ROM identifier
-    MLB="NO_LOGIC_BOARD_SN"                # MLB SN stored in NVRAM
-    DmiBoardSerial="${MLB}"                # MLB SN stored in EFI
-    DmiBoardProduct="Mac-3CBD00234E554E41" # Product (board) identifier
-    SystemUUID="aabbccddeeff00112233445566778899" # System UUID
-else
+# Assigning the following parameters is not required when installing or using macOS.
+
+DmiSystemFamily="MacBook Pro"          # Model Name
+DmiSystemProduct="MacBookPro11,2"      # Model Identifier
+DmiBIOSVersion="string:MBP7.89"        # Boot ROM Version
+DmiSystemSerial="NO_DEVICE_SN"         # Serial Number (system)
+DmiSystemUuid="CAFECAFE-CAFE-CAFE-CAFE-DECAFFDECAFF" # Hardware UUID
+ROM='%aa*%bbg%cc%dd'                   # ROM identifier
+MLB="NO_LOGIC_BOARD_SN"                # MLB SN stored in NVRAM
+DmiBoardSerial="${MLB}"                # MLB SN stored in EFI
+DmiBoardProduct="Mac-3CBD00234E554E41" # Product (board) identifier
+SystemUUID="aabbccddeeff00112233445566778899" # System UUID
+
+# If the script is running on macOS and "get_parameters_from_macOS_host" is
+# set to "yes", the script will attempt to get the host's EFI and NVRAM
+# parameters and override the above EFI and NVRAM parameters.
+
+get_parameters_from_macOS_host="no"
+
+if [[ "$(sw_vers 2>/dev/null)" && "${get_parameters_from_macOS_host}" =~ [Yy] ]]; then
     # These values are taken from a genuine Mac...
     hardware_overview="$(system_profiler SPHardwareDataType)"
     model_name="${hardware_overview##*Model Name: }"; model_name="${model_name%%$'\n'*}"
@@ -73,6 +74,7 @@ else
     DmiBoardProduct="${ioreg_board_id}"     # Product (board) identifier
     SystemUUID="${ioreg_system_id}"         # System UUID, stored in NVRAM
 fi
+
 system_integrity_protection='10'  # '10' - enabled, '77' - disabled
 
 # Additional configurations may be saved in external files and loaded with the
@@ -158,13 +160,22 @@ else
     exit
 fi
 
-if [[ ! -t 1 ]]; then  # terminal is not interactive
+if [[ ! $- =~ i ]]; then  # terminal is not interactive
+    echo "The shell appears to be executed non-interactively. If this is not the case,"
+    echo "please press CTRL-C and run the script under an interactive shell, for example"
+    echo -e "${highlight_color}bash -i macos-guest-virtualbox.sh${default_color}    or    ${highlight_color}zsh -i macos-guest-virtualbox.sh${default_color}\n"
+    echo "Otherwise, the script will continue running non-interactively."
+    animated_please_wait 5
+    echo ""
     tesseract_ocr="$(tesseract --version 2>/dev/null)"
     tesseract_lang="$(tesseract --list-langs 2>/dev/null)"
     regex_ver='[Tt]esseract 4'  # for zsh quoted regex compatibility
     if [[ ! ( "${tesseract_ocr}" =~ ${regex_ver} ) || -z "${tesseract_lang}" ]]; then
         echo "Running the script on a non-interactive shell requires the following packages:"
-        echo "    tesseract-ocr >= 4    tesseract-ocr-eng"
+        echo -e "    tesseract-ocr >= 4    tesseract-ocr-eng\n"
+        echo "Exiting."
+        animated_please_wait 5
+        echo ""
         exit
     fi
 fi
@@ -1095,6 +1106,7 @@ The installation is divided into stages. Stage titles may be given as command-
 line arguments for the script. When the script is executed with no command-line
 arguments, each of the stages is performed in succession in the order listed:
 
+${low_contrast_color}check_shell${default_color}
 ${low_contrast_stages}
 Other than the stages above, the command-line arguments \"${low_contrast_color}documentation${default_color}\",
 \"${low_contrast_color}troubleshoot${default_color}\", and \"${low_contrast_color}and_all_subsequent_stages${default_color}\" are available. \"${low_contrast_color}troubleshoot${default_color}\"
@@ -1531,7 +1543,7 @@ function declare_scancode_dict() {
 
 function clear_input_buffer_then_read() {
     while read -d '' -r -t 0; do read -d '' -t 0.1 -n 10000; break; done
-    [[ -t 1 ]] && read
+    [[ $- =~ i ]] && read || echo ""
 }
 
 # read variable kbstring and convert string to scancodes and send to guest vm
@@ -1639,7 +1651,7 @@ function would_you_like_to_know_less() {
 function prompt_delete_y_n() {
     # workaround for zsh-bash differences in read
     delete=""
-    if [[ -t 1 ]]; then  # terminal is interactive
+    if [[ $- =~ i ]]; then  # terminal is interactive
         if [[ -n "${ZSH_VERSION}" ]]; then
             read -s -q delete\?' [y/N] '
             delete="${delete:l}"
@@ -1654,7 +1666,6 @@ function prompt_delete_y_n() {
 # command-line argument processing
 check_shell
 stages='
-    check_shell
     check_gnu_coreutils_prefix
     set_variables
     welcome
@@ -1675,7 +1686,7 @@ stages='
 '
 [[ -z "${1}" ]] && for stage in ${stages}; do ${stage}; done && exit
 [[ "${1}" = "documentation" ]] && documentation && exit
-valid_arguments=(${stages//$'[\r\n]'/ } troubleshoot documentation and_all_subsequent_stages)
+valid_arguments=(${stages//$'[\r\n]'/ } check_shell troubleshoot documentation and_all_subsequent_stages)
 specified_arguments="$@"  # this variable is used in the function "and_all_subsequent_stages"
 for specified_arg in "$@"; do
     there_is_a_match=""
@@ -1686,7 +1697,7 @@ for specified_arg in "$@"; do
     if [[ -z "${there_is_a_match}" ]]; then
         echo -e "\nOne or more specified arguments is not recognized."
         echo -e "\nRecognized stages:\n${stages}"
-        echo -e "Other recognized arguments:\n\n    documentation\n    troubleshoot\n    and_all_subsequent_stages"
+        echo -e "Other recognized arguments:\n\n        check_shell\n    documentation\n    troubleshoot\n    and_all_subsequent_stages"
         echo -e "\nView documentation by entering the following command:"
         would_you_like_to_know_less
         exit
