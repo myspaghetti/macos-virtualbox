@@ -1106,7 +1106,7 @@ The installation is divided into stages. Stage titles may be given as command-
 line arguments for the script. When the script is executed with no command-line
 arguments, each of the stages is performed in succession in the order listed:
 
-${low_contrast_color}check_shell${default_color}
+    ${low_contrast_color}check_shell${default_color}
 ${low_contrast_stages}
 Other than the stages above, the command-line arguments \"${low_contrast_color}documentation${default_color}\",
 \"${low_contrast_color}troubleshoot${default_color}\", and \"${low_contrast_color}and_all_subsequent_stages${default_color}\" are available. \"${low_contrast_color}troubleshoot${default_color}\"
