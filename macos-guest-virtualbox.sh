@@ -686,12 +686,14 @@ echo "/ESP/startup.nsh=\"${vm_name}_startup.nsh\"" >> "${macOS_release_name}_ins
 
 function configure_vm() {
 print_dimly "stage: configure_vm"
-if [[ -n "$(VBoxManage modifyvm "${vm_name}" --cpus "${cpu_count}" \
+if [[ -n "$(
+            VBoxManage modifyvm "${vm_name}" --cpus "${cpu_count}" \
             --memory "${memory_size}" --vram "${gpu_vram}" --pae on \
             --boot1 none --boot2 none --boot3 none --boot4 none \
             --firmware efi --rtcuseutc on --chipset ich9 ${extension_pack_usb3_support} \
             --mouse usbtablet --keyboard usb --audiocontroller hda \
-            --audiocodec stac9221 --audio=none 2>&1 >/dev/null )" ]]; then
+            --audiocodec stac9221 --audio=none 2>&1 >/dev/null
+           )" ]]; then
     echo -e "\nError: Could not configure virtual machine \"${vm_name}\"."
     echo -e "Please execute the stage ${low_contrast_color}configure_vm${default_color} again before resuming the script"
     echo -e "as described in the documentation.\n"
