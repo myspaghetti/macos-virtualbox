@@ -1255,7 +1255,7 @@ this script. Some features may behave unexpectedly, such as USB device support,
 audio support, FileVault boot password prompt support, and other features.
 
         ${highlight_color}CPU profiles and CPUID settings${default_color} (unsupported)
-macOS does not supprort every CPU supported by VirtualBox. If the macOS Base
+macOS does not support every CPU supported by VirtualBox. If the macOS Base
 System does not boot, try applying different CPU profiles to the virtual
 machine with the ${low_contrast_color}VBoxManage${default_color} commands described below. First, while the
 VM is powered off, set the guest's CPU profile to the host's CPU profile, then
