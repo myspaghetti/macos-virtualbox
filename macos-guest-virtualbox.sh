@@ -343,7 +343,7 @@ else
 fi
 
 # dmg2img
-if [[ -z "$(dmg2img -d 2>/dev/null)" ]]; then
+if ! dmg2img >/dev/null 2>&1; then
     if [[ -z "$(cygcheck -V 2>/dev/null)" ]]; then
         echo "Please install the package dmg2img."
         exit
