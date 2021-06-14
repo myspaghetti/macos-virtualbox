@@ -245,6 +245,8 @@ if [[ -z "$(xxd -e -p -l 16 /dev/urandom 2>/dev/null)" ]]; then
     echo "Please make sure a version of xxd which supports the -e option is installed."
     echo -e "The -e option should be listed when executing   ${low_contrast_color}xxd --help${default_color}"
     echo "The package vim-common-8 provides a compatible version on most modern distros."
+    echo "If vim-common-8 is not available, you can install from source:"
+    echo "git clone https://github.com/ConorOG/xxd.git && cd xxd && make && cp xxd /usr/bin"
     exit
 fi
 
