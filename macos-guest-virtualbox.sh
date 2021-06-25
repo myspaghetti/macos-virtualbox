@@ -345,7 +345,7 @@ fi
 # dmg2img
 if ! dmg2img >/dev/null 2>&1; then
     if [[ -z "$(cygcheck -V 2>/dev/null)" ]]; then
-        echo "Please install the package dmg2img."
+        echo -e "\nPlease install the package dmg2img."
         exit
     fi
     if [[ -z "$("${PWD%%/}/dmg2img.exe" -d 2>/dev/null)" ]]; then
@@ -868,8 +868,8 @@ The virtual machine may report that disk space is critically low; this is fine.
 When the bootable installer virtual disk is finished being populated, the script
 will shut down the virtual machine. After shutdown, the initial base system will
 be detached from the VM and released from VirtualBox."
-print_dimly "If the partitioning fails, exit the script by pressing CTRL-C
-Otherwise, please wait."
+print_dimly "If the partitioning fails, exit the script by pressing CTRL-C"
+print_dimly "Otherwise, please wait."
 while [[ "$( VBoxManage list runningvms )" =~ \""${vm_name}"\" ]]; do sleep 2 >/dev/null 2>&1; done
 echo "Waiting for the VirtualBox GUI to shut off."
 animated_please_wait 10
