@@ -18,6 +18,7 @@ function set_variables() {
 vm_name="macOS"                  # name of the VirtualBox virtual machine
 macOS_release_name="Catalina"    # install "HighSierra" "Mojave" or "Catalina"
 storage_size=80000               # VM disk image size in MB, minimum 22000
+storage_variant="standard"       # VM disk image variant, can be "Standard", "Fixed", "Split2G", "Stream" or "ESX"
 storage_format="vdi"             # VM disk image file format, "vdi" or "vmdk"
 cpu_count=2                      # VM CPU cores, minimum 2
 memory_size=4096                 # VM RAM in MB, minimum 2048
@@ -114,6 +115,7 @@ function pad_to_33_chars() {
 echo -e "\nvm_name=\"${vm_name}\""
 pad_to_33_chars "macOS_release_name=\"${macOS_release_name}\"" "# install \"HighSierra\" \"Mojave\" \"Catalina\""
 pad_to_33_chars "storage_size=${storage_size}"                 "# VM disk image size in MB, minimum 22000"
+pad_to_33_chars "storage_variant=\"${storage_variant}\""       "# VM disk image variant, can be \"Standard\", \"Fixed\", \"Split2G\", \"Stream\" or \"ESX\""
 pad_to_33_chars "storage_format=\"${storage_format}\""         "# VM disk image file format, \"vdi\" or \"vmdk\""
 pad_to_33_chars "cpu_count=${cpu_count}"                       "# VM CPU cores, minimum 2"
 pad_to_33_chars "memory_size=${memory_size}"                   "# VM RAM in MB, minimum 2048"
@@ -934,7 +936,7 @@ if [[ ! -e "${vm_name}.${storage_format}" ]]; then
     VBoxManage createmedium --size="${storage_size}" \
                             --format "${storage_format}" \
                             --filename "${vm_name}.${storage_format}" \
-                            --variant standard 2>/dev/tty
+                            --variant "${storage_variant}" 2>/dev/tty
 fi
 }
 
