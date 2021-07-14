@@ -2,7 +2,7 @@
 # Push-button installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-virtualbox
-# version 0.98.9
+# version 0.99.0.1
 
 #       Dependencies: bash  coreutils  gzip  unzip  wget  xxd  dmg2img
 #  Optional features: tesseract-ocr  tesseract-ocr-eng
@@ -259,17 +259,17 @@ fi
 # VirtualBox in ${PATH}
 # Cygwin
 if [[ -n "$(cygcheck -V 2>/dev/null)" ]]; then
-    if [[ -n "$(cmd.exe /d /s /c call VBoxManage.exe -v 2>/dev/null)" ]]; then
+    if [[ -n "$(cmd.exe /d/s/c call VBoxManage.exe -v 2>/dev/null)" ]]; then
         function VBoxManage() {
-            cmd.exe /d /s /c call VBoxManage.exe "$@"
+            cmd.exe /d/s/c call VBoxManage.exe "$@"
         }
     else
         cmd_path_VBoxManage='C:\Program Files\Oracle\VirtualBox\VBoxManage.exe'
         echo "Can't find VBoxManage in PATH variable,"
         echo "checking ${cmd_path_VBoxManage}"
-        if [[ -n "$(cmd.exe /d /s /c call "${cmd_path_VBoxManage}" -v 2>/dev/null)" ]]; then
+        if [[ -n "$(cmd.exe /d/s/c call "${cmd_path_VBoxManage}" -v 2>/dev/null)" ]]; then
             function VBoxManage() {
-                cmd.exe /d /s /c call "${cmd_path_VBoxManage}" "$@"
+                cmd.exe /d/s/c call "${cmd_path_VBoxManage}" "$@"
             }
             echo "Found VBoxManage"
         else
@@ -1342,7 +1342,7 @@ for wrapper in 1; do
     echo "VBOX_VERSION ${vbox_ver//[$'\r\n']/}"
     macos_ver="$(sw_vers 2>/dev/null)"
     wsl_ver="$(cat /proc/sys/kernel/osrelease 2>/dev/null)"
-    win_ver="$(cmd.exe /d /s /c call ver 2>/dev/null)"
+    win_ver="$(cmd.exe /d/s/c call ver 2>/dev/null)"
     echo "OS VERSION ${macos_ver}${wsl_ver}${win_ver//[$'\r\n']/}"
     echo "################################################################################"
     echo "vbox.log"
