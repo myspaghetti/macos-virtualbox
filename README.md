@@ -45,7 +45,7 @@ QEMU with KVM is capable of providing virtual machine hardware passthrough for n
 
 #### VirtualBox Native Execution Manager (NEM)
 
-The VirtualBox Native Execution Manager (NEM) is an experimental VirtualBox feature. [VirtualBox uses NEM when access to VT-x and AMD-V is blocked by virtualization software or execution protection features such as Hyper-V, WSL2, Windows Sandbox, memory integrity protection, Application Guard,  Credential Guard, Device Guard, and other features and software.](https://docs.microsoft.com/en-us/troubleshoot/windows-client/application-management/virtualization-apps-not-work-with-hyper-v) macOS and the macOS installer have memory corruption issues under NEM virtualization. The script checks for NEM and exits with an error message if it is detected.
+The VirtualBox Native Execution Manager (NEM) is an experimental VirtualBox feature. [VirtualBox uses NEM when access to VT-x and AMD-V is blocked by virtualization software or execution protection features such as Hyper-V, WSL2, Windows Sandbox, memory integrity protection, Application Guard, Credential Guard, Device Guard, and other features and software.](https://docs.microsoft.com/en-us/troubleshoot/windows-client/application-management/virtualization-apps-not-work-with-hyper-v) macOS and the macOS installer have memory corruption issues under NEM virtualization. The script checks for NEM and exits with an error message if it is detected.
 
 ### Bootloaders
 
