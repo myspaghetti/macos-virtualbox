@@ -9,11 +9,11 @@ A default install only requires the user to sit patiently and, less than ten tim
 
 Tested on `bash` and `zsh` on [Cygwin](https://cygwin.com/install.html). Works on macOS, CentOS 7, and Windows. Should work on most modern Linux distros.
 
-macOS Catalina (10.15), Mojave (10.14), and High Sierra (10.13) currently supported. The virtual machine may be upgraded to the latest Big Sur (11) version through Software Update.
+macOS Catalina (10.15), Mojave (10.14), and High Sierra (10.13) currently supported. The virtual machine may be upgraded to the latest Big Sur (11.X.X) version through Software Update.
 
 ## Documentation
 
-Documentation can be viewed by executing the command `./macos-guest-virtualbox.sh documentation`
+Documentation can be viewed by executing command `./macos-guest-virtualbox.sh documentation`
 
 The majority of the script is either documentation, comments, or actionable error messages, which should make the script straightforward to inspect and understand.
 
