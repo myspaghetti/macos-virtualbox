@@ -47,6 +47,8 @@ QEMU with KVM is capable of providing virtual machine hardware passthrough for n
 
 The VirtualBox Native Execution Manager (NEM) is an experimental VirtualBox feature. [VirtualBox uses NEM when access to VT-x and AMD-V is blocked by virtualization software or execution protection features such as Hyper-V, WSL2, Windows Sandbox, memory integrity protection, Application Guard, Credential Guard, Device Guard, and other features and software.](https://docs.microsoft.com/en-us/troubleshoot/windows-client/application-management/virtualization-apps-not-work-with-hyper-v) macOS and the macOS installer have memory corruption issues under NEM virtualization. The script checks for NEM and exits with an error message if it is detected.
 
+[VirtualBox can run on WSL2 and WSLg with some kernel module compilation](https://github.com/myspaghetti/macos-virtualbox/issues/523). At the point that kernel module compilation is required, though, it's preferable to use QEMU/KVM, which on WSL2 and WSLg is orders of magnitude faster than VirtualBox. WSL2, WSLg, QEMU, and KVM require additional configuration that is beyond the scope of the script.
+
 ### Bootloaders
 
 The macOS VirtualBox guest is loaded without extra bootloaders, but it is compatible with [OpenCore](https://github.com/acidanthera/OpenCorePkg/releases). OpenCore requires additional configuration that is beyond the scope of  the script.
@@ -75,7 +77,7 @@ The following optional packages provide optical character recognition that reduc
 Supported versions:
 
 * [VirtualBox](https://www.virtualbox.org/wiki/Downloads) ≥ 6.1.6, though versions as low as 5.2 may work.
-* GNU `Bash` ≥ 4.3, on Windows run through [Cygwin](https://cygwin.com/install.html) or WSL - see [NEM](#virtualbox-native-execution-manager-nem)
+* GNU `Bash` ≥ 4.3, on Windows run through [Cygwin](https://cygwin.com/install.html) or WSL "1", see [NEM](#virtualbox-native-execution-manager-nem)
 * GNU `coreutils` ≥ 8.22, GNU `gzip` ≥ 1.5, Info-ZIP `unzip` ≥ v6.0, GNU `wget` ≥ 1.14, `xxd` ≥ 1.11
 * `dmg2img` ≥ 1.6.5, on Cygwin the package is not available through the package manager so the script downloads it automatically.
 * `tesseract-ocr` ≥ 4
