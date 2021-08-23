@@ -2,7 +2,7 @@
 # Push-button installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-virtualbox
-# version 0.99.1.0
+# version 0.99.1.1
 
 #       Dependencies: bash  coreutils  gzip  unzip  wget  xxd  dmg2img
 #  Optional features: tesseract-ocr  tesseract-ocr-eng
@@ -280,14 +280,12 @@ if [[ -n "$(cygcheck -V 2>/dev/null)" ]]; then
             exit
         fi
     fi
-# Windows Subsystem for Linux (WSL)
+# Windows Subsystem for Linux (WSL "1") 
 elif [[ "$(cat /proc/sys/kernel/osrelease 2>/dev/null)" =~ [Mm]icrosoft ]]; then
     if [[ -n "$(VBoxManage.exe -v 2>/dev/null)" ]]; then
         function VBoxManage() {
             VBoxManage.exe "$@"
         }
-    elif [[ -n "$(VBoxManage -v 2>/dev/null)" ]]; then # WSLg
-        true # do nothing
     else
         wsl_path_VBoxManage='/mnt/c/Program Files/Oracle/VirtualBox/VBoxManage.exe'
         echo "Can't find VBoxManage in PATH variable,"
@@ -299,10 +297,22 @@ elif [[ "$(cat /proc/sys/kernel/osrelease 2>/dev/null)" =~ [Mm]icrosoft ]]; then
             }
             echo "Found VBoxManage"
         else
-            echo "Please make sure VirtualBox is installed on Windows, and that the path to the"
-            echo "VBoxManage.exe executable is in the PATH variable, or assigned in the script"
-            echo -e "to the variable \"${highlight_color}wsl_path_VBoxManage${default_color}\" including the name of the executable."
-            exit
+            if [[ "$(cat /proc/sys/kernel/osrelease 2>/dev/null)" =~ WSL[2Gg] ]]; then  # WSL2 or WSLg
+                if [[ -n "$(VBoxManage -v 2>/dev/null)" ]]; then
+                    true # do nothing
+                else
+                    echo "Please make sure VirtualBox version 5.2 or higher is installed,"
+                    echo "and that the path to the VBoxManage executable is in the PATH variable."
+                    echo "Mind that WSL2 and WSLg require kernel module compilation and custom"
+                    echo "configuration that is not supported by the script."
+                    exit
+                fi
+            else
+                echo "Please make sure VirtualBox is installed on Windows, and that the path to the"
+                echo "VBoxManage.exe executable is in the PATH variable, or assigned in the script"
+                echo -e "to the variable \"${highlight_color}wsl_path_VBoxManage${default_color}\" including the name of the executable."
+                exit
+            fi
         fi
     fi
 # everything else (not cygwin and not wsl)
