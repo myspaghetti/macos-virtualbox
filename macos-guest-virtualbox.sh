@@ -2,7 +2,7 @@
 # Push-button installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-virtualbox
-# version 0.99.0.1
+# version 0.99.1.0
 
 #       Dependencies: bash  coreutils  gzip  unzip  wget  xxd  dmg2img
 #  Optional features: tesseract-ocr  tesseract-ocr-eng
@@ -286,6 +286,8 @@ elif [[ "$(cat /proc/sys/kernel/osrelease 2>/dev/null)" =~ [Mm]icrosoft ]]; then
         function VBoxManage() {
             VBoxManage.exe "$@"
         }
+    elif [[ -n "$(VBoxManage -v 2>/dev/null)" ]]; then # WSLg
+        true # do nothing
     else
         wsl_path_VBoxManage='/mnt/c/Program Files/Oracle/VirtualBox/VBoxManage.exe'
         echo "Can't find VBoxManage in PATH variable,"
