@@ -291,8 +291,9 @@ elif [[ "$(cat /proc/sys/kernel/osrelease 2>/dev/null)" =~ WSL[2Gg] ]]; then  # 
             exit
         fi
     else
-        echo "Please make sure VirtualBox version 5.2 or higher is installed,"
-        echo "and that the path to the VBoxManage executable is in the PATH variable."
+        echo "Please make sure VirtualBox version 5.2 or higher and its kernel module"
+        echo "are installed, and that the path to the VBoxManage executable"
+        echo "is in the PATH variable."
         exit
     fi
 # Windows Subsystem for Linux (WSL "1") 
@@ -320,8 +321,9 @@ elif [[ "$(cat /proc/sys/kernel/osrelease 2>/dev/null)" =~ [Mm]icrosoft ]]; then
     fi
 # everything else (not cygwin and not wsl)
 elif [[ -z "$(VBoxManage -v 2>/dev/null)" ]]; then
-    echo "Please make sure VirtualBox version 5.2 or higher is installed,"
-    echo "and that the path to the VBoxManage executable is in the PATH variable."
+    echo "Please make sure VirtualBox version 5.2 or higher and its kernel module"
+    echo "are installed, and that the path to the VBoxManage executable"
+    echo "is in the PATH variable."
     exit
 fi
 
