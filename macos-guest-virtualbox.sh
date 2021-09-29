@@ -322,6 +322,8 @@ elif [[ "$(cat /proc/sys/kernel/osrelease 2>/dev/null)" =~ [Mm]icrosoft ]]; then
 elif [[ -z "$(VBoxManage -v 2>/dev/null)" ]]; then
     echo "Please make sure VirtualBox version 5.2 or higher is installed,"
     echo "and that the path to the VBoxManage executable is in the PATH variable."
+    echo "If you have you have installed VirtualBox already," 
+    echo "you may want to check the command 'VBoxManage -v' to solve this issue."
     exit
 fi
 
