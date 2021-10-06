@@ -2,7 +2,7 @@
 # Push-button installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-virtualbox
-# version 0.99.1.2
+# version 0.99.1.3
 
 #       Dependencies: bash  coreutils  gzip  unzip  wget  xxd  dmg2img
 #  Optional features: tesseract-ocr  tesseract-ocr-eng
@@ -378,6 +378,7 @@ if ! dmg2img >/dev/null 2>&1; then
         unzip -oj "dmg2img-1.6.6-win32.zip" "dmg2img.exe"
         rm "dmg2img-1.6.6-win32.zip"
         chmod +x "dmg2img.exe"
+        [[ ! -x "dmg2img.exe" ]] && echo "Error setting the executable permission for dmg2img.exe. Exiting." && exit
     fi
     function dmg2img() {
         "${PWD%%/}/dmg2img.exe" "$@"
