@@ -45,9 +45,9 @@ QEMU with KVM is capable of providing virtual machine hardware passthrough for n
 
 #### VirtualBox Native Execution Manager (NEM)
 
-The VirtualBox Native Execution Manager (NEM) is an experimental VirtualBox feature. [VirtualBox uses NEM when access to VT-x and AMD-V is blocked by virtualization software or execution protection features such as Hyper-V, WSL2, Windows Sandbox, memory integrity protection, Application Guard, Credential Guard, Device Guard, and other features and software.](https://docs.microsoft.com/en-us/troubleshoot/windows-client/application-management/virtualization-apps-not-work-with-hyper-v) macOS and the macOS installer have memory corruption issues under NEM virtualization. The script checks for NEM and exits with an error message if it is detected.
+The VirtualBox Native Execution Manager (NEM) is an experimental VirtualBox feature. [VirtualBox uses NEM when access to VT-x and AMD-V is blocked by virtualization software or execution protection features such as Hyper-V, WSL2, WSLg, Windows Sandbox, memory integrity protection, Application Guard, Credential Guard, Device Guard, and other features and software.](https://docs.microsoft.com/en-us/troubleshoot/windows-client/application-management/virtualization-apps-not-work-with-hyper-v) macOS and the macOS installer have memory corruption issues under NEM virtualization. The script checks for NEM and exits with an error message if it is detected.
 
-[VirtualBox can run on WSL2 and WSLg with some kernel module compilation](https://github.com/myspaghetti/macos-virtualbox/issues/525). At the point that kernel module compilation is required, though, it's preferable to use QEMU/KVM, which on WSL2 and WSLg is orders of magnitude faster than VirtualBox. WSL2, WSLg, QEMU, and KVM require additional configuration that is beyond the scope of the script.
+[VirtualBox can run on WSL2 and WSLg with some kernel module compilation](https://github.com/myspaghetti/macos-virtualbox/issues/525), though performance is extremely low. At the point that kernel module compilation is required, it's preferable to use QEMU/KVM. QEMU/KVM on WSL2 and WSLg is orders of magnitude faster than VirtualBox. WSL2, WSLg, QEMU, and KVM require additional configuration that is beyond the scope of the script.
 
 ### Bootloaders
 
