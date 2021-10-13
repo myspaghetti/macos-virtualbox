@@ -2,7 +2,7 @@
 # Push-button installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-virtualbox
-# version 0.99.1.3
+# version 0.99.1.4
 
 #       Dependencies: bash  coreutils  gzip  unzip  wget  xxd  dmg2img
 #  Optional features: tesseract-ocr  tesseract-ocr-eng
@@ -204,6 +204,9 @@ if [[ -n "$(gcsplit --help 2>/dev/null)" ]]; then
     }
     function seq() {
         gseq "$@"
+    }
+    function sort() {
+        gsort "$@"
     }
 fi
 }
@@ -1096,20 +1099,12 @@ fi
 function and_all_subsequent_stages() {
     # if exactly two arguments were specified on the command line, and the first is a stage title,
     # then perform all stages subsequent to the specified stage, otherwise do nothing.
-    if [[ ${#specified_arguments[@]} == 2 ]]; then
-        local stage
-        local first_argument=${specified_arguments[0]}
-        local run=n
-
-        for stage in "${stages[@]}"; do
-            [[ $run == n ]] || "$stage"
-
-            if [[ $stage == "$first_argument" ]]; then
-                # Run all subsequent stages.
-                run=y
-            fi
-        done
-    fi
+    [[ ${#specified_arguments[@]} -ne 2 ]] && return
+    for stage in "${stages[@]}"; do
+        [[ "${stages[0]}" = "${specified_arguments[0]}" ]] && break
+        stages=( "${stages[@]:1}" )
+    done
+    for stage in "${stages[@]:1}"; do ${stage}; done
 }
 
 function documentation() {
@@ -1713,19 +1708,6 @@ stages=(
     prompt_delete_temporary_files
 )
 
-if [[ $# == 0 ]]; then
-    for stage in "${stages[@]}"; do
-        "$stage"
-    done
-
-    exit
-fi
-
-if [[ $1 == documentation ]]; then
-    documentation
-    exit
-fi
-
 other_commands=(
     check_shell
     troubleshoot
@@ -1733,36 +1715,27 @@ other_commands=(
     and_all_subsequent_stages
 )
 
-specified_arguments=("$@") # this variable is used in the function "and_all_subsequent_stages"
-for specified_arg; do
-    there_is_a_match=n
-    for valid_arg in "${stages[@]}" "${other_commands[@]}"; do
-        if [[ $valid_arg == "$specified_arg" ]]; then
-            there_is_a_match=y
-            break
-        fi
-    done
+# script called without arguments
+[[ $# -eq 0 ]] && for stage in "${stages[@]}"; do ${stage}; done && exit
 
-    if [[ $there_is_a_match == n ]]; then
-        cat <<EOF
+# first argument is "documentation"
+[[ "${1}" == "documentation" ]] && documentation && exit
 
-One or more specified arguments is not recognized.
-
-Recognized stages:
-$(printf '    %s\n' "${stages[@]}")
-
-Other recognized arguments:
-$(printf '    %s\n' "${other_commands[@]}")
-
-View documentation by entering the following command:
-$(would_you_like_to_know_less)
-
-EOF
-        exit
-    fi
-done
-
+specified_arguments=("$@")  # this variable is used in the function "and_all_subsequent_stages"
+sorted_unique_recognized_arguments="$( printf "%s\n" ${stages[@]} ${other_commands[@]} | sort -bu )"
+sorted_unique_recognized_and_specified_arguments="$( printf "%s\n" ${stages[@]} ${other_commands[@]} $@ | sort -bu )"
+# if a specified argument is different from any recognized argument
+if [[ "${sorted_unique_recognized_and_specified_arguments}" != "${sorted_unique_recognized_arguments}" ]]; then
+    echo -e "\nOne or more specified arguments is not recognized."
+    echo -e "\nRecognized stages:\n"
+    printf '    %s\n' "${stages[@]}"
+    echo -e "\nOther recognized arguments:\n"
+    printf '    %s\n' "${other_commands[@]}"
+    echo -e "\nView documentation by entering the following command:"
+    would_you_like_to_know_less
+    exit
+fi
 check_gnu_coreutils_prefix
 set_variables
 check_dependencies
-for argument; do "${argument}"; done
+for argument; do ${argument}; done
