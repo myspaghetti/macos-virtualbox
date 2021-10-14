@@ -2,7 +2,7 @@
 # Push-button installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-virtualbox
-# version 0.99.1.3
+# version 0.99.1.4
 
 #       Dependencies: bash  coreutils  gzip  unzip  wget  xxd  dmg2img
 #  Optional features: tesseract-ocr  tesseract-ocr-eng
@@ -204,6 +204,9 @@ if [[ -n "$(gcsplit --help 2>/dev/null)" ]]; then
     }
     function seq() {
         gseq "$@"
+    }
+    function sort() {
+        gsort "$@"
     }
 fi
 }
@@ -1096,17 +1099,17 @@ fi
 function and_all_subsequent_stages() {
     # if exactly two arguments were specified on the command line, and the first is a stage title,
     # then perform all stages subsequent to the specified stage, otherwise do nothing.
-    # first_argument is already sanitized so it's safe (though incorrect) to use as a regex (for brevity)
-    first_argument=${specified_arguments%% *}
-    last_argument=${specified_arguments##* }
-    [[ "${first_argument} ${last_argument}" = "${specified_arguments}" ]] && \
-    [[ "${stages}" =~ "${first_argument}" ]] && \
-    for stage in ${stages##*${first_argument}}; do ${stage}; done
+    [[ ${#specified_arguments[@]} -ne 2 ]] && return
+    for stage in "${stages[@]}"; do
+        [[ "${stages[0]}" = "${specified_arguments[0]}" ]] && break
+        stages=( "${stages[@]:1}" )
+    done
+    for stage in "${stages[@]:1}"; do ${stage}; done
 }
 
 function documentation() {
 low_contrast_stages=""
-for stage in ${stages}; do
+for stage in "${stages[@]}"; do
     low_contrast_stages="${low_contrast_stages}"'    '"${low_contrast_color}${stage}${default_color}"$'\n'
 done
 echo -ne "\n        ${highlight_color}NAME${default_color}
@@ -1685,7 +1688,7 @@ function prompt_delete_y_n() {
 
 # command-line argument processing
 check_shell
-stages='
+stages=(
     check_gnu_coreutils_prefix
     set_variables
     welcome
@@ -1703,27 +1706,36 @@ stages='
     create_target_virtual_disk
     populate_macos_target_disk
     prompt_delete_temporary_files
-'
-[[ -z "${1}" ]] && for stage in ${stages}; do ${stage}; done && exit
-[[ "${1}" = "documentation" ]] && documentation && exit
-valid_arguments=(${stages//$'[\r\n]'/ } check_shell troubleshoot documentation and_all_subsequent_stages)
-specified_arguments="$@"  # this variable is used in the function "and_all_subsequent_stages"
-for specified_arg in "$@"; do
-    there_is_a_match=""
-    # doing matching the long way to prevent delimiter confusion
-    for valid_arg in "${valid_arguments[@]}"; do
-        [[ "${valid_arg}" = "${specified_arg}" ]] && there_is_a_match="true" && break
-    done
-    if [[ -z "${there_is_a_match}" ]]; then
-        echo -e "\nOne or more specified arguments is not recognized."
-        echo -e "\nRecognized stages:\n${stages}"
-        echo -e "Other recognized arguments:\n\n    check_shell\n    documentation\n    troubleshoot\n    and_all_subsequent_stages"
-        echo -e "\nView documentation by entering the following command:"
-        would_you_like_to_know_less
-        exit
-    fi
-done
+)
+
+other_commands=(
+    check_shell
+    troubleshoot
+    documentation
+    and_all_subsequent_stages
+)
+
+# script called without arguments
+[[ $# -eq 0 ]] && for stage in "${stages[@]}"; do ${stage}; done && exit
+
+# first argument is "documentation"
+[[ "${1}" == "documentation" ]] && documentation && exit
+
+specified_arguments=("$@")  # this variable is used in the function "and_all_subsequent_stages"
+sorted_unique_recognized_arguments="$( printf "%s\n" ${stages[@]} ${other_commands[@]} | sort -bu )"
+sorted_unique_recognized_and_specified_arguments="$( printf "%s\n" ${stages[@]} ${other_commands[@]} $@ | sort -bu )"
+# if a specified argument is different from any recognized argument
+if [[ "${sorted_unique_recognized_and_specified_arguments}" != "${sorted_unique_recognized_arguments}" ]]; then
+    echo -e "\nOne or more specified arguments is not recognized."
+    echo -e "\nRecognized stages:\n"
+    printf '    %s\n' "${stages[@]}"
+    echo -e "\nOther recognized arguments:\n"
+    printf '    %s\n' "${other_commands[@]}"
+    echo -e "\nView documentation by entering the following command:"
+    would_you_like_to_know_less
+    exit
+fi
 check_gnu_coreutils_prefix
 set_variables
 check_dependencies
-for argument in "$@"; do ${argument}; done
+for argument; do ${argument}; done
