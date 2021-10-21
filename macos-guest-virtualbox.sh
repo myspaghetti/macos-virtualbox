@@ -1050,7 +1050,8 @@ fi
 echo -e "\nFor further information, such as applying EFI and NVRAM variables to enable
 iMessage connectivity, see the documentation with the following command:\n"
 would_you_like_to_know_less
-echo -e "\n${highlight_color}That's it! Enjoy your virtual machine.${default_color}\n"
+echo -e "\n${highlight_color}If the Terminal window progress counter reaches 100% and reboots into${default_color}"
+echo -e "${highlight_color}an Apple macOS installer progress bar, it! Enjoy your virtual machine.${default_color}\n"
 }
 
 function prompt_delete_temporary_files() {
