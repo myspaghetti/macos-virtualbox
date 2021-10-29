@@ -1208,7 +1208,7 @@ These are the variables that are usually required for iMessage connectivity:
 These parameters may be manually set in the ${low_contrast_color}set_variables()${default_color} function when the
 \"${low_contrast_color}get_parameters_from_macOS_host${default_color}\" is set to \"${low_contrast_color}no${default_color}\", which is the default setting. When
 the script is executed on macOS and the variable \"${low_contrast_color}get_parameters_from_macOS_host${default_color}\" is
-set to "${low_contrast_color}yes${default_color}", the script copies the parameters from the host.
+set to \"${low_contrast_color}yes${default_color}\", the script copies the parameters from the host.
 
         ${highlight_color}Applying the EFI and NVRAM parameters${default_color}
 The EFI and NVRAM parameters may be set in the script before installation by
