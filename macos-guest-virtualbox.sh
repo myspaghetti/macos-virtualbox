@@ -2,7 +2,7 @@
 # Push-button installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-virtualbox
-# version 0.99.1.4
+# version 0.99.1.5
 
 #       Dependencies: bash  coreutils  gzip  unzip  wget  xxd  dmg2img
 #  Optional features: tesseract-ocr  tesseract-ocr-eng
@@ -1605,18 +1605,16 @@ function prompt_lang_utils_terminal() {
         for i in $(seq 1 60); do  # try automatic ocr for about 5 minutes
             VBoxManage controlvm "${vm_name}" screenshotpng "${vm_name}_screenshot.png" 2>&1 1>/dev/null
             ocr="$(tesseract "${vm_name}_screenshot.png" - --psm 11 --dpi 72 -l eng 2>/dev/null)"
-            regex='Language|English|Fran.ais'  # for zsh quoted regex compatibility
-            if [[ "${ocr}" =~ ${regex} ]]; then
+            regex_lang='Language|English|Fran.ais'  # for zsh quoted regex compatibility
+            regex_term='Terminal.Shell|Terminal.*sh.?-'  # for zsh quoted regex compatibility
+            if [[ "${ocr}" =~ ${regex_lang} ]]; then
                 animated_please_wait 20
                 send_enter
-            fi
-            if [[ "${ocr}" =~ Utilities ]]; then
+            elif [[ "${ocr}" =~ Utilities ]]; then
                 animated_please_wait 20
                 kbspecial='CTRLprs F2 CTRLrls u ENTER t ENTER'  # start Terminal
                 send_special
-            fi
-            regex='Terminal.Shell|Terminal.*sh.?-'  # for zsh quoted regex compatibility
-            if [[ "${ocr}" =~ ${regex} ]]; then
+            elif [[ "${ocr}" =~ ${regex_term} ]]; then
                 sleep 2
                 return
             fi
