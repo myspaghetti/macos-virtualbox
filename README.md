@@ -39,7 +39,7 @@ macOS guests on VirtualBox are incompatible with some CPU models. If the guest m
 
 ### Upgrading to Big Sur and Monterey 
 
-The virtual machine may be upgraded to the latest Big Sur (11) and Monterey (12) versions through Software Update, though it's probably quicker and less failure-prone to create a bootable installation volume with [`createinstallmedia --downloadassets`](https://support.apple.com/en-us/HT201372) and use it to upgrade the existing macOS installation or create a new one.
+The virtual machine may be upgraded to the latest Big Sur (11) and Monterey (12) versions through Software Update. Big Sur may be installed in-place. Monterey may require attaching another volume to the virtual machine and selecting it as the installation target, otherwise the installation is prone to failing and entering a boot loop.
 
 ### Performance and deployment
 
