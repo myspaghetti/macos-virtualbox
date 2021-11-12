@@ -1610,10 +1610,12 @@ function prompt_lang_utils_terminal() {
             if [[ "${ocr}" =~ ${regex_lang} ]]; then
                 animated_please_wait 20
                 send_enter
+                animated_please_wait 20
             elif [[ "${ocr}" =~ Utilities ]]; then
                 animated_please_wait 20
                 kbspecial='CTRLprs F2 CTRLrls u ENTER t ENTER'  # start Terminal
                 send_special
+                animated_please_wait 20
             elif [[ "${ocr}" =~ ${regex_term} ]]; then
                 sleep 2
                 return
