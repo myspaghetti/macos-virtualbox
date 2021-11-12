@@ -997,7 +997,7 @@ mkdir -p "/Volumes/'"${vm_name}"'/tmp/mount_efi" && \
 mount_msdos /dev/${disks[0]}s1 "/Volumes/'"${vm_name}"'/tmp/mount_efi" && \
 cp -r "/Volumes/'"${macOS_release_name:0:5}-files"'/ESP/"* "/Volumes/'"${vm_name}"'/tmp/mount_efi/" && \
 installer_pid=$(ps | grep startosinstall | grep -v grep | cut -d '"'"' '"'"' -f 3) && \
-kill -SIGUSR1 ${installer_pid}' > "${vm_name}_configure_nvram.txt"
+kill -SIGUSR1 ${installer_pid}' >> "${vm_name}_configure_nvram.txt"
 # Find background process PID, then
 # start the installer, send SIGUSR1 to concurrent bash script,
 # the other script copies files to EFI system partition,
