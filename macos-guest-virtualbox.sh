@@ -151,6 +151,7 @@ elif [[ -n "${ZSH_VERSION}" ]]; then
             || "${ZSH_VERSION:0:4}" =~ 5\.[1-4][0-9] ) ]]; then
         # make zsh parse the script (almost) like bash
         setopt extendedglob sh_word_split ksh_arrays posix_argzero nullglob bsd_echo
+        unsetopt noclobber
     else
         echo "Please execute this script with zsh version 5.5 or higher."
         exit
@@ -163,7 +164,7 @@ fi
 if [[ ! $- =~ i ]]; then  # terminal is not interactive
     echo "The shell appears to be executed non-interactively. If this is not the case,"
     echo "please press CTRL-C and run the script under an interactive shell, for example"
-    echo -e "${highlight_color}bash -i macos-guest-virtualbox.sh${default_color}    or    ${highlight_color}zsh -i macos-guest-virtualbox.sh${default_color}\n"
+    echo -e "${highlight_color}bash -i macos-guest-virtualbox.sh${default_color}    or    ${highlight_color}zsh -f -i macos-guest-virtualbox.sh${default_color}\n"
     echo "Otherwise, the script will continue running non-interactively."
     animated_please_wait 5
     echo ""
