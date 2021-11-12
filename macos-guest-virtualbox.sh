@@ -33,15 +33,15 @@ resolution="1280x800"            # VM display resolution
 # Assigning the following parameters is not required when installing or using macOS.
 
 DmiSystemFamily="MacBook Pro"          # Model Name
-DmiSystemProduct="MacBookPro11,2"      # Model Identifier
+DmiSystemProduct="iMacPro1,1"          # Model Identifier
 DmiBIOSVersion="string:MBP7.89"        # Boot ROM Version
-DmiSystemSerial="NO_DEVICE_SN"         # Serial Number (system)
+DmiSystemSerial="C02TK3YNHX87"         # Serial Number (system)
 DmiSystemUuid="CAFECAFE-CAFE-CAFE-CAFE-DECAFFDECAFF" # Hardware UUID
-ROM='%aa*%bbg%cc%dd'                   # ROM identifier
-MLB="NO_LOGIC_BOARD_SN"                # MLB SN stored in NVRAM
-DmiBoardSerial="${MLB}"                # MLB SN stored in EFI
+ROM='38484CC4EE76'                   # ROM identifier
+MLB="C02715600CDJG36CB"                # MLB SN stored in NVRAM
+DmiBoardSerial="C02715600CDJG36CB"                # MLB SN stored in EFI
 DmiBoardProduct="Mac-3CBD00234E554E41" # Product (board) identifier
-SystemUUID="aabbccddeeff00112233445566778899" # System UUID
+SystemUUID="B926E83C-FF61-4D17-B5A1-83D66151838D" # System UUID
 
 # If the script is running on macOS and "get_parameters_from_macOS_host" is
 # set to "yes", the script will attempt to get the host's EFI and NVRAM
@@ -63,16 +63,16 @@ if [[ "$(sw_vers 2>/dev/null)" && "${get_parameters_from_macOS_host}" =~ [Yy] ]]
     ioreg_system_id="$(ioreg -p "IODeviceTree" -n platform -r)"; ioreg_system_id="${ioreg_system_id##*system-id\" = <}"; ioreg_system_id="${ioreg_system_id%%>*}"
 
     # ...and set in VirtualBox EFI and NVRAM...
-    DmiSystemFamily="${model_name}"         # Model Name
-    DmiSystemProduct="${model_identifier}"  # Model Identifier
+    DmiSystemFamily="${MacBook Pro}"         # Model Name
+    DmiSystemProduct="${iMacPro1,1}"  # Model Identifier
     DmiBIOSVersion="string:${boot_rom_ver}" # Boot ROM Version
-    DmiSystemSerial="${sn_system}"          # Serial Number (system)
+    DmiSystemSerial="${C02TK3YNHX87}"          # Serial Number (system)
     DmiSystemUuid="${hardware_uuid}"        # Hardware UUID
-    ROM="${nvram_rom}"                      # ROM identifier, stored in NVRAM
-    MLB="${nvram_mlb}"                      # MLB SN, stored in NVRAM
-    DmiBoardSerial="${nvram_mlb}"           # MLB SN, stored in EFI
-    DmiBoardProduct="${ioreg_board_id}"     # Product (board) identifier
-    SystemUUID="${ioreg_system_id}"         # System UUID, stored in NVRAM
+    ROM="${38484CC4EE76}"                      # ROM identifier, stored in NVRAM
+    MLB="${C02715600CDJG36CB}"                      # MLB SN, stored in NVRAM
+    DmiBoardSerial="${C02715600CDJG36CB}"           # MLB SN, stored in EFI
+    DmiBoardProduct="${Mac-3CBD00234E554E41}"     # Product (board) identifier
+    SystemUUID="${B926E83C-FF61-4D17-B5A1-83D66151838D}"         # System UUID, stored in NVRAM
 fi
 
 system_integrity_protection='10'  # '10' - enabled, '77' - disabled
