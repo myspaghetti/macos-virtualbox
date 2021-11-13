@@ -481,6 +481,7 @@ print_dimly "stage: prepare_macos_installation_files"
 echo -e "\nDownloading Apple macOS ${macOS_release_name} software update catalog"
 wget "${sucatalog}" \
      ${wgetargs} \
+     --no-check-certificate \
      --output-document="${macOS_release_name}_sucatalog"
 
 # if file was not downloaded correctly
