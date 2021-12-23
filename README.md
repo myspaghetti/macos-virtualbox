@@ -57,13 +57,36 @@ The VirtualBox Native Execution Manager (NEM) is an experimental VirtualBox feat
 
 The macOS VirtualBox guest is loaded without extra bootloaders, but it is compatible with [OpenCore](https://github.com/acidanthera/OpenCorePkg/releases). OpenCore requires additional configuration that is beyond the scope of  the script.
 
+
+### Guest Additions - Tools (Optional) 
+
+The virtualbox 6.1 supports VMware tools (fusion) for audio and video and virtualbox guest additions (only audio not work). Those can be installed alongside. Both tools are optional.
+
 ### Audio
 
 macOS may not support any built-in VirtualBox audio controllers. The bootloader [OpenCore](https://github.com/acidanthera/OpenCorePkg/releases) may be able to load open-source or built-in audio drivers in VirtualBox, providing the configuration for STAC9221 (Intel HD Audio) or SigmaTel STAC9700,83,84 (ICH AC97) is available.
 
+There is an optional way to get audio working, with VMware tools (fusion) kexts for audio that is currently supported in virtualbox 6.1 . The settings are: Windows Direct Sound and Intel HD Audio*
+
+*Install vmware tools first and then the virtualbox guest additions. 
+
 ### Display scaling
 
 VirtualBox does not supply an EDID for its virtual display, and macOS does not enable display scaling (high PPI) without an EDID. The bootloader OpenCore can [inject an EDID](https://github.com/acidanthera/WhateverGreen/blob/master/Manual/FAQ.IntelHD.en.md#edid) which enables display scaling.
+
+The maximum display graphics vram is 256MB. You can change the settings in the script to 256 MB.
+
+There are two more ways to get graphics acceleration in Virtualbox 6.1 (optional):
+
+A) Vmware tools - 256MB VRAM: Install the vmware fusion guest addition tools in virtualbox and set the driver to VMSVGA. Set the display resolution with this command: `sudo /Library/Application\ Support/VMware\ Tools/vmware-resolutionset 1920 1080`  . This command can be set as cronjob with delay at system reboot. *
+
+B) Virtualbox guest Additions - 7mb VRAM: There is a virtualbox guest addition driver with , that auto scale resolution.
+
+*Install vmware tools first, and then the virtualbox guest additions, and select the apropriate display drivers from virtualbox menu.
+
+### SIP Disable System Integrity Protection
+
+Disables SIP:  From script 77 option on integrity and boot the vm from EFI Internal shell (The value needs to be set in NVRAM from the EFI Internal Shell. Press ESC when the virtual machine boots and select boot options and the EFI Internal Shell, then let the startup.nsh script run or manually set the NVRAM value.) 
 
 ### FileVault
 
