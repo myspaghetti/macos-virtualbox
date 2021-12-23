@@ -21,7 +21,7 @@ storage_size=80000               # VM disk image size in MB, minimum 22000
 storage_format="vdi"             # VM disk image file format, "vdi" or "vmdk"
 cpu_count=2                      # VM CPU cores, minimum 2
 memory_size=4096                 # VM RAM in MB, minimum 2048
-gpu_vram=128                     # VM video RAM in MB, minimum 34, maximum 256
+gpu_vram=256                     # VM video RAM in MB, minimum 34, maximum 256
 resolution="1280x800"            # VM display resolution
 
 # Values for NVRAM and EFI parameters are required by iCloud, iMessage,
