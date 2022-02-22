@@ -716,8 +716,8 @@ if [[ -n "$(
             --audiocodec stac9221 --audio=none 2>&1 >/dev/null
            )" ]]; then
     echo -e "\nError: Could not configure virtual machine \"${vm_name}\"."
-    echo -e "Please execute the stage ${low_contrast_color}configure_vm${default_color} again before resuming the script"
-    echo -e "as described in the documentation.\n"
+    echo -e "If the VM is powered on, power off the virtual machine and resume the script or"
+    echo -e "execute the stage ${low_contrast_color}configure_vm${default_color}\n"
     echo "Exiting."
     exit
 fi
