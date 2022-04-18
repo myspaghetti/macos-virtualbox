@@ -169,7 +169,7 @@ if [[ ! $- =~ i ]]; then  # terminal is not interactive
     echo ""
     tesseract_ocr="$(tesseract --version 2>/dev/null)"
     tesseract_lang="$(tesseract --list-langs 2>/dev/null)"
-    regex_ver='[Tt]esseract 4'  # for zsh quoted regex compatibility
+    regex_ver='[Tt]esseract [4-5]'  # for zsh quoted regex compatibility
     if [[ ! ( "${tesseract_ocr}" =~ ${regex_ver} ) || -z "${tesseract_lang}" ]]; then
         echo "Running the script on a non-interactive shell requires the following packages:"
         echo -e "    tesseract-ocr >= 4    tesseract-ocr-eng\n"
