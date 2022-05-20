@@ -371,7 +371,7 @@ if ! dmg2img >/dev/null 2>&1; then
     if [[ -z "$("${PWD%%/}/dmg2img.exe" -d 2>/dev/null)" ]]; then
         if [[ -z "${PWD}" ]]; then echo "PWD environment variable is not set. Exiting."; exit; fi
         echo "Locally installing dmg2img"
-        wget "http://vu1tur.eu.org/tools/dmg2img-1.6.6-win32.zip" \
+        wget "https://web.archive.org/web/20190322013244/http://vu1tur.eu.org/tools/dmg2img-1.6.6-win32.zip" \
              ${wgetargs} \
              --output-document="dmg2img-1.6.6-win32.zip"
         if [[ ! -s dmg2img-1.6.6-win32.zip ]]; then
