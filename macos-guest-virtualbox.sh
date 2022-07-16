@@ -2,7 +2,7 @@
 # Push-button installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-virtualbox
-# version 0.99.1.8
+# version 0.99.2.0
 
 #       Dependencies: bash  coreutils  gzip  unzip  wget  xxd  dmg2img
 #  Optional features: tesseract-ocr  tesseract-ocr-eng
@@ -751,6 +751,8 @@ VBoxManage setextradata "${vm_name}" \
   "ourhardworkbythesewordsguardedpleasedontsteal(c)AppleComputerInc"
 VBoxManage setextradata "${vm_name}" \
  "VBoxInternal/Devices/smc/0/Config/GetKeyFromRealSMC" 0
+VBoxManage setextradata "${vm_name}" \
+  "VBoxInternal/TM/TSCMode" "RealTSCOffset"  # avoid boot loop when upgrading to Monterey
 }
 
 # Create the macOS base system virtual disk image
