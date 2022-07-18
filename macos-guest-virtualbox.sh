@@ -423,7 +423,7 @@ print_dimly "${macOS_release_name} selected to be downloaded and installed"
 # Done with dependencies
 
 function prompt_delete_existing_vm() {
-print_dimly "stage: prompt_delete_existing_vm"
+print_dimly "stage: ${FUNCNAME[0]}"
 if [[ -n "$(VBoxManage showvminfo "${vm_name}" 2>/dev/null)" ]]; then
     echo -e "\nA virtual machine named \"${vm_name}\" already exists."
     echo -ne "${warning_color}Delete existing virtual machine \"${vm_name}\"?${default_color}"
@@ -442,7 +442,7 @@ fi
 
 # Attempt to create new virtual machine named "${vm_name}"
 function create_vm() {
-print_dimly "stage: create_vm"
+print_dimly "stage: ${FUNCNAME[0]}"
 if [[ -n "$( VBoxManage createvm --name "${vm_name}" --ostype "MacOS1013_64" --register 2>&1 >/dev/null )" ]]; then
     echo -e "\nError: Could not create virtual machine \"${vm_name}\"."
     echo -e "${highlight_color}Please delete exising \"${vm_name}\" VirtualBox configuration files ${warning_color}manually${default_color}.\n"
@@ -453,7 +453,7 @@ fi
 }
 
 function check_default_virtual_machine() {
-print_dimly "stage: check_default_virtual_machine"
+print_dimly "stage: ${FUNCNAME[0]}"
 echo -e "\nChecking that VirtualBox starts the virtual machine without errors."
 if [[ -n $(VBoxManage startvm "${vm_name}" 2>&1 1>/dev/null) ]]; then
     echo -e "Error while starting the virtual machine.\nExiting."
@@ -476,7 +476,7 @@ fi
 }
 
 function prepare_macos_installation_files() {
-print_dimly "stage: prepare_macos_installation_files"
+print_dimly "stage: ${FUNCNAME[0]}"
 # Find the correct download URL in the Apple catalog
 echo -e "\nDownloading Apple macOS ${macOS_release_name} software update catalog"
 wget "${sucatalog}" \
@@ -547,7 +547,7 @@ fi
 }
 
 function create_nvram_files() {
-print_dimly "stage: create_nvram_files"
+print_dimly "stage: ${FUNCNAME[0]}"
 
 # Each NVRAM file may contain multiple entries.
 # Each entry contains a namesize, datasize, name, guid, attributes, and data.
@@ -628,7 +628,7 @@ generate_nvram_bin_file "csr-active-config" "${system_integrity_protection}" "7C
 }
 
 function create_macos_installation_files_viso() {
-print_dimly "stage: create_macos_installation_files_viso"
+print_dimly "stage: ${FUNCNAME[0]}"
 echo "Creating EFI startup script"
 echo 'echo -off' > "${vm_name}_startup.nsh"
 if [[ ( "${vbox_version:0:1}" -lt 6 ) || ( "${vbox_version:0:1}" = 6 && "${vbox_version:2:1}" = 0 ) ]]; then
@@ -706,7 +706,7 @@ echo "/ESP/startup.nsh=\"${vm_name}_startup.nsh\"" >> "${macOS_release_name}_ins
 }
 
 function configure_vm() {
-print_dimly "stage: configure_vm"
+print_dimly "stage: ${FUNCNAME[0]}"
 if [[ -n "$(
             VBoxManage modifyvm "${vm_name}" --cpus "${cpu_count}" \
             --memory "${memory_size}" --vram "${gpu_vram}" --pae on \
@@ -717,7 +717,7 @@ if [[ -n "$(
            )" ]]; then
     echo -e "\nError: Could not configure virtual machine \"${vm_name}\"."
     echo -e "If the VM is powered on, power off the virtual machine and resume the script or"
-    echo -e "execute the stage ${low_contrast_color}configure_vm${default_color}\n"
+    echo -e "execute the stage ${low_contrast_color}${FUNCNAME[0]}${default_color}\n"
     echo "Exiting."
     exit
 fi
@@ -757,7 +757,7 @@ VBoxManage setextradata "${vm_name}" \
 
 # Create the macOS base system virtual disk image
 function populate_basesystem_virtual_disk() {
-print_dimly "stage: populate_basesystem_virtual_disk"
+print_dimly "stage: ${FUNCNAME[0]}"
 [[ -s "${macOS_release_name}_BaseSystem.${storage_format}" ]] && echo "${macOS_release_name}_BaseSystem.${storage_format} bootstrap virtual disk image exists." && return
 [[ ! -s "${macOS_release_name}_BaseSystem.dmg" ]] && echo -e "\nCould not find ${macOS_release_name}_BaseSystem.dmg; exiting." && exit
 echo "Converting BaseSystem.dmg to BaseSystem.img"
@@ -783,7 +783,7 @@ exit
 
 # Create the installation media virtual disk image
 function create_bootable_installer_virtual_disk() {
-print_dimly "stage: create_bootable_installer_virtual_disk"
+print_dimly "stage: ${FUNCNAME[0]}"
 if [[ -w "${macOS_release_name}_bootable_installer.${storage_format}" ]]; then
     echo "\"${macOS_release_name}_bootable_installer.${storage_format}\" virtual disk image exists."
     echo -ne "${warning_color}Delete \"${macOS_release_name}_bootable_installer.${storage_format}\"?${default_color}"
@@ -817,7 +817,7 @@ fi
 }
 
 function populate_bootable_installer_virtual_disk() {
-print_dimly "stage: populate_bootable_installer_virtual_disk"
+print_dimly "stage: ${FUNCNAME[0]}"
 # Attach virtual disk images of the base system, installation, and target
 # to the virtual machine
 VBoxManage storagectl "${vm_name}" --remove --name SATA >/dev/null 2>&1
@@ -919,7 +919,7 @@ echo "the virtual machine and released from VirtualBox Manager."
 }
 
 function create_target_virtual_disk() {
-print_dimly "stage: create_target_virtual_disk"
+print_dimly "stage: ${FUNCNAME[0]}"
 if [[ -w "${vm_name}.${storage_format}" ]]; then
     echo "${vm_name}.${storage_format} target system virtual disk image exists."
     echo -ne "${warning_color}Delete \"${vm_name}.${storage_format}\"?${default_color}"
@@ -962,7 +962,7 @@ fi
 }
 
 function populate_macos_target_disk() {
-print_dimly "stage: populate_macos_target_disk"
+print_dimly "stage: ${FUNCNAME[0]}"
 if [[ "$( VBoxManage list runningvms )" =~ \""${vm_name}"\" ]]; then
     echo -e "${highlight_color}Please ${warning_color}manually${highlight_color} shut down the virtual machine and press enter to continue.${default_color}"
     clear_input_buffer_then_read
@@ -1057,7 +1057,7 @@ echo -e "${highlight_color}an Apple macOS installer progress bar, that's it! Enj
 }
 
 function prompt_delete_temporary_files() {
-print_dimly "stage: prompt_delete_temporary_files"
+print_dimly "stage: ${FUNCNAME[0]}"
 if [[ ! "$(VBoxManage showvminfo "${vm_name}")" =~ State:[\ \t]*powered\ off ]]
 then
     echo -e "Temporary files may be deleted when the virtual machine is powered off
