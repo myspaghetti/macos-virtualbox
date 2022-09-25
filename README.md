@@ -29,9 +29,9 @@ The script by default assigns a target virtual disk storage size of 80GB, which 
 
 The following primary display resolutions are supported by macOS on VirtualBox: `5120x2880` `2880x1800` `2560x1600` `2560x1440` `1920x1200` `1600x1200` `1680x1050` `1440x900` `1280x800` `1024x768` `640x480`. See the [documentation command](#documentation) for further information.
 
-## Unsupported features
+## Scope and unsupported features
 
-Developing and maintaining VirtualBox or macOS features is beyond the scope of this script. Some features may behave unexpectedly, such as USB device support, audio support, FileVault boot password prompt support, and other features.
+The scope of the script is completing a default macOS install process on VirtualBox on supported hardware. Further functioning order of VirtualBox or macOS is beyond the scope of this script. Some features may behave unexpectedly, such as USB device support, audio support, FileVault boot password prompt support, and other features, including critical functionality.
 
 ### CPU compatibility
 
