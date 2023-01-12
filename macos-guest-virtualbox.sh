@@ -2,7 +2,7 @@
 # Push-button installer of macOS on VirtualBox
 # (c) myspaghetti, licensed under GPL2.0 or higher
 # url: https://github.com/myspaghetti/macos-virtualbox
-# version 0.99.2.0
+# version 0.99.2.1
 
 #       Dependencies: bash  coreutils  gzip  unzip  wget  xxd  dmg2img
 #  Optional features: tesseract-ocr  tesseract-ocr-eng
@@ -379,7 +379,7 @@ if ! dmg2img >/dev/null 2>&1; then
              exit
         fi
         unzip -oj "dmg2img-1.6.6-win32.zip" "dmg2img.exe"
-        rm "dmg2img-1.6.6-win32.zip"
+        command rm "dmg2img-1.6.6-win32.zip"
         chmod +x "dmg2img.exe"
         [[ ! -x "dmg2img.exe" ]] && echo "Error setting the executable permission for dmg2img.exe. Exiting." && exit
     fi
@@ -500,7 +500,7 @@ echo "Trying to find macOS ${macOS_release_name} InstallAssistant download URL"
 tac "${macOS_release_name}_sucatalog" | csplit - '/InstallAssistantAuto.smd/+1' '{*}' -f "${macOS_release_name}_sucatalog_" -s
 for catalog in "${macOS_release_name}_sucatalog_"* "error"; do
     if [[ "${catalog}" == error ]]; then
-        rm "${macOS_release_name}_sucatalog"*
+        command rm "${macOS_release_name}_sucatalog"*
         echo "Couldn't find the requested download URL in the Apple catalog. Exiting."
        exit
     fi
@@ -515,7 +515,7 @@ for catalog in "${macOS_release_name}_sucatalog_"* "error"; do
     found_version="$(head -n 6 "${catalog}_InstallAssistantAuto.smd" | tail -n 1)"
     if [[ "${found_version}" == *${CFBundleShortVersionString}* ]]; then
         echo -e "Found download URL: ${urlbase}\n"
-        rm "${macOS_release_name}_sucatalog"*
+        command rm "${macOS_release_name}_sucatalog"*
         break
     fi
 done
@@ -752,7 +752,7 @@ VBoxManage setextradata "${vm_name}" \
 VBoxManage setextradata "${vm_name}" \
  "VBoxInternal/Devices/smc/0/Config/GetKeyFromRealSMC" 0
 VBoxManage setextradata "${vm_name}" \
-  "VBoxInternal/TM/TSCMode" "RealTSCOffset"  # avoid boot loop when upgrading to Monterey
+ "VBoxInternal/TM/TSCMode" "RealTSCOffset"  # avoid boot loop when upgrading to Monterey
 }
 
 # Create the macOS base system virtual disk image
@@ -767,7 +767,7 @@ VBoxManage closemedium "${macOS_release_name}_BaseSystem.${storage_format}" >/de
 local success=''
 VBoxManage convertfromraw --format "${storage_format}" "${macOS_release_name}_BaseSystem.img" "${macOS_release_name}_BaseSystem.${storage_format}" && local success="True"
 if [[ "${success}" = "True" ]]; then
-    rm "${macOS_release_name}_BaseSystem.img" 2>/dev/null
+    command rm "${macOS_release_name}_BaseSystem.img" 2>/dev/null
     return
 fi
 echo "Failed to create \"${macOS_release_name}_BaseSystem.${storage_format}\"."
@@ -798,7 +798,7 @@ if [[ -w "${macOS_release_name}_bootable_installer.${storage_format}" ]]; then
         else
             VBoxManage storagectl "${vm_name}" --remove --name SATA >/dev/null 2>&1
             VBoxManage closemedium "${macOS_release_name}_bootable_installer.${storage_format}" >/dev/null 2>&1
-            rm "${macOS_release_name}_bootable_installer.${storage_format}"
+            command rm "${macOS_release_name}_bootable_installer.${storage_format}"
         fi
     else
         echo "Exiting."
@@ -934,7 +934,7 @@ if [[ -w "${vm_name}.${storage_format}" ]]; then
         else
             VBoxManage storagectl "${vm_name}" --remove --name SATA >/dev/null 2>&1
             VBoxManage closemedium "${vm_name}.${storage_format}" >/dev/null 2>&1
-            rm "${vm_name}.${storage_format}"
+            command rm "${vm_name}.${storage_format}"
         fi
     else
         echo "Exiting."
@@ -1094,7 +1094,7 @@ else
     echo -ne "\n${warning_color}Delete temporary files listed above?${default_color}"
     prompt_delete_y_n
     if [[ "${delete}" == "y" ]]; then
-        rm -f "${temporary_files[@]}" 2>/dev/null
+        command rm -f "${temporary_files[@]}" 2>/dev/null
     fi
 fi
 }
