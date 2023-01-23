@@ -712,8 +712,7 @@ if [[ -n "$(
             --memory "${memory_size}" --vram "${gpu_vram}" --pae on \
             --boot1 none --boot2 none --boot3 none --boot4 none \
             --firmware efi --rtcuseutc on --chipset ich9 ${extension_pack_usb3_support} \
-            --mouse usbtablet --keyboard usb --audiocontroller hda \
-            --audiocodec stac9221 --audio=none 2>&1 >/dev/null
+            --mouse usbtablet --keyboard usb 2>&1 >/dev/null
            )" ]]; then
     echo -e "\nError: Could not configure virtual machine \"${vm_name}\"."
     echo -e "If the VM is powered on, power off the virtual machine and resume the script or"
