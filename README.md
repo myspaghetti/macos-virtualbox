@@ -11,6 +11,10 @@ Tested on `bash` and `zsh` on [Cygwin](https://cygwin.com/install.html). Works o
 
 macOS Catalina (10.15), Mojave (10.14), and High Sierra (10.13) currently supported.
 
+## Maintainer wanted
+
+If you would like to become the maintainer of this repository, please see [issue #645 - maintainer wanted](https://github.com/myspaghetti/macos-virtualbox/issues/645).
+
 ## Documentation
 
 Documentation can be viewed by executing the command `./macos-guest-virtualbox.sh documentation`
