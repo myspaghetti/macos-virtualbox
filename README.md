@@ -7,7 +7,7 @@
 
 A default install only requires the user to sit patiently and, less than ten times, press enter when prompted by the script, without interacting with the virtual machine.
 
-Tested on `bash` and `zsh` on [Cygwin](https://cygwin.com/install.html). Works on macOS, CentOS 7, and Windows. Should work on most modern Linux distros.
+Tested on `bash` and `zsh` on [Cygwin](https://cygwin.com/install.html). Works on macOS, CentOS 7, and Windows on x86 CPUs with VT-x or AMD-V. Should work on most modern Linux distros.
 
 macOS Catalina (10.15), Mojave (10.14), and High Sierra (10.13) currently supported.
 
@@ -39,7 +39,7 @@ The scope of the script is completing a default macOS install process on Virtual
 
 ### CPU compatibility
 
-macOS guests on VirtualBox are incompatible with some CPU models. If the guest macOS boot process hangs on “LoadKernelFromStream”, “EndRandomSeed”, or "EXITBS", see the [documentation command](#documentation) regarding VirtualBox CPU profiles and [CPUID settings](https://www.virtualbox.org/manual/ch08.html#vboxmanage-modifyvm-teleport). Some CPU models released in 2020 and later may fail to start or complete the installer, and may require manually adjusting the CPUID settings.
+The script is designed for x86 CPU Mac hardware. macOS guests on VirtualBox are generally incompatible with other CPU models. If the guest macOS boot process hangs on “LoadKernelFromStream”, “EndRandomSeed”, or "EXITBS", see the [documentation command](#documentation) regarding VirtualBox CPU profiles and [CPUID settings](https://www.virtualbox.org/manual/ch08.html#vboxmanage-modifyvm-teleport). Some CPU models released in 2020 and later may fail to start or complete the installer, and may require manually adjusting the CPUID settings.
 
 ### Upgrading to Big Sur and Monterey 
 
