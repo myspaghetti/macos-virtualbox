@@ -19,6 +19,7 @@ vm_name="macOS"                  # name of the VirtualBox virtual machine
 macOS_release_name="Catalina"    # install "HighSierra" "Mojave" or "Catalina"
 storage_size=80000               # VM disk image size in MB, minimum 22000
 storage_format="vdi"             # VM disk image file format, "vdi" or "vmdk"
+cpu_profile="host"               # VM CPU profile, "host" or one of the models listed in documentation
 cpu_count=2                      # VM CPU cores, minimum 2
 memory_size=4096                 # VM RAM in MB, minimum 2048
 gpu_vram=128                     # VM video RAM in MB, minimum 34, maximum 128
@@ -115,6 +116,7 @@ echo -e "\nvm_name=\"${vm_name}\""
 pad_to_33_chars "macOS_release_name=\"${macOS_release_name}\"" "# install \"HighSierra\" \"Mojave\" \"Catalina\""
 pad_to_33_chars "storage_size=${storage_size}"                 "# VM disk image size in MB, minimum 22000"
 pad_to_33_chars "storage_format=\"${storage_format}\""         "# VM disk image file format, \"vdi\" or \"vmdk\""
+pad_to_33_chars "cpu_profile\"${cpu_profile}\""                '# VM CPU profile, \"host\" or one of the models listed in documentation"
 pad_to_33_chars "cpu_count=${cpu_count}"                       "# VM CPU cores, minimum 2"
 pad_to_33_chars "memory_size=${memory_size}"                   "# VM RAM in MB, minimum 2048"
 pad_to_33_chars "gpu_vram=${gpu_vram}"                         "# VM video RAM in MB, minimum 34, maximum 128"
@@ -708,7 +710,7 @@ echo "/ESP/startup.nsh=\"${vm_name}_startup.nsh\"" >> "${macOS_release_name}_ins
 function configure_vm() {
 print_dimly "stage: configure_vm"
 if [[ -n "$(
-            VBoxManage modifyvm "${vm_name}" --cpus "${cpu_count}" \
+            VBoxManage modifyvm "${vm_name}" --cpu-profile "${cpu_profile}" --cpus "${cpu_count}" \
             --memory "${memory_size}" --vram "${gpu_vram}" --pae on \
             --boot1 none --boot2 none --boot3 none --boot4 none \
             --firmware efi --rtcuseutc on --chipset ich9 ${extension_pack_usb3_support} \
