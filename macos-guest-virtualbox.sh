@@ -481,7 +481,7 @@ function prepare_macos_installation_files() {
 print_dimly "stage: prepare_macos_installation_files"
 # Find the correct download URL in the Apple catalog
 echo -e "\nDownloading Apple macOS ${macOS_release_name} software update catalog"
-wget "${sucatalog}" \
+wget --secure-protocol=PFS "${sucatalog}" \
      ${wgetargs} \
      --output-document="${macOS_release_name}_sucatalog"
 
