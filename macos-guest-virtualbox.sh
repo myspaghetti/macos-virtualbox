@@ -256,7 +256,7 @@ fi
 # wget supports --show-progress from version 1.16
 regex='1\.1[6-9]|1\.[2-9][0-9]'  # for zsh quoted regex compatibility
 if [[ "$(wget --version 2>/dev/null | head -n 1)" =~ ${regex} ]]; then
-    wgetargs="--quiet --continue --show-progress --timeout=60"  # pretty
+    wgetargs="--quiet --continue --show-progress --timeout=60 --secure-protocol=PFS"  # pretty
 else
     wgetargs="--continue"  # ugly
 fi
